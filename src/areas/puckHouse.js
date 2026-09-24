@@ -81,9 +81,7 @@ export class PuckHouse extends Area {
     [-2.4, -0.3, 1.8].forEach((z) => addShaft(this.group, new THREE.Vector3(-5, 2.1, z), new THREE.Vector3(-2.6, 0, z - 0.85), 1.1));
     [-2.0, 0.2].forEach((x) => addShaft(this.group, new THREE.Vector3(x, 2.1, -3.5), new THREE.Vector3(x + 0.4, 0, -1.6), 0.9, 0.08));
     this.fx.push(new DustMotes(this.group, new THREE.Box3(new THREE.Vector3(-4.6, 0.3, -3.2), new THREE.Vector3(-1.8, 2.3, 2.3))));
-    const hallLamp = new THREE.PointLight(0xffd6a0, 1.4, 5, 1.5);
-    hallLamp.position.set(1, 2.3, 7);
-    this.group.add(hallLamp);
+    // (Geen extra puntlamp in de gang: die kostte op elke pixel rekenkracht)
   }
 
   wall(x0, y0, z0, x1, y1, z1, mat = P.wall) {
@@ -235,7 +233,8 @@ export class PuckHouse extends Area {
     pillow(-4.45, 0.62, 2.95, -0.7, P.navy);
     pillow(-2.9, 0.62, 3.0, Math.PI / 2, lambert(0xa9c3ad));
     pillow(-4.4, 0.55, -0.1, -0.2, lambert(0xc9cfc4));
-    this.block(-4.0, 0.45, 0.4, -3.45, 0.5, 1.15, P.blanket, { collide: false });
+    this.block(-4.65, 0.45, 0.4, -4.1, 0.49, 1.15, P.blanket, { collide: false });
+    this.block(-4.1, 0.2, 0.45, -4.07, 0.49, 1.1, P.blanket, { collide: false });
     const toyColors = [0xe23b3b, 0xf2c230, 0x3d9be0, 0x6ac46b, 0xe86fb4];
     toyColors.forEach((c, i) => {
       const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.035, 0), lambert(c));
@@ -630,6 +629,10 @@ export class PuckHouse extends Area {
     this.plant(x0 + 0.35, R.maxZ - 0.5, 0.18, 0.3, 0.8, lambert(0xb8653d), P.spotLeaf);
     this.block(x0 + 0.3, 0.42, 0.4, x0 + 0.72, 0.46, 0.82, lambert(0x2f6b3a), { climbable: true, name: 'stoeltje' });
     this.block(x0 + 0.3, 0.46, 0.4, x0 + 0.34, 0.85, 0.82, lambert(0x2f6b3a), { collide: false });
+    // Pootjes van het klapstoeltje
+    [[0.33, 0.43], [0.69, 0.43], [0.33, 0.79], [0.69, 0.79]].forEach(([dx, z]) =>
+      this.block(x0 + dx - 0.015, 0, z - 0.015, x0 + dx + 0.015, 0.42, z + 0.015, M.metalDark, { collide: false }),
+    );
     this.addCollider(x0 + 0.3, 0, 0.4, x0 + 0.72, 0.42, 0.82, { climbable: true, name: 'stoeltje' });
     this.block(x1 - 0.7, 0.003, -2.5, x1 - 0.1, 0.01, -1.8, lambert(0x3c4a44), { collide: false, shadow: false });
     this.zones.push({ x: (x0 + x1) / 2, y: 0, z: 1.8, r: 0.8, h: 1.5, secret: 'balkon', say: 'Watskebeurt? Heel Stad ligt aan mijn pootjes!' });

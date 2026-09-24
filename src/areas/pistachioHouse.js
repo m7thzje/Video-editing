@@ -585,9 +585,7 @@ export class PistachioHouse extends Area {
   buildLights() {
     this.addLights({ sunPos: new THREE.Vector3(2.5, 6, -7), center: new THREE.Vector3(0, 0, 0.5), size: 5.5 });
     // Gezellige staande lamp
-    const lamp = new THREE.PointLight(0xffb866, 2.2, 6, 1.4);
-    lamp.position.copy(this.lampPosition);
-    this.group.add(lamp);
+    // (De lampenkap gloeit zelf; een echte puntlamp kostte te veel rekenkracht)
   }
 
   // ---------- Gameplay ----------

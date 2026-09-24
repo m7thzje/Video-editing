@@ -87,6 +87,7 @@ export class JumboStore extends Area {
       const s = makeSign(text, { width: 1.1, height: 0.24, bg: '#1b1b1d', fg: '#ffd200', border: '#1b1b1d' });
       s.position.set(x, 2.35, z);
       this.group.add(s);
+      [-0.45, 0.45].forEach((dx) => this.block(x + dx - 0.005, 2.47, z - 0.005, x + dx + 0.005, R.h, z + 0.005, M.metalDark, { collide: false, shadow: false }));
     });
   }
 

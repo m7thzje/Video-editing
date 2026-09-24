@@ -30,13 +30,95 @@ function scaleTexture(base, edge) {
   return t;
 }
 
+/**
+ * Echte veertjes: rijen overlappende, afgeronde veren (van onder naar boven getekend, zodat ze als
+ * dakpannen over elkaar vallen), elk met een donker hart en een lichte rand.
+ * red: kans op een rood veertje per plek, als functie van (u, v) (0..1), voor de buik.
+ */
+function featherTexture(base, rim, { w = 256, h = 256, size = 14, red = null, repeat = [1, 1] } = {}) {
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, w, h);
+  let seed = 11;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const rowH = size * 0.62;
+  for (let y = h + size; y > -size; y -= rowH) {
+    const row = Math.round(y / rowH);
+    for (let x = (row % 2) * size * 0.5 - size; x < w + size; x += size) {
+      const isRed = red && rnd() < red(x / w, 1 - y / h);
+      const jitter = (rnd() - 0.5) * 3;
+      const cx = x + jitter;
+      const cy = y + jitter * 0.5;
+      const rw = size * 0.62;
+      const rh = size * 0.85;
+      // Veertje: halve ellips naar beneden, met verloop van donker (midden) naar licht (rand)
+      const g = ctx.createRadialGradient(cx, cy - rh * 0.3, 1, cx, cy, rh);
+      if (isRed) {
+        g.addColorStop(0, '#9e1320');
+        g.addColorStop(0.7, '#d9283a');
+        g.addColorStop(1, '#f25a5a');
+      } else {
+        g.addColorStop(0, shade(base, -22));
+        g.addColorStop(0.75, base);
+        g.addColorStop(1, rim);
+      }
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rw, rh, 0, 0, Math.PI);
+      ctx.lineTo(cx - rw, cy - rh * 0.4);
+      ctx.lineTo(cx + rw, cy - rh * 0.4);
+      ctx.fill();
+      // Lichte zoom onderaan en een schachtje in het midden
+      ctx.strokeStyle = isRed ? 'rgba(255,170,160,0.9)' : rim;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rw - 0.7, rh - 0.7, 0, 0.12 * Math.PI, 0.88 * Math.PI);
+      ctx.stroke();
+      ctx.strokeStyle = isRed ? 'rgba(120,10,20,0.35)' : 'rgba(0,0,0,0.12)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - rh * 0.3);
+      ctx.lineTo(cx, cy + rh * 0.7);
+      ctx.stroke();
+    }
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(...repeat);
+  t.anisotropy = 4;
+  return t;
+}
+
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const cl = (v) => Math.max(0, Math.min(255, v));
+  const r = cl((n >> 16) + amt);
+  const g = cl(((n >> 8) & 255) + amt);
+  const b = cl((n & 255) + amt);
+  return `rgb(${r},${g},${b})`;
+}
+
 const mat = (color, extra = {}) => new THREE.MeshLambertMaterial({ color, flatShading: true, ...extra });
+const smooth = (map) => new THREE.MeshLambertMaterial({ color: 0xffffff, map });
 
 const MATERIALS = {
-  body: mat(0xffffff, { map: scaleTexture('#8e959b', '#b4babf') }),
-  head: mat(0xffffff, { map: scaleTexture('#aab0b5', '#d3d7da') }),
-  belly: mat(0xffffff, { map: scaleTexture('#9ea4a9', '#c3c8cc') }),
-  wing: mat(0xffffff, { map: scaleTexture('#737b82', '#9aa1a7') }),
+  body: smooth(featherTexture('#8e959b', '#c4c9cd', { size: 16, repeat: [2, 1] })),
+  head: smooth(featherTexture('#a9afb4', '#dde0e2', { size: 11, repeat: [2, 1] })),
+  // Buik: grijze veertjes met hier en daar een rood veertje, vooral onderaan de voorkant (zoals bij Puck)
+  belly: smooth(featherTexture('#9ca2a7', '#cfd3d6', {
+    w: 512,
+    size: 15,
+    red: (u, v) => {
+      const front = Math.max(0, 1 - Math.abs(u - 0.25) / 0.2);
+      const low = Math.max(0, (0.55 - v) / 0.4);
+      return Math.min(0.75, front * low * 0.9);
+    },
+  })),
+  wing: smooth(featherTexture('#6f777e', '#a3aab0', { size: 20, repeat: [2, 1] })),
   primaries: mat(0x5a5f64),
   face: mat(0xf4f2ed),
   beak: mat(0x1b1b1d),
@@ -54,6 +136,7 @@ const MATERIALS = {
 };
 
 const ball = (r, detail = 1) => new THREE.IcosahedronGeometry(r, detail);
+const sphere = (r) => new THREE.SphereGeometry(r, 24, 16);
 
 export class Puck {
   constructor() {
@@ -90,14 +173,12 @@ export class Puck {
     this.body = new THREE.Group();
     this.body.position.y = 0.16;
     rig.add(this.body);
-    add(this.body, ball(0.1, 2), MATERIALS.body, [0, 0, -0.01], [1, 1.25, 1.05], [0.25, 0, 0]);
-    add(this.body, ball(0.086, 2), MATERIALS.belly, [0, -0.01, 0.035], [0.92, 1.15, 0.75]);
+    add(this.body, sphere(0.1), MATERIALS.body, [0, 0, -0.01], [1, 1.25, 1.05], [0.25, 0, 0]);
+    add(this.body, sphere(0.086), MATERIALS.belly, [0, -0.01, 0.035], [0.92, 1.15, 0.75]);
     // Lichte stuit boven de staart (typisch voor een grijze roodstaart)
     add(this.body, ball(0.05, 1), MATERIALS.rump, [0, -0.07, -0.07], [1.1, 0.7, 0.8]);
     // Rode spikkels op buik en dijen (zoals bij Puck op de foto)
-    [[0.03, -0.03, 0.095], [-0.035, -0.05, 0.09], [0.0, -0.075, 0.085], [0.045, -0.085, 0.07], [-0.05, -0.09, 0.065], [0.02, 0.0, 0.098]].forEach(
-      ([x, y, z], i) => add(this.body, ball(0.013, 0), MATERIALS.speckle, [x, y, z], [1.3, 0.8, 0.4], [0, 0, i]),
-    );
+    // (De rode veertjes zitten nu als echte veertjes in de buiktextuur)
 
     // Staart: rode waaier met donkere dekveren erboven
     this.tail = new THREE.Group();
@@ -117,7 +198,7 @@ export class Puck {
     this.wings = [-1, 1].map((side) => {
       const pivot = new THREE.Group();
       pivot.position.set(side * 0.085, 0.05, -0.01);
-      add(pivot, ball(0.075, 2), MATERIALS.wing, [side * 0.012, -0.055, -0.02], [0.36, 1.2, 1], [0.35, 0, 0]);
+      add(pivot, sphere(0.075), MATERIALS.wing, [side * 0.012, -0.055, -0.02], [0.36, 1.2, 1], [0.35, 0, 0]);
       // Donkere slagpennen in een waaiertje naar achteren
       const pf = new THREE.SphereGeometry(1, 6, 4);
       pf.scale(0.012, 0.022, 0.05);
@@ -134,7 +215,7 @@ export class Puck {
     this.head.position.set(0, 0.128, 0.035);
     this.headBase = this.head.position.clone();
     this.body.add(this.head);
-    add(this.head, ball(0.078, 2), MATERIALS.head, null, [1, 0.97, 1.02]);
+    add(this.head, sphere(0.078), MATERIALS.head, null, [1, 0.97, 1.02]);
 
     // Witte naakte huid rond de ogen, lichtgele iris, zwarte pupil
     [-1, 1].forEach((side) => {

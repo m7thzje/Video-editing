@@ -45,6 +45,8 @@ function buildCage(parent, withColliders, area) {
   // Achterwand: onderkant dicht, bovenkant is de spiegel (het gat wordt door het spiegelbeeld gevuld)
   block(-X, 0, -Z - 0.1, X, MIRROR.y0, -Z, P.wall, { name: 'liftwand' });
   block(-X, MIRROR.y1, -Z - 0.1, X, H, -Z, P.wall, { collide: false });
+  // Onzichtbare wand vóór de spiegel: je kunt er niet doorheen lopen (ook niet vanaf het bierkrat)
+  if (withColliders) area.addCollider(-X - 0.1, 0, -Z - 0.3, X + 0.1, H + 0.2, -Z + 0.01, { name: 'spiegel', camIgnore: true });
   block(-X, MIRROR.y0 - 0.03, -Z, X, MIRROR.y0, -Z + 0.02, P.alu, { collide: false });
   block(-X, MIRROR.y1, -Z, X, MIRROR.y1 + 0.03, -Z + 0.02, P.alu, { collide: false });
   // Leuningen

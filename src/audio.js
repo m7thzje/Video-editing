@@ -394,6 +394,13 @@ const PLACEHOLDERS = {
   talk(ctx, out, v) {
     [700, 1100, 850, 1300].forEach((f, i) => tone(ctx, out, { type: 'sawtooth', from: f, to: f * 1.2, start: i * 0.09, dur: 0.08, vol: 0.06 * v }));
   },
+  tick(ctx, out, v) {
+    tone(ctx, out, { type: 'square', from: 660, dur: 0.12, vol: 0.12 * v });
+  },
+  go(ctx, out, v) {
+    tone(ctx, out, { type: 'square', from: 1320, dur: 0.35, vol: 0.14 * v });
+    tone(ctx, out, { type: 'triangle', from: 1760, start: 0.05, dur: 0.35, vol: 0.12 * v });
+  },
   alarm(ctx, out, v) {
     for (let i = 0; i < 8; i++) tone(ctx, out, { type: 'square', from: i % 2 ? 900 : 1300, start: i * 0.2, dur: 0.18, vol: 0.09 * v });
   },

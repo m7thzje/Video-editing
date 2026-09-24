@@ -507,8 +507,12 @@ export class Outside extends Area {
     this.block(-18.5, 0, z1, -17.5, 1.9, z1 + 0.03, M.woodDark, { collide: false });
     // Kratten-trap
     [[-15.6, -11.0, 0.4], [-15.6, -11.6, 0.8], [-15.6, -12.2, 1.2], [-15.6, -12.8, 1.6]].forEach(([cx, cz, top]) => {
-      this.block(cx - 0.28, top - 0.4, cz - 0.28, cx + 0.28, top, cz + 0.28, M.cardboard, { name: 'krat' });
-      if (top > 0.4) this.addCollider(cx - 0.28, 0, cz - 0.28, cx + 0.28, top - 0.4, cz + 0.28);
+      // Gestapelde dozen tot op de grond (niets zweeft)
+      for (let y = 0; y < top - 0.01; y += 0.4) {
+        this.block(cx - 0.28 + (y % 0.8 ? 0.02 : 0), y, cz - 0.28, cx + 0.28, y + 0.4, cz + 0.28, M.cardboard, { collide: false });
+        this.block(cx - 0.29, y + 0.39, cz - 0.03, cx + 0.29, y + 0.405, cz + 0.03, M.tape, { collide: false, shadow: false });
+      }
+      this.addCollider(cx - 0.28, 0, cz - 0.28, cx + 0.28, top, cz + 0.28, { name: 'krat' });
     });
     // Tuinkabouter achter de schuur (geheim)
     const gnome = new THREE.Group();
@@ -567,6 +571,10 @@ export class Outside extends Area {
 
     // Bankje
     this.block(2.2, 0.38, 1.8, 3.8, 0.45, 2.3, M.wood, { climbable: true, name: 'bankje' });
+    [2.3, 3.62].forEach((x) => {
+      this.block(x, 0, 1.85, x + 0.08, 0.38, 1.93, M.metalDark, { collide: false });
+      this.block(x, 0, 2.17, x + 0.08, 0.85, 2.25, M.metalDark, { collide: false });
+    });
     this.addCollider(2.25, 0, 1.85, 3.75, 0.38, 2.25, { climbable: true });
     this.block(2.2, 0.45, 2.25, 3.8, 0.85, 2.32, M.wood, { climbable: true });
     // Wegwijzer
@@ -876,8 +884,22 @@ export class Outside extends Area {
       const handle = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.05, 0.05), yellow);
       handle.position.set(0, 1.0, -0.42);
       const base = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.05, 0.75), cartMat);
-      base.position.y = 0.2;
-      c.add(basket, handle, base);
+      base.position.y = 0.1;
+      // Onderstel met wieltjes, zodat het karretje op de grond staat
+      const legMat = lambert(0x6f777e);
+      [[-0.2, -0.33], [0.2, -0.33], [-0.2, 0.33], [0.2, 0.33]].forEach(([lx, lz]) => {
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.5, 0.03), legMat);
+        leg.position.set(lx, 0.33, lz);
+        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.03, 10), lambert(0x1b1b1d));
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(lx, 0.05, lz);
+        c.add(leg, wheel);
+      });
+      const handlePost = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.3, 0.03), legMat);
+      handlePost.position.set(-0.26, 0.85, -0.4);
+      const handlePost2 = handlePost.clone();
+      handlePost2.position.x = 0.26;
+      c.add(basket, handle, base, handlePost, handlePost2);
       c.position.set(x0 - 1.1, 0, 9.4 - k * 0.3);
       c.traverse((o) => (o.castShadow = true));
       this.group.add(c);

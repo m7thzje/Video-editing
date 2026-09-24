@@ -46,10 +46,8 @@ export class Bakery extends Area {
     this.buildRoom();
     this.buildOma();
     this.addLights({ sunPos: new THREE.Vector3(5, 6, 3), center: new THREE.Vector3(0, 0, 0), size: 4.5, hemi: 1.7 });
-    const warm = new THREE.PointLight(0xffa860, 2.4, 5, 1.4);
-    warm.position.set(-2.2, 1.0, -1.8);
-    this.group.add(warm);
-    this.ovenLight = warm;
+    // Warme ovengloed zonder extra lamp (scheelt veel rekenwerk): het vuur zelf gloeit
+    this.ovenLight = { intensity: 0 };
   }
 
   buildRoom() {

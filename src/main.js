@@ -32,12 +32,31 @@ const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in win
 document.body.classList.toggle('is-touch', isTouch);
 
 const app = document.getElementById('app');
-installDetailShader();
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-let pixelRatio = Math.min(window.devicePixelRatio || 1, isTouch ? 1.25 : 1.5);
+// Welke videokaart? Zonder hardwareversnelling tekent de browser alles met de processor (heel traag).
+const gpuName = (() => {
+  try {
+    const gl = document.createElement('canvas').getContext('webgl');
+    const ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
+    return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl ? gl.getParameter(gl.RENDERER) : 'geen WebGL';
+  } catch {
+    return 'onbekend';
+  }
+})();
+const softwareGPU = /swiftshader|llvmpipe|softpipe|software|basic render/i.test(gpuName);
+let savedLow = false;
+try {
+  savedLow = !!JSON.parse(localStorage.getItem('puck-settings-v1') || '{}').lowfx;
+} catch {
+  /* geen opslag */
+}
+// Snelle stand: geen detail-shader, geen schaduwen, geen anti-aliasing, lagere resolutie
+const lowStart = savedLow || softwareGPU || location.search.includes('low');
+if (!lowStart && !location.search.includes('nodetail')) installDetailShader();
+const renderer = new THREE.WebGLRenderer({ antialias: !lowStart && !isTouch, powerPreference: 'high-performance' });
+let pixelRatio = lowStart ? Math.min(window.devicePixelRatio || 1, 0.9) : Math.min(window.devicePixelRatio || 1, isTouch ? 1.25 : 1.5);
 renderer.setPixelRatio(pixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = !lowStart;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.shadowMap.autoUpdate = false; // statische schaduwen: alleen verversen als er iets verandert
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -721,6 +740,13 @@ function onAreaEntered(name) {
     toast(progress.stars.koek ? 'Bakkerij Haafs ruikt naar vers gebakken koek 🍪' : 'Bakkerij Haafs! Praat met oma Moi achter de toonbank.', 3.5);
   } else if (name === 'pistachehuis') {
     const left = area.pistachios.filter((c) => !c.found).length;
+    if (left && !progress.stars.pistache) {
+      startChallenge({
+        icon: '🥜', title: 'HET PISTACHEHUIS', goal: `Pik ${left} pistachenootjes zonder dat de buurvrouw je ziet`,
+        tip: 'Blijf uit haar lichtkegel. In een kartonnen doos ben je onzichtbaar.', countdown: false,
+        active: () => area.name === 'pistachehuis' && area.pistachios.some((c) => !c.found),
+      });
+    }
     toast(
       left
         ? `Het Pistachehuis! Nog ${left} pistachenootjes… maar pas op voor de chagrijnige buurvrouw. Blijf uit haar zicht (verstop je in een doos)!`
@@ -736,6 +762,9 @@ function startGame() {
   if (state.mode !== 'start') return;
   audio.unlock();
   $('start-screen').classList.add('hidden');
+  if (softwareGPU) {
+    setTimeout(() => toast('⚠️ Je browser gebruikt je videokaart niet (hardwareversnelling staat uit). Zet die aan in de browserinstellingen, dan loopt het spel veel soepeler.', 9), 2500);
+  }
   hud.classList.remove('hidden');
   if (isTouch) touchUI.classList.remove('hidden');
   state.mode = 'play';
@@ -1049,10 +1078,12 @@ function checkZones() {
         audio.playLong('puck-dans');
         say('Het tasje!! 🎶', { seconds: 3, sound: null });
       }
-      if (z.id === 'stenen-start' && !area.stoneRun.active) {
-        area.startStoneRun();
-        audio.play('checkpoint');
-        toast(`Go! Hop over de stenen door de gele ringen naar de finish (${STONE_TARGET_TIME} s)`, 3);
+      if (z.id === 'stenen-start' && !area.stoneRun.active && !state.challenge) {
+        const a = area;
+        startChallenge({
+          icon: '🪨', title: 'STAPSTENEN', goal: `Hop via de gele ringen naar de finish binnen ${STONE_TARGET_TIME} seconden`,
+          tip: 'Niet in het water vallen!', onGo: () => a.startStoneRun(), active: () => a.stoneRun.active,
+        });
       }
     } else if (!inside && was) {
       state.zonesInside.delete(z);
@@ -1102,7 +1133,7 @@ function interact() {
   if (z.id === 'kassa') {
     const anja = areas.jumbo.anja;
     anja.person.talk(3);
-    audio.playSlice('npc-praat', 0.7, { volume: 0.7, rate: 1.05 });
+    audio.playSlice('npc-praat', 0.7, { volume: 0.3, rate: 1.05 });
     if (state.jumboBag !== 'unpaid') return dialog.show(anja.name, dialog.next('anja'));
     state.jumboBag = 'paid';
     state.frozen = true;
@@ -1130,6 +1161,7 @@ function interact() {
   if (z.id === 'merel') {
     state.frozen = true;
     input.releasePointer();
+    startChallenge({ icon: '🐦', title: 'MEREL-LIEDJES', goal: 'Zing 3 liedjes van de merel na', tip: 'Luister goed en druk dan de knoppen (of 1 t/m 4) in dezelfde volgorde.', countdown: false, active: () => song.active });
     song.start();
   }
 }
@@ -1180,11 +1212,56 @@ function updateStoneRun(dt) {
   }
 }
 
+// ---------- Uitdagingen: duidelijke start (titel, doel, 3-2-1-GO) en het doel in beeld ----------
+const challengeEl = $('challenge');
+const goalEl = $('goal');
+function startChallenge({ icon, title, goal, tip = '', countdown = true, onGo = () => {}, active = () => false }) {
+  const card = `<div class="ch-card"><div class="ch-icon">${icon}</div><div class="ch-title">${title}</div><div class="ch-goal">🎯 ${goal}</div>${tip ? `<div class="ch-tip">${tip}</div>` : ''}</div>`;
+  challengeEl.innerHTML = card;
+  challengeEl.classList.remove('hidden');
+  state.challenge = { icon, title, goal, active, starting: true };
+  goalEl.textContent = `${icon} ${goal}`;
+  goalEl.classList.remove('hidden');
+  document.body.classList.add('has-goal');
+  audio.play('checkpoint');
+  if (!countdown) {
+    onGo();
+    state.challenge.starting = false;
+    setTimeout(() => challengeEl.classList.add('hidden'), 3800);
+    return;
+  }
+  state.frozen = true;
+  const show = (txt, go) => {
+    challengeEl.innerHTML = `<div class="ch-count ${go ? 'go' : ''}">${txt}</div>`;
+    audio.play(go ? 'go' : 'tick');
+  };
+  setTimeout(() => show('3'), 2600);
+  setTimeout(() => show('2'), 3350);
+  setTimeout(() => show('1'), 4100);
+  setTimeout(() => {
+    show('GO!', true);
+    state.frozen = false;
+    state.challenge.starting = false;
+    onGo();
+  }, 4850);
+  setTimeout(() => challengeEl.classList.add('hidden'), 5600);
+}
+
+function updateChallenge() {
+  const c = state.challenge;
+  if (!c || c.starting) return;
+  if (!c.active()) {
+    state.challenge = null;
+    goalEl.classList.add('hidden');
+    document.body.classList.remove('has-goal');
+  }
+}
+
 function talkTo(npc) {
   npc.person.talk(3);
   // Kort stukje "game-gebrabbel" bij elk bericht van een NPC, iets hoger of lager per persoon
   const pitch = 0.85 + ((npc.id.charCodeAt(0) * 7 + npc.id.length * 13) % 30) / 100;
-  audio.playSlice('npc-praat', 0.55 + Math.random() * 0.35, { volume: 0.7, rate: pitch });
+  audio.playSlice('npc-praat', 0.55 + Math.random() * 0.35, { volume: 0.3, rate: pitch });
   const o = areas.buiten;
   if (npc.id === 'mehmet') {
     o.mehmetPaused = true;
@@ -1201,33 +1278,35 @@ function talkTo(npc) {
   if (npc.id === 'bas') {
     if (o.boxSmash.active) return dialog.show(npc.name, 'Nait praten. Springen.');
     dialog.show(npc.name, progress.stars.dozen ? dialog.next('basIdle') : `Die dozen moeten plat. Allemaal. ${DOZEN_TIME} tellen. Spring er bovenop. Hup.`, 4);
-    setTimeout(() => {
-      o.boxSmash.start();
-      audio.play('checkpoint');
-      toast('📦 Go! Spring op alle dozen.', 2.5);
-    }, 1200);
+    startChallenge({
+      icon: '📦', title: 'DOZEN PLAT', goal: `Spring op alle ${o.boxSmash.boxes.length} dozen binnen ${DOZEN_TIME} seconden`,
+      tip: 'Hop bovenop een doos om hem plat te springen.', onGo: () => o.boxSmash.start(), active: () => o.boxSmash.active,
+    });
     return;
   }
   if (npc.id === 'toren') {
     if (o.towerRun) return dialog.show(npc.name, 'Klimmen. Nait kletsen.');
     dialog.show(npc.name, progress.stars.toren ? dialog.next('torenIdle') : `Moi. Klim naar het balkon en luid de klok. ${TOREN_TIME} tellen. Nait naar beneden kieken.`, 4);
-    setTimeout(() => {
-      o.towerRun = { time: 0 };
-      audio.play('checkpoint');
-      toast('🔔 Go! Klim de Martinitoren op (loop tegen de toren aan).', 3);
-    }, 1200);
+    startChallenge({
+      icon: '🔔', title: 'MARTINITOREN', goal: `Klim naar het balkon en luid de klok binnen ${TOREN_TIME} seconden`,
+      tip: 'Loop tegen de toren aan om te klimmen. De gele pijl wijst naar de klok.', onGo: () => (o.towerRun = { time: 0 }), active: () => !!o.towerRun,
+    });
     return;
   }
   if (npc.id === 'sjoukje') {
     if (o.race.active) return dialog.show(npc.name, 'Rennen, nait praten.');
     if (!progress.stars.rondje) {
       dialog.show(npc.name, 'Moi! Race? Ik op de fiets, jij te voet. Door alle blauwe ringen. Wie het eerst terug is. Klaar? Nee? Toch go.', 5);
-      setTimeout(() => {
-        o.race.start();
-        o.rival.start();
-        audio.play('bell');
-        toast('🚲 Go! Wees eerder terug dan Sjoukje.', 2.5);
-      }, 1500);
+      startChallenge({
+        icon: '🚲', title: 'FIETSRACE', goal: 'Ren door alle blauwe ringen en wees eerder terug dan Sjoukje',
+        tip: 'Volg de gele pijl naar de volgende ring. Patat geeft extra snelheid!',
+        onGo: () => {
+          o.race.start();
+          o.rival.start();
+          audio.play('bell');
+        },
+        active: () => o.race.active,
+      });
       return;
     }
     return dialog.show(npc.name, dialog.next('sjoukjeIdle'));
@@ -1236,11 +1315,10 @@ function talkTo(npc) {
     if (o.pigeons.active) return dialog.show(npc.name, 'Nait tegen mij. Tegen de duiven.');
     if (!progress.stars.duiven) {
       dialog.show(npc.name, `Die duiven eten al mien brood op. Jaag ze eens weg, jong. ${DUIVEN_TIME} tellen. Henk ook.`, 5);
-      setTimeout(() => {
-        o.pigeons.start();
-        audio.play('checkpoint');
-        toast('🐦 Go! Ren door de duiven heen.', 2.5);
-      }, 1200);
+      startChallenge({
+        icon: '🕊️', title: 'DUIVEN WEGJAGEN', goal: `Jaag alle duiven van het plein binnen ${DUIVEN_TIME} seconden`,
+        tip: 'Ren of hop door de duiven heen. Henk is de lastigste.', onGo: () => o.pigeons.start(), active: () => o.pigeons.active,
+      });
       return;
     }
     return dialog.show(npc.name, dialog.next('janIdle'));
@@ -1668,6 +1746,7 @@ function update(dt) {
     state.flewTried = false;
   }
   if (input.consumeInteract()) interact();
+  updateChallenge();
   if (state.concert) {
     concert.update();
     const lx = areas.buiten.stage.lanes[state.concertLane ?? 1];
@@ -1883,7 +1962,17 @@ function frame(timestamp) {
   perfFrames++;
   if (now - perfTime > 1500) {
     const fps = (perfFrames * 1000) / (now - perfTime);
-    fpsEl.textContent = `${Math.round(fps)} fps`;
+    fpsEl.textContent = `${Math.round(fps)} fps · ${gpuName.replace(/^ANGLE \(|\)$/g, '').slice(0, 48)}`;
+    if (state.mode === 'play' && fps < 26) state.slowCount = (state.slowCount || 0) + 1;
+    else state.slowCount = 0;
+    if (state.slowCount >= 3 && !settings.lowfx) {
+      // Blijft het traag? Zet zelf de snelle stand aan
+      settings.lowfx = true;
+      saveSettings();
+      buildSettingsUI();
+      goLow();
+      toast('🐢 Het liep niet soepel: de snelle stand staat nu aan (uit te zetten in het menu).', 5);
+    }
     if (fps < 50 && bloomOn) {
       bloomOn = false; // eerst de glow uit
     } else if (fps < 45 && pixelRatio > 0.8) {
@@ -1929,6 +2018,24 @@ const dayLight = {};
 Object.values(areas).forEach((a) => {
   dayLight[a.name] = { sun: a.sun?.intensity, sunColor: a.sun?.color.clone(), hemi: a.hemi?.intensity, fog: a.fog?.color.clone() };
 });
+
+/** Snelle stand tijdens het spelen: detail-shader en schaduwen uit, resolutie omlaag. */
+function goLow() {
+  pixelRatio = Math.min(pixelRatio, 0.8);
+  renderer.setPixelRatio(pixelRatio);
+  composer.setPixelRatio(pixelRatio);
+  bloomOn = false;
+  if (renderer.shadowMap.enabled) {
+    renderer.shadowMap.enabled = false;
+    Object.values(areas).forEach((a) =>
+      a.group.traverse((o) => {
+        if (!o.material || Array.isArray(o.material) || !o.material.isMeshLambertMaterial) return;
+        o.material.defines = { ...(o.material.defines || {}), DETAIL_OFF: '' };
+        o.material.needsUpdate = true;
+      }),
+    );
+  }
+}
 
 function applySettings() {
   audio.setVolumes(settings);
@@ -1986,6 +2093,10 @@ function buildSettingsUI() {
       settings[inp.dataset.k] = inp.type === 'checkbox' ? inp.checked : parseFloat(inp.value);
       saveSettings();
       applySettings();
+      if (inp.dataset.k === 'lowfx') {
+        if (settings.lowfx) goLow();
+        else toast('Mooie stand staat weer aan. Herlaad de pagina om schaduwen en details terug te krijgen.', 4);
+      }
     }),
   );
 }
@@ -1993,4 +2104,4 @@ buildSettingsUI();
 applySettings();
 
 // Debug-hulpje in de console
-window.__puck = { music, concert, startConcert, talkTo, perf, renderer, bloom: () => bloomOn, audio, body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };
+window.__puck = { THREE, music, concert, startConcert, talkTo, perf, renderer, bloom: () => bloomOn, audio, body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };
