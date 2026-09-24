@@ -13,10 +13,13 @@ ronde bijzettafeltjes, eettafel met mintgroene stoelen, het notenhouten dressoir
 
 1. **De galerij (9e verdieping):** via de voordeur kom je op een lange galerij met balustrade en uitzicht over Stad,
    met de Martinitoren in de verte. Nr. 93 is de deur van de chagrijnige buurvrouw (het Pistachehuis).
-2. **De lift:** aan het eind van de galerij brengt de lift je naar beneden (en weer terug).
+2. **De lift:** achter de rode liftdeuren aan het eind van de galerij. Binnen (witte wanden, leuningen, lichtpaneel)
+   druk je op de knop: de deuren schuiven dicht, de teller loopt van 9 naar 0 en de lift schudt even. Hop op de
+   leuning en je ziet jezelf in de liftspiegel!
 3. **Groningen op straatniveau:** de ingang van de Donderslaanflat (glazen hal, grijze plint, rij fietsen, coniferen,
    klinkerpad met paaltje, parkeerplaats), een plein met fontein en snackbar, de vijver, de merelboom, een gracht met
-   brug, bootje en grachtenpanden, stadsvlaggen en de Martinitoren.
+   brug, bootje en grachtenpanden, stadsvlaggen en de Martinitoren. Op de parkeerplaats staat Puck's eigen witte
+   Citroën DS3 met zwart dak (kenteken P-UCK-91).
 
 Elke minigame levert een ⭐ op (5 in totaal):
 
@@ -47,7 +50,7 @@ meubels, tafels en dozen blokkeren haar zicht. Na binnenkomen heb je 2,5 seconde
 
 ### Geheimpjes (easter eggs) 🥚
 
-Er zijn 16 geheimpjes. Een paar hints (spoilers!):
+Er zijn 19 geheimpjes. Een paar hints (spoilers!):
 
 <details>
 <summary>Toon hints</summary>
@@ -62,6 +65,7 @@ Er zijn 16 geheimpjes. Een paar hints (spoilers!):
 - Lees de deurmat van nr. 93. Klim op het opstapje op de galerij voor een mooi uitzicht.
 - Bel eens aan bij de fietsen voor de flat. En proef een Groningse eierbal.
 - Het vuurdraak-kaartje is een zeldzame holo-kaart: bekijk hem goed als je hem vindt.
+- In de lift hangt een spiegel. Op de galerij staat een pakketje. En welke auto is van Puck?
 
 </details>
 
@@ -145,6 +149,7 @@ src/
   areas/puckHouse.js    Puck's appartement op de 9e verdieping (startgebied)
   areas/gallery.js      de galerij op de 9e met balustrade, deuren en de lift
   areas/bakery.js       Bakkerij Moi met oma Moi en de koek-quest
+  areas/lift.js         de lift met knop, schuifdeuren, verdiepingsteller en een echte spiegel
   areas/outside.js      Groningen op straatniveau: Donderslaanflat, plein, vijver, gracht, merelboom, schuur, veren, patat, ingrediënten
   areas/pistachioHouse.js  het Pistachehuis (pistache-minigame met dozen en radar)
   areas/neighbor.js     de chagrijnige buurvrouw: rondje lopen, kijkkegel, zichtlijn, buiten zetten

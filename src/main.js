@@ -5,6 +5,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { Bakery, INGREDIENTS } from './areas/bakery.js';
 import { Gallery } from './areas/gallery.js';
+import { Lift } from './areas/lift.js';
 import { Outside, STONE_TARGET_TIME } from './areas/outside.js';
 import { PistachioHouse } from './areas/pistachioHouse.js';
 import { PuckHouse } from './areas/puckHouse.js';
@@ -53,12 +54,24 @@ const areas = {
   pistachehuis: new PistachioHouse({ quality }),
   buiten: new Outside({ quality }),
   bakkerij: new Bakery({ quality }),
+  lift: new Lift({ quality }),
 };
 Object.values(areas).forEach((a) => scene.add(a.group));
 let area = null;
 
 const puck = new Puck();
 scene.add(puck.root);
+// Spiegelbeeld van Puck in de liftspiegel
+const mirrorPuck = new Puck();
+areas.lift.mirrorInner.add(mirrorPuck.root);
+const setHat = (n) => {
+  puck.setHat(n);
+  mirrorPuck.setHat(n);
+};
+const setBeakItem = (n) => {
+  puck.setBeakItem(n);
+  mirrorPuck.setBeakItem(n);
+};
 
 // Zachte "blob"-schaduw onder Puck
 const blob = new THREE.Mesh(
@@ -101,6 +114,9 @@ const SECRETS = {
   martini: 'Uitzicht op de Martinitoren',
   fietsbel: 'Tring tring!',
   eierbal: 'Een echte Groningse eierbal',
+  liftspiegel: 'Puck in de liftspiegel',
+  pakketje: 'Een pakketje op de galerij',
+  ds3: "Puck's eigen auto",
 };
 const SAVE_KEY = 'puck-avontuur-v2';
 
@@ -184,7 +200,7 @@ function updateStarHud() {
 }
 
 function applyHat() {
-  puck.setHat(allStars() ? 'kroon' : progress.hat);
+  setHat(allStars() ? 'kroon' : progress.hat);
 }
 
 function award(id) {
@@ -497,8 +513,8 @@ function enterArea(name, spawnName, { instant = false } = {}) {
   };
   if (instant) return doSwitch();
   state.transitioning = true;
-  const lift = (area?.name === 'galerij' && name === 'buiten') || (area?.name === 'buiten' && name === 'galerij');
-  fadeEl.textContent = lift ? (name === 'buiten' ? '🛗 Lift gaat naar beneden… Ding! Begane grond' : '🛗 Lift gaat omhoog… Ding! 9e verdieping') : '';
+  const lift = false;
+  fadeEl.textContent = '';
   fadeEl.classList.add('on');
   audio.play(lift ? 'checkpoint' : 'door');
   setTimeout(
@@ -521,6 +537,8 @@ function onAreaEntered(name) {
     toast('De galerij op de 9e! Nr. 93 is de buurvrouw (Pistachehuis). Aan het eind gaat de lift naar beneden.', 5);
   } else if (name === 'buiten' && first) {
     toast('Moi! Welkom in Groningen ⭐ Bakkerij Moi, de vijver, de merel en rode veren wachten op je.', 5);
+  } else if (name === 'lift' && first) {
+    toast('De lift! Druk op de knop om naar beneden of boven te gaan. (Hop eens op de leuning…)', 4);
   } else if (name === 'bakkerij') {
     toast(progress.stars.koek ? 'Bakkerij Moi ruikt naar vers gebakken koek 🍪' : 'Bakkerij Moi! Praat met oma Moi achter de toonbank.', 3.5);
   } else if (name === 'pistachehuis') {
@@ -612,6 +630,7 @@ input.onTap = (x, y) => {
   if (state.tapCount >= 5) {
     state.tapCount = 0;
     puck.dance(8);
+    mirrorPuck.dance(8);
     audio.playLong('puck-dans');
     say('We gaan doen wat we doen! 🎶', { seconds: 4, sound: null });
     secret('dans');
@@ -714,7 +733,7 @@ function onCollect(c) {
       break;
     case 'sigaret':
     case 'kaart':
-      puck.setBeakItem(c.type);
+      setBeakItem(c.type);
       state.beakTime = 20;
       say(c.type === 'sigaret' ? 'Watskebeurt? Stoer hè!' : 'Vuurdraak, 150 HP! 🔥');
       secret(c.type);
@@ -841,6 +860,17 @@ function checkZones() {
 function interact() {
   const z = state.activeZone;
   if (!z || song.active) return;
+  if (z.id === 'liftknop') {
+    const lift = areas.lift;
+    if (lift.ride((floor) => {
+      audio.play('checkpoint');
+      toast(floor === 0 ? '🛗 Ding! Begane grond — welkom in Stad!' : '🛗 Ding! 9e verdieping', 2.5);
+    })) {
+      audio.play('door');
+      toast(lift.floor === 9 ? '🛗 Naar beneden…' : '🛗 Naar boven…', 2);
+    }
+    return;
+  }
   if (z.id === 'oma') {
     followCam.yaw = 0; // kijk naar oma achter de toonbank
     followCam.pitch = 0.55;
@@ -1002,6 +1032,13 @@ function update(dt) {
   puck.root.rotation.y = body.yaw;
   puck.update(dt, { speed: body.speed, grounded: body.grounded, climbing: body.climbing, vy: body.vel.y });
   puck.applyDance(dt);
+  if (area.name === 'lift') {
+    mirrorPuck.root.position.copy(body.pos);
+    mirrorPuck.root.rotation.y = body.yaw;
+    mirrorPuck.update(dt, { speed: body.speed, grounded: body.grounded, climbing: body.climbing, vy: body.vel.y });
+    mirrorPuck.applyDance(dt);
+    mirrorPuck.setPower(state.powerTime > 0 ? 1 : 0, state.time);
+  }
   if (puck.dancing <= 0 && audio.long) audio.stopLong();
 
   const gh = body.groundHeight(body.pos.y + 0.01);
@@ -1022,7 +1059,7 @@ function update(dt) {
   // Iets in de snavel?
   if (state.beakTime > 0) {
     state.beakTime -= dt;
-    if (state.beakTime <= 0) puck.setBeakItem(null);
+    if (state.beakTime <= 0) setBeakItem(null);
   }
 
   // Tikken op Puck telt alleen snel achter elkaar
@@ -1059,7 +1096,17 @@ function update(dt) {
   // Deuren
   const portal = area.portalAt(body.pos);
   if (!portal) state.portalLock = false;
-  else if (!state.portalLock && !state.transitioning) enterArea(portal.to, portal.spawn);
+  else if (!state.portalLock && !state.transitioning) {
+    if (portal.to === 'lift') {
+      areas.lift.floor = area.name === 'buiten' ? 0 : 9;
+      areas.lift.drawDisplay(areas.lift.floor);
+      enterArea('lift', 'binnen');
+    } else if (portal.to === 'lift-uit') {
+      if (area.moving <= 0) enterArea(area.floor === 9 ? 'galerij' : 'buiten', 'lift');
+    } else {
+      enterArea(portal.to, portal.spawn);
+    }
+  }
 
   followCam.update(dt, tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z));
 }

@@ -203,6 +203,20 @@ export function makeCityView(groundY = -25, { towerPos = new THREE.Vector3(10, 0
   const tower = makeMartinitoren(1.4);
   tower.position.set(towerPos.x, groundY, towerPos.z);
   g.add(tower);
+
+  // Rijtjeshuizen met grijze daken en een witte woontoren, zoals vanaf de galerij
+  const rowColors = [0xa65b43, 0x8c5a4a, 0xb9785a, 0x7d4a3a, 0xc98b5e];
+  for (let r = 0; r < 12; r++) {
+    const rx = -60 + ((r * 37) % 120);
+    const rz = 18 + Math.floor(r / 3) * 12 + ((r * 13) % 5);
+    if (exclude && exclude(rx, rz)) continue;
+    const row = makeTerrace(18 + (r % 3) * 6, 8, 5.5 + (r % 2), rowColors[r % rowColors.length]);
+    row.position.set(rx, groundY, rz);
+    g.add(row);
+  }
+  const res = makeResidentialTower(38);
+  res.position.set(towerPos.x - 45, groundY, towerPos.z - 10);
+  g.add(res);
   return g;
 }
 
@@ -231,4 +245,107 @@ export function makeCar(color = 0x222222) {
     g.add(l);
   });
   return g;
+}
+
+/** Puck's eigen auto: een witte Citroën DS3 met zwart dak en een geel Nederlands kenteken. */
+export function makeDS3() {
+  const g = new THREE.Group();
+  const white = lambert(0xf4f4f2);
+  const black = lambert(0x1b1c1e);
+  const glass = lambert(0x243140, { emissive: 0x141c26, emissiveIntensity: 0.3 });
+  const add = (geo, mat, x, y, z) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    g.add(m);
+    return m;
+  };
+  // Carrosserie: hoge witte flanken, afgeronde neus en een licht aflopende motorkap
+  add(new THREE.BoxGeometry(1.74, 0.62, 3.9), white, 0, 0.62, 0);
+  const nose = add(new THREE.CylinderGeometry(0.31, 0.31, 1.74, 10, 1, false, 0, Math.PI), white, 0, 0.62, 1.95);
+  nose.rotation.z = Math.PI / 2;
+  const hood = add(new THREE.BoxGeometry(1.68, 0.14, 1.05), white, 0, 0.97, 1.32);
+  hood.rotation.x = 0.16;
+  add(new THREE.BoxGeometry(1.7, 0.1, 2.3), white, 0, 0.98, -0.55);
+  // Slanke ramenband en het zwevende zwarte dak
+  add(new THREE.BoxGeometry(1.5, 0.34, 1.9), glass, 0, 1.2, -0.45);
+  add(new THREE.BoxGeometry(1.56, 0.07, 1.95), black, 0, 1.4, -0.5);
+  const ws = add(new THREE.BoxGeometry(1.46, 0.04, 0.62), glass, 0, 1.2, 0.7);
+  ws.rotation.x = -0.9;
+  // De witte "haaienvin" (B-stijl), typisch DS3
+  [-1, 1].forEach((sd) => {
+    const fin = add(new THREE.BoxGeometry(0.03, 0.36, 0.42), white, sd * 0.765, 1.2, -0.62);
+    fin.rotation.x = 0.35;
+  });
+  // Spiegels, lampen en grille
+  [-1, 1].forEach((sd) => {
+    add(new THREE.BoxGeometry(0.16, 0.1, 0.12), black, sd * 0.92, 1.05, 0.35);
+    add(new THREE.BoxGeometry(0.42, 0.1, 0.05), lambert(0xe8f2ff, { emissive: 0x9ab4d0, emissiveIntensity: 0.6 }), sd * 0.55, 0.8, 2.1);
+    add(new THREE.BoxGeometry(0.3, 0.14, 0.05), lambert(0xd7263d, { emissive: 0x800000, emissiveIntensity: 0.5 }), sd * 0.6, 0.82, -1.97);
+  });
+  add(new THREE.BoxGeometry(0.75, 0.18, 0.04), black, 0, 0.55, 2.2);
+  // Wielen met donkere velgen
+  const wheel = new THREE.CylinderGeometry(0.34, 0.34, 0.24, 12);
+  wheel.rotateZ(Math.PI / 2);
+  [[-0.8, 1.25], [0.8, 1.25], [-0.8, -1.25], [0.8, -1.25]].forEach(([x, z]) => add(wheel, G.tyre, x, 0.34, z));
+  // Geel kenteken voor en achter
+  const c = document.createElement('canvas');
+  c.width = 128;
+  c.height = 28;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#f2c230';
+  ctx.fillRect(0, 0, 128, 28);
+  ctx.fillStyle = '#1f4f9c';
+  ctx.fillRect(0, 0, 14, 28);
+  ctx.fillStyle = '#111';
+  ctx.font = 'bold 20px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('P-UCK-91', 71, 21);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const plateMat = new THREE.MeshBasicMaterial({ map: tex });
+  const plate = add(new THREE.PlaneGeometry(0.52, 0.11), plateMat, 0, 0.4, 2.27);
+  plate.castShadow = false;
+  const back = add(new THREE.PlaneGeometry(0.52, 0.11), plateMat, 0, 0.62, -1.99);
+  back.rotation.y = Math.PI;
+  return g;
+}
+
+/** Rij rijtjeshuizen met een grijs zadeldak (lengte langs x). */
+export function makeTerrace(len, depth = 8, h = 6, color = 0xa65b43) {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(len, h, depth), lambert(color));
+  body.position.y = h / 2;
+  g.add(body);
+  const shape = new THREE.Shape();
+  shape.moveTo(-depth / 2 - 0.3, 0);
+  shape.lineTo(depth / 2 + 0.3, 0);
+  shape.lineTo(0, depth * 0.45);
+  shape.closePath();
+  const roofGeo = new THREE.ExtrudeGeometry(shape, { depth: len + 0.4, bevelEnabled: false });
+  roofGeo.translate(0, 0, -(len + 0.4) / 2);
+  roofGeo.rotateY(Math.PI / 2);
+  const roof = new THREE.Mesh(roofGeo, lambert(0x5b5f66));
+  roof.position.y = h;
+  g.add(roof);
+  return g;
+}
+
+/** Witte woontoren met ramengrid. */
+export function makeResidentialTower(h = 40) {
+  const c = document.createElement('canvas');
+  c.width = 64;
+  c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#e9e7e2';
+  ctx.fillRect(0, 0, 64, 64);
+  ctx.fillStyle = '#3e4a58';
+  for (let y = 4; y < 64; y += 16) for (let x = 4; x < 64; x += 16) ctx.fillRect(x, y, 10, 9);
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(2, h / 4);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const m = new THREE.Mesh(new THREE.BoxGeometry(9, h, 9), new THREE.MeshLambertMaterial({ map: tex }));
+  m.position.y = h / 2;
+  return m;
 }

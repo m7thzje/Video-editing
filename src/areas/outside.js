@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { applyWind, Birds, bunting, Butterflies, Clouds, Fountain, makeSkyDome, waterTexture } from '../world/fx.js';
 import { Area, glowSprite, makeFeather, makeFries, makePistachio, makeSign } from '../world/area.js';
-import { makeBike, makeCanalHouse, makeCar, makeCityView, makeGroningenFlag, makeMartinitoren } from '../world/groningen.js';
+import { makeBike, makeCanalHouse, makeCar, makeCityView, makeDS3, makeGroningenFlag, makeMartinitoren } from '../world/groningen.js';
 import { greyBrickTexture, mailboxTexture, pavingTexture, redBrickPavingTexture, terrazzoTexture } from '../textures.js';
 import { lambert, M } from '../world/materials.js';
 
@@ -221,7 +221,7 @@ export class Outside extends Area {
     this.block(1.82, 0, hz + 0.04, 1.9, 0.35, hz + 0.1, lambert(0x2b2f36), { collide: false });
     // Lift achter de glazen deuren
     this.block(-0.55, 0, z1 + 0.02, 0.55, 2.1, z1 + 0.05, lambert(0xb7bec4, { emissive: 0x30363b, emissiveIntensity: 0.2 }), { collide: false, shadow: false });
-    this.portals.push({ x0: -0.62, z0: hz - 0.6, x1: 0.62, z1: hz + 0.35, to: 'galerij', spawn: 'lift' });
+    this.portals.push({ x0: -0.62, z0: hz - 0.6, x1: 0.62, z1: hz + 0.35, to: 'lift', spawn: 'binnen' });
     const liftSign = makeSign('🛗 LIFT', { width: 0.6, height: 0.2, bg: '#222', fg: '#9ef08a', border: '#555' });
     liftSign.position.set(0, 2.35, hz + 0.03);
     this.group.add(liftSign);
@@ -291,13 +291,21 @@ export class Outside extends Area {
     lot.position.set(11.8, 0.005, z1 + 4.5);
     lot.receiveShadow = true;
     this.group.add(lot);
-    [[9.8, 0x1b1b1d], [11.8, 0xb3261e], [13.8, 0xf2f2f2]].forEach(([cx, col]) => {
-      const car = makeCar(col);
+    const bays = new THREE.Mesh(new THREE.PlaneGeometry(6.6, 4.4), new THREE.MeshLambertMaterial({ map: redBrickPavingTexture([8, 6]) }));
+    bays.rotation.x = -Math.PI / 2;
+    bays.position.set(11.8, 0.008, z1 + 4.5);
+    this.group.add(bays);
+    [[9.8, 0x3a3d40], [11.8, 'ds3'], [13.8, 0xb3261e]].forEach(([cx, col]) => {
+      const car = col === 'ds3' ? makeDS3() : makeCar(col);
       car.position.set(cx, 0, z1 + 4.5);
+      if (col === 'ds3') car.rotation.y = 0.08;
       this.group.add(car);
       this.addCollider(cx - 0.85, 0, z1 + 2.55, cx + 0.85, 0.85, z1 + 6.45, { climbable: true, name: 'auto' });
       this.addCollider(cx - 0.75, 0.85, z1 + 3.25, cx + 0.75, 1.4, z1 + 5.35, { climbable: true, name: 'auto' });
     });
+    this.zones.push({ x: 11.8, y: 0, z: z1 + 2.2, r: 0.8, h: 1.6, secret: 'ds3', say: 'Watskebeurt? Mijn DS3! P-UCK-91' });
+    this.sign(['🦜 Puck', 'parkeerplaats'], 11.8, 0.9, z1 + 6.9, Math.PI, { width: 0.8, height: 0.35 });
+    this.block(11.75, 0, z1 + 6.95, 11.85, 0.7, z1 + 7.05, M.metalDark, { collide: false });
     // Brievenbus op de hoek
     this.block(-4.6, 0, z1 + 3.3, -4.5, 0.9, z1 + 3.4, M.metalDark, { collide: false });
     this.block(-4.8, 0.9, z1 + 3.15, -4.3, 1.1, z1 + 3.55, M.red, { climbable: true, name: 'brievenbus' });
