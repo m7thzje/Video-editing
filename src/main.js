@@ -16,6 +16,7 @@ import { Input } from './input.js';
 import { CharacterBody, DEFAULT_HOP } from './physics.js';
 import { Puck } from './puck.js';
 import { Concert } from './concert.js';
+import { JumboStore } from './areas/jumbo.js';
 import { SongGame } from './songGame.js';
 import { Dialog } from './dialog.js';
 import { vuurdraakCardCanvas } from './textures.js';
@@ -23,6 +24,7 @@ import { fxTime } from './world/fx.js';
 import { makePerson } from './world/people.js';
 import { mergeStatic } from './world/optimize.js';
 import { glowSprite } from './world/area.js';
+import { setWaterEvening } from './world/water.js';
 
 // ---------- Setup ----------
 
@@ -62,6 +64,7 @@ const areas = {
   buiten: new Outside({ quality }),
   bakkerij: new Bakery({ quality }),
   lift: new Lift({ quality }),
+  jumbo: new JumboStore({ quality }),
 };
 Object.values(areas).forEach((a) => scene.add(a.group));
 let area = null;
@@ -94,7 +97,7 @@ Object.values(areas).forEach((a) => {
     nightGlows.push(glow);
   });
 });
-Object.values(areas).forEach((a) => mergeStatic(a.group));
+if (!location.search.includes('nomerge')) Object.values(areas).forEach((a) => mergeStatic(a.group));
 // Snaveltikje als Puck zich met zijn snavel optrekt tijdens het klimmen
 puck.onGrip = () => audio.play('puck-tok', { volume: 0.35, rate: 0.9 + Math.random() * 0.2 });
 
@@ -139,7 +142,7 @@ function saveSettings() {
     /* geen opslag */
   }
 }
-const MUSIC_FOR = { puckhuis: 'thuis', galerij: 'galerij', pistachehuis: 'pistachehuis', buiten: 'buiten', bakkerij: 'bakkerij', lift: 'lift' };
+const MUSIC_FOR = { puckhuis: 'thuis', galerij: 'galerij', pistachehuis: 'pistachehuis', buiten: 'buiten', bakkerij: 'bakkerij', lift: 'lift', jumbo: 'lift' };
 const musicFor = (name) => MUSIC_FOR[name] || 'buiten';
 input.onFirstInteraction = () => audio.unlock();
 
@@ -182,6 +185,39 @@ const SECRETS = {
   radio: 'Radio Moskou in de merelboom',
   cola: 'Watskecola! (op de bank)',
   ben: 'OP WELK NUMMER WOON JIJ?',
+  betaald: 'Netjes betaald (met een knoop)',
+  winkeldief: 'Winkeldief!',
+};
+
+// Uitleg bij elk geheimpje: waarom is dit grappig?
+const SECRET_JOKES = {
+  portret: 'De chagrijnige buurvrouw heeft stiekem een schilderij van Puck boven de bank hangen. Zo chagrijnig is ze dus niet.',
+  tv: 'Puck stapt op de controller en zet de tv aan. Wat is er te zien? Puck zelf. Zijn favoriete programma.',
+  letterbord: 'Op het letterbord staat Puck\'s lievelingszin. Hij vraagt het zo vaak dat het er gewoon op staat.',
+  koekje: 'Puck vraagt altijd: "Mag ik een koekje?" Hier ligt er eentje. Achter het letterbord. Niemand zag het. Behalve Puck.',
+  spiegel: 'Drie ronde spiegels en één knappe vogel. Puck vindt zichzelf nogal leuk.',
+  sigaret: 'Stoer sigaretje in de snavel. Grapje hoor: Puck rookt niet. Hij kan niet eens een aansteker vasthouden.',
+  kaart: 'Een zeldzame holo-vuurdraakkaart. Puck heeft geen idee wat hij waard is, maar hij glimt. En dus is hij van Puck.',
+  goud: 'Een gouden pistache op het dak van het fietsenhok. Waarom? Omdat pistaches daar gewoon liggen, in Groningen.',
+  kabouter: 'Een tuinkabouter achter de schuur. Puck pikt zijn muts. De kabouter zegt niks. Kabouters zijn Gronings.',
+  eend: 'Een badeendje in de vijver. Het enige dier in Stad dat nog stiller is dan Visser Geert.',
+  vliegen: 'Puck is een papegaai, maar hij vliegt niet. Blijf je op hop drukken? Dan weigert hij gewoon. Lopen is prima.',
+  dans: 'Tik vijf keer op Puck en hij gaat los. Dat doet de echte Puck ook.',
+  deurmat: 'Op de deurmat van de buurvrouw staat geen WELKOM maar WEG. Dat zegt genoeg.',
+  martini: 'Vanaf het opstapje zie je de Martinitoren. Klaas zit daar elke dag om te checken of hij er nog staat. Hij staat er nog.',
+  fietsbel: 'Tring tring! In Groningen heb je meer fietsen dan mensen. Puck belt ze allemaal even.',
+  eierbal: 'Een eierbal is een Groningse snack: een half ei met ragout in een krokant jasje. Puck vindt hem lekker. Iedereen vindt hem lekker.',
+  liftspiegel: 'In de lift kun je jezelf zien. Puck staat op het bierkrat van Buurman Ben om zijn eigen kuif te bewonderen.',
+  pakketje: 'Postbode Harm zet het pakketje gewoon op de galerij. Hij gaat nait nog een keer.',
+  ds3: 'Puck heeft een eigen witte Citroën DS3 met kenteken P-UCK-141. Rijden kan hij niet. Wel scheef parkeren, vindt Tineke.',
+  stink: 'Meneer Mehmet en Pasja de kat lopen altijd samen. Pasja ruikt… bijzonder. Mehmet zegt alleen hoi. Misschien daarom.',
+  tasje: 'Het zwarte tasje! Geen idee wat erin zit, maar Puck wordt er helemaal wild van en gaat dansen.',
+  balkon: 'Negen hoog uitzicht over heel Stad. Puck kijkt graag naar buiten. Vooral naar de duiven. Die hij niet mag hebben.',
+  radio: 'Er staat een oude radio in de merelboom die Russisch praat. Niemand weet waarom. De merel ook niet.',
+  cola: 'Puck zegt geen "Wat is dat?", Puck zegt "Watskebeurt?". En bij een blikje cola wordt het dus: Watskecola!',
+  ben: 'Buurman Ben hangt altijd in de lift en vraagt elke keer op welk nummer je woont. Puck woont op 141. Ben vergeet het meteen weer.',
+  betaald: 'Puck betaalt een zak pistache van €2,49 met een glimmend knoopje. Kassière Anja neemt het gewoon aan. Het is maandag.',
+  winkeldief: 'Puck loopt zonder betalen door de poortjes. Alarm! Bedrijfsleider Gerrit ontploft bijna. Stelen is niet netjes. Maar zijn hoofd…',
 };
 const SAVE_KEY = 'puck-avontuur-v2';
 
@@ -311,12 +347,15 @@ function secret(id) {
   if (progress.secrets[id]) return false;
   progress.secrets[id] = true;
   saveProgress();
-  audio.play('secret');
+  audio.play('secret-jingle');
+  setTimeout(() => audio.play('secret'), 650);
   flashScreen();
   const n = Object.keys(SECRETS).filter((k) => progress.secrets[k]).length;
   unlock('🥚', 'GEHEIMPJE!', `${SECRETS[id]} (${n}/${Object.keys(SECRETS).length})`, {
     image: id === 'kaart' ? cardImage() : null,
     sound: null,
+    joke: SECRET_JOKES[id],
+    duration: 6.5,
   });
   return true;
 }
@@ -494,8 +533,8 @@ function banner(title, sub) {
 const unlockEl = $('unlock');
 const unlockQueue = [];
 let unlockBusy = false;
-function unlock(icon, title, sub, { image = null, sound = 'secret' } = {}) {
-  unlockQueue.push({ icon, title, sub, image, sound });
+function unlock(icon, title, sub, { image = null, sound = 'secret', joke = null, duration = 2.6 } = {}) {
+  unlockQueue.push({ icon, title, sub, image, sound, joke, duration });
   if (!unlockBusy) nextUnlock();
 }
 function nextUnlock() {
@@ -506,14 +545,17 @@ function nextUnlock() {
   }
   unlockBusy = true;
   const visual = u.image ? `<img class="unlock-img" src="${u.image}" alt="">` : `<div class="unlock-icon">${u.icon}</div>`;
-  unlockEl.innerHTML = `<div class="banner-rays"></div>${visual}<div class="unlock-title">${u.title}</div><div class="unlock-sub">${u.sub}</div>`;
+  const joke = u.joke ? `<div class="unlock-joke"><b>De grap:</b> ${u.joke}</div>` : '';
+  unlockEl.innerHTML = `<div class="banner-rays"></div>${visual}<div class="unlock-title">${u.title}</div><div class="unlock-sub">${u.sub}</div>${joke}`;
+  unlockEl.style.setProperty('--unlock-time', `${u.duration}s`);
+  unlockEl.classList.toggle('with-joke', !!u.joke);
   unlockEl.classList.remove('show');
   void unlockEl.offsetWidth;
   unlockEl.classList.add('show');
   if (u.sound) audio.play(u.sound);
   confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 30);
   shockwave(tmpV.set(body.pos.x, body.pos.y + 0.02, body.pos.z), 0xfff1a8, 2);
-  setTimeout(nextUnlock, u.image ? 2600 : 2000);
+  setTimeout(nextUnlock, Math.max(u.duration * 1000, u.image ? 2600 : 2000));
 }
 
 const inventoryEl = $('inventory');
@@ -622,8 +664,48 @@ function enterArea(name, spawnName, { instant = false } = {}) {
   );
 }
 
+function jumboGate() {
+  if (state.jumboBag === 'paid') {
+    audio.play('checkpoint', { volume: 0.5 });
+    return;
+  }
+  if (state.jumboBag !== 'unpaid') return;
+  state.jumboBag = 'stolen';
+  const j = areas.jumbo;
+  j.alarm(4);
+  audio.play('alarm');
+  j.gerrit.person.rage(6);
+  dialog.show(j.gerrit.name, 'HÉ! HÉÉÉ! DIEF! Dat is een PAPEGAAI met een ZAK PISTACHE! Anja! ANJA! Bel de politie! Bel mijn moeder!', 4.5);
+  secret('winkeldief');
+}
+
 function onAreaEntered(name) {
   if (state.mode === 'start') return;
+  if (name === 'buiten' && state.jumboBag && state.lastArea === 'jumbo') {
+    const stolen = state.jumboBag === 'stolen';
+    state.jumboBag = null;
+    setTimeout(() => {
+      setBeakItem(null);
+      eat(0x9cc75a);
+      confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 25);
+    }, 900);
+    if (stolen) {
+      const g = areas.buiten.angryGerrit;
+      g.root.visible = true;
+      g.rage(8);
+      const lines = [
+        [0, 'Bedrijfsleider Gerrit', 'KOM TERUG! Ik heb een diploma retailmanagement! Van de ROC!'],
+        [3200, 'Bedrijfsleider Gerrit', 'Dit komt in het rapport. Het RAPPORT! Met een foto! Van een vogel!'],
+        [6600, 'Puck', 'Watskebeurt? Lekker!'],
+        [8800, 'Bedrijfsleider Gerrit', 'Pff. Ik ga koffie halen. Dit is niet mijn dag. Het was ook niet mijn week.'],
+      ];
+      lines.forEach(([t, who, line]) => setTimeout(() => (who === 'Puck' ? say(line, { sound: 'lach', seconds: 2.5 }) : dialog.show(who, line, 3)), t));
+      setTimeout(() => (g.root.visible = false), 12000);
+    } else {
+      setTimeout(() => say('Eerlijk betaald. Met een knoop. Lekker!', { seconds: 2.5 }), 1600);
+    }
+  }
+  state.lastArea = name;
   const first = !visited[name];
   visited[name] = true;
   if (name === 'buiten' && allStars() && !progress.partyDone && !state.concertHinted) {
@@ -960,6 +1042,7 @@ function checkZones() {
         applyHat();
       }
       if (z.onEnter) z.onEnter();
+      if (z.id === 'poortjes') jumboGate();
       if (z.dance) {
         puck.dance(6);
         mirrorPuck.dance(6);
@@ -1005,6 +1088,34 @@ function interact() {
     followCam.yaw = 0; // kijk naar oma achter de toonbank
     followCam.pitch = 0.55;
     talkToOma();
+    return;
+  }
+  if (z.id === 'pistachebak') {
+    if (state.jumboBag) return dialog.show('Puck', 'Eén zak is genoeg. Twee zakken is hebberig. Drie zakken is een hobby.', 3.5);
+    state.jumboBag = 'unpaid';
+    setBeakItem('zak');
+    audio.play('box');
+    say('Watskebeurt? Pistache!', { sound: 'chirp' });
+    toast('🥜 Puck heeft een zak pistachenoten in zijn snavel. Afrekenen bij de kassa… of toch niet?', 4.5);
+    return;
+  }
+  if (z.id === 'kassa') {
+    const anja = areas.jumbo.anja;
+    anja.person.talk(3);
+    audio.playSlice('npc-praat', 0.7, { volume: 0.7, rate: 1.05 });
+    if (state.jumboBag !== 'unpaid') return dialog.show(anja.name, dialog.next('anja'));
+    state.jumboBag = 'paid';
+    state.frozen = true;
+    dialog.show(anja.name, 'Dat is dan €2,49. Heb je een Jumbo-pas? Nee. Natuurlijk niet. Je bent een papegaai.', 3.2);
+    setTimeout(() => {
+      say('*legt een glimmend knoopje neer*', { sound: 'chirp', seconds: 2.5 });
+    }, 3300);
+    setTimeout(() => {
+      audio.play('kassa');
+      dialog.show(anja.name, 'Een knoop. Nou. Die neem ik aan. Bonnetje? Nee. Fijne dag nog. Of niet. Mij maakt het niet uit.', 4.5);
+      secret('betaald');
+      state.frozen = false;
+    }, 6000);
     return;
   }
   if (z.id === 'podium') {
@@ -1144,8 +1255,9 @@ const GRAPH = {
   galerij: ['puckhuis', 'pistachehuis', 'lift'],
   pistachehuis: ['galerij'],
   lift: ['galerij', 'buiten'],
-  buiten: ['lift', 'bakkerij'],
+  buiten: ['lift', 'bakkerij', 'jumbo'],
   bakkerij: ['buiten'],
+  jumbo: ['buiten'],
 };
 
 function nextHop(from, to) {
@@ -1743,7 +1855,7 @@ function frame(timestamp) {
     music.play(busy ? 'spannend' : musicFor(area.name));
   }
   // Omgevingsgeluid per plek
-  const ambKind = state.mode !== 'play' || state.concert ? null : { buiten: 'buiten', galerij: 'galerij', lift: 'lift', puckhuis: 'binnen', bakkerij: 'binnen' }[area.name] || null;
+  const ambKind = state.mode !== 'play' || state.concert ? null : { buiten: 'buiten', galerij: 'galerij', lift: 'lift', puckhuis: 'binnen', bakkerij: 'binnen', jumbo: 'binnen' }[area.name] || null;
   if (ambKind !== state.ambKind) {
     state.ambKind = ambKind;
     audio.setAmbience(ambKind);
@@ -1836,6 +1948,7 @@ function applySettings() {
     }
   });
   nightGlows.forEach((g) => (g.visible = !!eve));
+  setWaterEvening(eve);
   Object.values(areas).forEach((a) => {
     const d = dayLight[a.name];
     const outdoorish = OUTDOOR.includes(a.name);

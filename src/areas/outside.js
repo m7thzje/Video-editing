@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { applyWind, Birds, bunting, Butterflies, Clouds, Fountain, makeSkyDome, waterTexture } from '../world/fx.js';
 import { Area, glowSprite, makeFeather, makeFries, makeHaafsBoard, makePistachio, makeSign } from '../world/area.js';
 import { makeBike, makeCanalHouse, makeCar, makeCityView, makeDS3, makeGroningenFlag, makeMartinitoren } from '../world/groningen.js';
@@ -6,6 +7,7 @@ import { greyBrickTexture, mailboxTexture, pavingTexture, redBrickPavingTexture,
 import { lambert, M } from '../world/materials.js';
 import { BoxSmash, Pigeons, RingRace, Rival, Walker } from '../minigames.js';
 import { makePerson } from '../world/people.js';
+import { waterMaterial } from '../world/water.js';
 
 // De open wereld rond Puck's flat. Hier liggen de toegangen tot de minigames:
 //   - Pistachehuis (deur)                       -> 10 pistachenootjes zoeken
@@ -358,8 +360,9 @@ export class Outside extends Area {
     const edge = new THREE.Mesh(new THREE.CylinderGeometry(r + 0.4, r + 0.4, 0.06, 20), M.stoneDark);
     edge.position.set(x, 0.01, z);
     this.group.add(edge);
-    const water = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.06, 20), M.water);
-    water.position.set(x, 0.03, z);
+    const water = new THREE.Mesh(new THREE.CircleGeometry(r, 40), waterMaterial({ shape: 'circle', foam: 0.08 }));
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(x, 0.055, z);
     water.receiveShadow = true;
     this.group.add(water);
     this.water = water;
@@ -652,8 +655,20 @@ export class Outside extends Area {
   buildFlowers() {
     const colors = [0xe9806e, 0xf2c230, 0xffffff, 0xd96fb4, 0x9ad3ff];
     const count = 220;
-    const geo = new THREE.IcosahedronGeometry(0.07, 0);
+    // Bloem = steeltje met twee blaadjes (groen) + platte bloemkroon (kleur) + geel hartje, allemaal op de grond
+    const stemGeo = new THREE.CylinderGeometry(0.008, 0.01, 0.2, 4).translate(0, 0.1, 0);
+    const leafA = new THREE.SphereGeometry(1, 5, 3).scale(0.035, 0.008, 0.015).rotateZ(0.5).translate(0.03, 0.06, 0);
+    const leafB = new THREE.SphereGeometry(1, 5, 3).scale(0.03, 0.008, 0.013).rotateZ(-0.5).translate(-0.025, 0.1, 0);
+    const stemParts = [stemGeo, leafA, leafB].map((g) => {
+      const n = g.index ? g.toNonIndexed() : g;
+      ['uv'].forEach((k) => n.deleteAttribute(k));
+      return n;
+    });
+    const stemMerged = mergeGeometries(stemParts);
+    const stems = new THREE.InstancedMesh(stemMerged, applyWind(lambert(0x4f8f3a), 1.5), count);
+    const geo = new THREE.CylinderGeometry(0.055, 0.02, 0.03, 6).translate(0, 0.21, 0);
     const flowers = new THREE.InstancedMesh(geo, applyWind(new THREE.MeshLambertMaterial({ flatShading: true }), 1.5), count);
+    const hearts = new THREE.InstancedMesh(new THREE.SphereGeometry(0.02, 6, 4).translate(0, 0.228, 0), applyWind(lambert(0xf2b01e), 1.5), count);
     const m = new THREE.Matrix4();
     const c = new THREE.Color();
     let seed = 7;
@@ -665,10 +680,14 @@ export class Outside extends Area {
         x = (rnd() - 0.5) * 54;
         z = (rnd() - 0.5) * 54;
       } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 2 || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || Math.hypot(x - POND.x, z - POND.z) < POND.r + 1 || (Math.abs(x) < 9 && z < -15));
-      flowers.setMatrixAt(i, m.makeTranslation(x, 0.12, z));
+      const sc = 0.8 + rnd() * 0.5;
+      m.makeRotationY(rnd() * 6.28).scale(new THREE.Vector3(sc, sc, sc)).setPosition(x, 0, z);
+      stems.setMatrixAt(i, m);
+      flowers.setMatrixAt(i, m);
+      hearts.setMatrixAt(i, m);
       flowers.setColorAt(i, c.setHex(colors[i % colors.length]));
     }
-    this.group.add(flowers);
+    this.group.add(stems, flowers, hearts);
     // Bloemperk achter de flat
     this.block(-4, 0, -26.5, 4, 0.2, -25.5, M.soil, { collide: false });
   }
@@ -713,7 +732,7 @@ export class Outside extends Area {
       ]),
     );
     // Fontein op het plein
-    this.fountain = new Fountain(this.group, 0, 0.6, M.stone, M.water);
+    this.fountain = new Fountain(this.group, 0, 0.6, M.stone, waterMaterial({ shape: 'circle', deep: 0x3f9fc0, shallow: 0x8fdbe8, foam: 0.15 }));
     this.fx.push(this.fountain);
     this.addCollider(-1.2, 0, -0.6, 1.2, 0.45, 1.8, { climbable: true, name: 'fontein' });
     this.addCollider(-0.2, 0.45, 0.4, 0.2, 1.1, 0.8, { climbable: true, name: 'fontein' });
@@ -761,7 +780,7 @@ export class Outside extends Area {
 
   buildGroningen() {
     // De gracht (het Diep) met een brug, kade en grachtenpanden met trapgevels
-    const canal = new THREE.Mesh(new THREE.PlaneGeometry(SIZE * 2 + 4, CANAL.z1 - CANAL.z0), M.water);
+    const canal = new THREE.Mesh(new THREE.PlaneGeometry(SIZE * 2 + 4, CANAL.z1 - CANAL.z0), waterMaterial({ shape: 'strip', deep: 0x2b5a66, shallow: 0x4f8f8c, foam: 0.1 }));
     canal.rotation.x = -Math.PI / 2;
     canal.position.set(0, -0.25, (CANAL.z0 + CANAL.z1) / 2);
     this.group.add(canal);
@@ -834,7 +853,17 @@ export class Outside extends Area {
     logo.position.set(x0 - 0.07, h - 0.55, (z0 + z1) / 2);
     logo.rotation.y = -Math.PI / 2;
     this.group.add(logo);
-    // Glazen pui + schuifdeuren (dicht: papegaaien mogen nait naar binnen)
+    // Glazen pui + schuifdeuren: loop ertegenaan en je bent binnen
+    this.portals.push({ x0: x0 - 0.35, z0: 4.3, x1: x0 + 0.3, z1: 5.7, to: 'jumbo', spawn: 'deur' });
+    this.addSpawn('jumbo', x0 - 0.9, 0, 5.0, -Math.PI / 2);
+    this.spawns.jumbo.camYaw = Math.PI / 2;
+    // Bedrijfsleider Gerrit komt naar buiten als je iets gejat hebt
+    this.angryGerrit = makePerson({ shirt: 0xffffff, pants: 0x2b2f3a, hairStyle: 'short', hair: 0x4a3322, glasses: true, mood: 'frown', height: 1.8 });
+    this.angryGerrit.root.position.set(x0 - 0.6, 0, 3.9);
+    this.angryGerrit.root.rotation.y = -Math.PI / 2;
+    this.angryGerrit.root.visible = false;
+    this.group.add(this.angryGerrit.root);
+    this.fx.push(this.angryGerrit);
     this.block(x0 - 0.04, 0, 1.5, x0, 2.9, 8.5, M.windowBlue, { collide: false, shadow: false });
     this.block(x0 - 0.06, 0, 4.2, x0 - 0.02, 2.4, 5.8, lambert(0xcfe6f2, { emissive: 0x7fa0b8, emissiveIntensity: 0.4 }), { collide: false, shadow: false });
     this.block(x0 - 0.08, 2.4, 4.1, x0 - 0.02, 2.55, 5.9, yellow, { collide: false, shadow: false });

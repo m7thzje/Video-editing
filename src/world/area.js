@@ -100,9 +100,15 @@ export class Area {
   /** Iets om op te pakken: pistache, veer, patat, gouden pistache... */
   addCollectible(type, object, x, y, z, extra = {}) {
     const g = new THREE.Group();
-    g.position.set(x, y + 0.07, z);
+    g.position.set(x, y + 0.004, z);
     g.userData.dynamic = true;
-    g.add(glowSprite(extra.glow ?? 0xffe28a, (extra.glowSize ?? 0.3) * 1.4), object);
+    // Het voorwerp ligt óp de ondergrond: schuif het zo dat de onderkant precies op y staat
+    object.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(object);
+    if (Number.isFinite(box.min.y)) object.position.y -= box.min.y;
+    const glow = glowSprite(extra.glow ?? 0xffe28a, (extra.glowSize ?? 0.3) * 1.4);
+    glow.position.y = Number.isFinite(box.max.y) ? (box.max.y - box.min.y) / 2 : 0.05;
+    g.add(glow, object);
     this.group.add(g);
     const item = { type, group: g, base: g.position.clone(), found: false, timer: 0, phase: Math.random() * 6.28, ...extra };
     this.collectibles.push(item);
@@ -124,8 +130,7 @@ export class Area {
         }
         continue;
       }
-      c.group.rotation.y += dt * 2.2;
-      c.group.position.y = c.base.y + Math.sin(time * 2.5 + c.phase) * 0.03;
+      c.group.rotation.y += dt * 1.2;
       const glow = c.group.children[0];
       glow.material.opacity = 0.55 + Math.sin(time * 4 + c.phase) * 0.25;
       glow.scale.setScalar(glow.userData.size * (1 + Math.sin(time * 4 + c.phase) * 0.15));

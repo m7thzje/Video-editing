@@ -601,7 +601,42 @@ h1 {
 }
 
 #unlock.show {
-  animation: unlock-pop 2s cubic-bezier(0.2, 1.5, 0.4, 1) forwards;
+  animation: unlock-pop var(--unlock-time, 2s) cubic-bezier(0.2, 1.5, 0.4, 1) forwards;
+}
+
+#unlock.with-joke.show {
+  animation-name: unlock-pop-long;
+}
+
+#unlock.with-joke {
+  top: 40%;
+}
+
+.unlock-joke {
+  position: relative;
+  margin: 10px auto 0;
+  width: min(86vw, 440px);
+  background: #fffaf0;
+  border: 4px solid var(--ink);
+  border-radius: 16px;
+  padding: 10px 14px;
+  font-size: clamp(15px, 3.8vw, 18px);
+  line-height: 1.35;
+  color: var(--ink);
+  text-align: left;
+  box-shadow: 0 6px 0 rgba(59, 42, 30, 0.35);
+}
+
+.unlock-joke b {
+  color: #c8203a;
+}
+
+@keyframes unlock-pop-long {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+  6% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+  11% { transform: translate(-50%, -50%) scale(1); }
+  92% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -70%) scale(0.85); }
 }
 
 .unlock-icon {
@@ -733,11 +768,11 @@ h1 {
   left: 50%;
   bottom: calc(150px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
-  width: min(92vw, 560px);
-  background: #fffaf0;
-  border: 4px solid var(--ink);
-  border-radius: 16px;
-  padding: 10px 16px 12px;
+  width: min(94vw, 640px);
+  background: #fffdf6;
+  border: 5px solid var(--ink);
+  border-radius: 18px;
+  padding: 14px 20px 16px;
   box-shadow: 0 6px 0 rgba(59, 42, 30, 0.35);
   pointer-events: none;
   z-index: 4;
@@ -754,15 +789,19 @@ h1 {
   background: var(--ink);
   color: #f3c98b;
   font-weight: bold;
-  font-size: 14px;
-  padding: 3px 10px;
+  font-size: 17px;
+  padding: 5px 14px;
   border-radius: 999px;
-  transform: translateY(-4px);
+  border: 3px solid #fffdf6;
+  transform: translateY(-8px);
 }
 
 .dialog-text {
-  font-size: 17px;
-  line-height: 1.35;
+  font-size: clamp(17px, 4.4vw, 21px);
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--ink);
+  min-height: 1.4em;
 }
 
 @keyframes dialog-pop {

@@ -202,7 +202,11 @@ export class Puck {
     const cardTex = vuurdraakCardTexture();
     add(card, new THREE.BoxGeometry(0.075, 0.105, 0.003), [MATERIALS.gold, MATERIALS.gold, MATERIALS.gold, MATERIALS.gold, mat(0xffffff, { map: cardTex }), mat(0xffffff, { map: cardTex })], [0.03, -0.075, 0.105]);
     card.rotation.y = 1.2;
-    this.beakItems = { sigaret: cig, kaart: card };
+    // Zak pistachenoten uit de Jumbo
+    const zak = new THREE.Group();
+    add(zak, new THREE.BoxGeometry(0.06, 0.075, 0.03), mat(0x3f8f3a), [0, -0.075, 0.1]);
+    add(zak, new THREE.BoxGeometry(0.062, 0.02, 0.032), mat(0xffd200), [0, -0.05, 0.1]);
+    this.beakItems = { sigaret: cig, kaart: card, zak };
     Object.values(this.beakItems).forEach((b) => {
       b.visible = false;
       this.head.add(b);

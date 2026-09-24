@@ -289,7 +289,42 @@ export function makePerson({
   });
   mergeStatic(body);
 
-  const state = { talk: 0, t: Math.random() * 10 };
+  const state = { talk: 0, t: Math.random() * 10, rage: 0 };
+  const baseSkin = new THREE.Color(skinColor);
+  const red = new THREE.Color(0xff2a1a);
+  let steam = null;
+  const makeSteam = () => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 32;
+    const ctx = c.getContext('2d');
+    // Stripwolkje: wit met een grijze rand, goed zichtbaar op elke achtergrond
+    c.width = c.height = 64;
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#8a929a';
+    ctx.lineWidth = 4;
+    const blobs = [[32, 38, 16], [20, 32, 12], [44, 32, 12], [32, 22, 13]];
+    blobs.forEach(([x, y, r]) => {
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+    blobs.forEach(([x, y, r]) => {
+      ctx.beginPath();
+      ctx.arc(x, y, r - 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    steam = [];
+    for (let i = 0; i < 10; i++) {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+      sp.userData.phase = i / 10;
+      sp.userData.side = i % 2 ? 1 : -1;
+      sp.visible = false;
+      head.add(sp);
+      steam.push(sp);
+    }
+  };
   root.userData.person = true;
   root.userData.dynamic = true;
   return {
@@ -300,12 +335,51 @@ export function makePerson({
     talk(seconds = 2) {
       state.talk = seconds;
     },
+    /** Overdreven boos: knalrood hoofd, stoom uit de oren, springen en met de armen zwaaien. */
+    rage(seconds = 5) {
+      state.rage = seconds;
+      if (!steam) makeSteam();
+    },
+    get raging() {
+      return state.rage > 0;
+    },
     update(dt, t) {
       state.t += dt;
       state.talk = Math.max(0, state.talk - dt);
       // Rustig ademen en af en toe om zich heen kijken
       body.position.y = Math.sin(state.t * 1.5) * 0.005;
       head.rotation.y = Math.sin(state.t * 0.4) * 0.35;
+      if (state.rage > 0 || (steam && steam[0].visible)) {
+        state.rage = Math.max(0, state.rage - dt);
+        const k = Math.min(1, state.rage * 2);
+        faceMat.color.setRGB(1, 1, 1).lerp(red, 0.75 * k);
+        skinMat.color.copy(baseSkin).lerp(red, 0.75 * k);
+        body.position.y = Math.abs(Math.sin(state.t * 9)) * 0.14 * k;
+        head.rotation.y = Math.sin(state.t * 26) * 0.35 * k;
+        head.rotation.x = -0.15 * k;
+        head.scale.setScalar(1 + 0.12 * k + Math.sin(state.t * 30) * 0.03 * k);
+        if (!sitting) {
+          arms[0].rotation.x = -2.7 * k + Math.sin(state.t * 18) * 0.35 * k;
+          arms[1].rotation.x = -2.7 * k + Math.sin(state.t * 18 + 1.5) * 0.35 * k;
+          arms[0].rotation.z = -0.3 * k;
+          arms[1].rotation.z = 0.3 * k;
+        }
+        steam.forEach((sp) => {
+          const f = (state.t * 1.6 + sp.userData.phase) % 1;
+          sp.visible = k > 0.05;
+          sp.position.set(sp.userData.side * (0.15 + f * 0.18), 0.02 + f * 0.6, -0.02);
+          sp.scale.setScalar((0.12 + f * 0.34) * (0.5 + k * 0.5));
+          sp.material.opacity = Math.min(1, (1 - f) * 1.6) * k;
+        });
+        if (state.rage <= 0) {
+          head.scale.setScalar(1);
+          arms.forEach((a, i) => a.rotation.set(0, 0, (i ? 1 : -1) * 0.06));
+          steam.forEach((sp) => (sp.visible = false));
+          faceMat.color.setRGB(1, 1, 1);
+          skinMat.color.copy(baseSkin);
+        }
+        return;
+      }
       if (state.talk > 0) {
         head.rotation.x = Math.sin(state.t * 11) * 0.06;
         arms[0].rotation.x = -0.3 + Math.sin(state.t * 5) * 0.15;

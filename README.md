@@ -30,10 +30,14 @@ met uitzicht over Stad en de gang met de zwarte voordeur.
    brug, bootje en grachtenpanden, stadsvlaggen en de Martinitoren. Op de parkeerplaats staat Puck's eigen witte
    Citroën DS3 met zwart dak (kenteken P-UCK-141). Verder: de Jumbo, de Martinitoren, en het podium voor het concert.
 
+**De Jumbo** kun je in: pak een zak pistachenoten uit de aanbiedingsbak en reken af bij Kassière Anja (met een
+glimmend knoopje), of loop zonder betalen door de poortjes. Dan gaat het alarm af en ontploft Bedrijfsleider Gerrit:
+knalrood hoofd, stoom uit zijn oren, en hij rent je achterna naar buiten.
+
 **De Groningers** zijn droog en kort van stof: Postbode Harm, Visser Geert, Studente Sjoukje, Duivenman Jan (en
 duif Henk), Buurman Klaas, Oma Moi, Jumbo-Bas en Eline van de Jumbo, Buurvrouw Tineke (klaagt over scheef geparkeerde
 auto's), Torenwachter Wiebe, Meneer Mehmet met zijn oranje kat Pasja (zegt alleen "Hoi.", en ruikt een beetje) en
-Buurman Ben in de lift.
+Buurman Ben in de lift, Kassière Anja en Bedrijfsleider Gerrit in de Jumbo.
 
 Elke minigame levert een ⭐ op (9 in totaal):
 
@@ -68,7 +72,7 @@ meubels, tafels en dozen blokkeren haar zicht. Na binnenkomen heb je 2,5 seconde
 
 ### Geheimpjes (easter eggs) 🥚
 
-Er zijn 24 geheimpjes. Een paar hints (spoilers!):
+Er zijn 27 geheimpjes. Bij elk geheimpje hoor je een eigen deuntje en verschijnt een kaartje met uitleg van de grap. Een paar hints (spoilers!):
 
 <details>
 <summary>Toon hints</summary>
@@ -193,6 +197,7 @@ src/
   areas/gallery.js      de galerij op de 9e met balustrade, deuren en de lift
   areas/bakery.js       Bakkerij Haafs met oma Moi en de koek-quest
   areas/lift.js         de lift met knop, schuifdeuren, verdiepingsteller en een echte spiegel
+  areas/jumbo.js        de Jumbo van binnen: schappen, kassa, pistache kopen of stelen
   areas/outside.js      Groningen op straatniveau: Donderslaanflat, plein, vijver, gracht, merelboom, schuur, veren, patat, ingrediënten
   areas/pistachioHouse.js  het Pistachehuis (pistache-minigame met dozen en radar)
   areas/neighbor.js     de chagrijnige buurvrouw: rondje lopen, kijkkegel, zichtlijn, buiten zetten
@@ -206,6 +211,7 @@ src/
   dialog.js             droge Groningse dialogen
   world/people.js       Groningers (gezichten, kleding, haar) en hun animaties
   world/detail.js       detail-shader: vlekjes, korrel en contactschaduw op alle materialen
+  world/water.js        watershader: diepte, golfjes, glinstering, schuimrand
   world/optimize.js     stilstaande meshes samenvoegen per materiaal
   puck.js               Puck-model (geschubde veren, gele iris, rode spikkels) + animaties, hoedjes, gloed
   physics.js            karakterfysica: lopen, klimmen, hoppen, botsen met blokken

@@ -70,8 +70,8 @@ function buildCage(parent, withColliders, area) {
   block(cx0, ch - 0.06, cz0, cx1, ch - 0.03, cz1, crate, { collide: false });
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 2; j++) {
-      const b = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.2, 6), lambert(0x3d5a2a));
-      b.position.set(cx0 + 0.08 + i * 0.12, ch - 0.16, cz0 + 0.1 + j * 0.15);
+      const b = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.4, 6), lambert(0x3d5a2a));
+      b.position.set(cx0 + 0.08 + i * 0.12, 0.26, cz0 + 0.1 + j * 0.15);
       parent.add(b);
     }
   }

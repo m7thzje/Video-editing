@@ -394,6 +394,18 @@ const PLACEHOLDERS = {
   talk(ctx, out, v) {
     [700, 1100, 850, 1300].forEach((f, i) => tone(ctx, out, { type: 'sawtooth', from: f, to: f * 1.2, start: i * 0.09, dur: 0.08, vol: 0.06 * v }));
   },
+  alarm(ctx, out, v) {
+    for (let i = 0; i < 8; i++) tone(ctx, out, { type: 'square', from: i % 2 ? 900 : 1300, start: i * 0.2, dur: 0.18, vol: 0.09 * v });
+  },
+  kassa(ctx, out, v) {
+    tone(ctx, out, { type: 'square', from: 2400, dur: 0.05, vol: 0.05 * v });
+    [1568, 2093].forEach((f, i) => tone(ctx, out, { type: 'sine', from: f, start: 0.08 + i * 0.1, dur: 0.6, vol: 0.2 * v }));
+  },
+  // Vrolijk geheimpjes-deuntje: oplopend arpeggio met glinstering
+  'secret-jingle'(ctx, out, v) {
+    [784, 988, 1175, 1568, 1976].forEach((f, i) => tone(ctx, out, { type: 'triangle', from: f, start: i * 0.08, dur: 0.22, vol: 0.2 * v }));
+    [2637, 3136, 3951].forEach((f, i) => tone(ctx, out, { type: 'sine', from: f, start: 0.45 + i * 0.06, dur: 0.3, vol: 0.08 * v }));
+  },
   meow(ctx, out, v) {
     tone(ctx, out, { type: 'sawtooth', from: 520, to: 880, dur: 0.18, vol: 0.08 * v });
     tone(ctx, out, { type: 'sawtooth', from: 880, to: 420, start: 0.18, dur: 0.3, vol: 0.08 * v });
