@@ -1,66 +1,30 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { rugTexture, skyTexture, wallpaperTexture, woodFloorTexture } from './textures.js';
+import { puckPortraitTexture, rugTexture, skyTexture, wallpaperTexture, woodFloorTexture } from '../textures.js';
+import { Area, makePistachio } from '../world/area.js';
+import { lambert, M } from '../world/materials.js';
 
-// Level 1: de woonkamer.
+// Het Pistachehuis van de buren: hier verstopt de buurvrouw 10 pistachenootjes.
 // Eenheden zijn ongeveer meters. De kamer loopt van x -4..4, z -3.5..3.5, hoogte 2.7.
-//
-// Botsvormen zijn assen-uitgelijnde blokken (AABB):
-//   climbable: Puck klimt omhoog als hij er tegenaan loopt
-//   oneWay:    alleen van bovenaf begaanbaar (takken, planken, tafelblad)
 
 export const ROOM = { minX: -4, maxX: 4, minZ: -3.5, maxZ: 3.5, height: 2.7 };
 const DOOR = { x: 4, z0: 1.6, z1: 2.5, height: 2.1 };
 const WINDOW = { x0: -0.5, x1: 1.3, y0: 0.9, y1: 2.1 };
 
-const lambert = (color, extra = {}) => new THREE.MeshLambertMaterial({ color, flatShading: true, ...extra });
-
-const M = {
-  wood: lambert(0xa86b3c),
-  woodDark: lambert(0x7a4a26),
-  woodLight: lambert(0xd9a86c),
-  white: lambert(0xfaf3e8),
-  sofa: lambert(0x4f8a8b),
-  sofaDark: lambert(0x3f7475),
-  mustard: lambert(0xe8b04b),
-  coral: lambert(0xe9806e),
-  cardboard: lambert(0xc89b62),
-  cardboardDark: lambert(0xa87c47),
-  tape: lambert(0xe8cf9a),
-  metal: lambert(0xdedede),
-  cageBase: lambert(0xefe6d8),
-  pot: lambert(0xc4643a),
-  soil: lambert(0x5a3b22),
-  trunk: lambert(0x7b5a3a),
-  leaf: lambert(0x5aa05a),
-  leafDark: lambert(0x468a4e),
-  glass: new THREE.MeshLambertMaterial({ color: 0xcfeaff, transparent: true, opacity: 0.25, depthWrite: false }),
-  gold: lambert(0xe7b53c),
-  lampShade: new THREE.MeshLambertMaterial({ color: 0xfff0c8, emissive: 0xffc870, emissiveIntensity: 0.6, flatShading: true }),
-  grass: lambert(0x8cc56a),
-  treeLeaf: lambert(0x5fae5a),
-  book: [0xd7263d, 0x3d7ea6, 0xe8b04b, 0x6aa36b, 0x8e6bb0, 0xf09a5a].map((c) => lambert(c)),
-  nut: lambert(0xb5793f),
-  nutCap: lambert(0x7a4e27),
-};
-
-export class LivingRoom {
-  constructor(scene, { quality = 'high' } = {}) {
-    this.scene = scene;
-    this.quality = quality;
-    this.group = new THREE.Group();
-    scene.add(this.group);
-
-    this.colliders = [];
-    this.nuts = [];
+export class PistachioHouse extends Area {
+  constructor(opts) {
+    super('pistachehuis', opts);
     this.boxes = [];
-    this.spawn = new THREE.Vector3(2.4, 0, -1.4);
-    this.spawnYaw = -Math.PI / 2 - 0.5;
-
-    this.door = null;
-    this.doorCollider = null;
-    this.doorOpen = 0; // 0 = dicht, 1 = open
-    this.doorOpening = false;
+    this.addSpawn('deur', 3.45, 0, 2.05, -Math.PI / 2);
+    this.portals.push({ x0: ROOM.maxX + 0.1, z0: DOOR.z0, x1: ROOM.maxX + 1, z1: DOOR.z1, to: 'buiten', spawn: 'pistachehuis' });
+    this.cameraBounds = {
+      minX: ROOM.minX + 0.15,
+      maxX: ROOM.maxX - 0.15,
+      minZ: ROOM.minZ + 0.15,
+      maxZ: ROOM.maxZ - 0.15,
+      minY: 0.12,
+      maxY: ROOM.height - 0.15,
+    };
 
     this.buildShell();
     this.buildOutside();
@@ -76,37 +40,6 @@ export class LivingRoom {
     this.buildBoxes();
     this.buildNuts();
     this.buildLights();
-  }
-
-  // ---------- Hulpfuncties ----------
-
-  /** Blok van (x0,y0,z0) tot (x1,y1,z1) met optioneel botsvorm. */
-  block(x0, y0, z0, x1, y1, z1, material, opts = {}) {
-    const w = x1 - x0;
-    const h = y1 - y0;
-    const d = z1 - z0;
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
-    mesh.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
-    mesh.castShadow = opts.shadow !== false;
-    mesh.receiveShadow = true;
-    (opts.parent || this.group).add(mesh);
-    if (opts.collide !== false) {
-      this.addCollider(x0, y0, z0, x1, y1, z1, opts);
-    }
-    return mesh;
-  }
-
-  addCollider(x0, y0, z0, x1, y1, z1, opts = {}) {
-    const c = {
-      min: new THREE.Vector3(x0, y0, z0),
-      max: new THREE.Vector3(x1, y1, z1),
-      climbable: !!opts.climbable,
-      oneWay: !!opts.oneWay,
-      enabled: true,
-      name: opts.name || '',
-    };
-    this.colliders.push(c);
-    return c;
   }
 
   // ---------- Kamer ----------
@@ -164,20 +97,17 @@ export class LivingRoom {
     this.block(maxX - 0.02, 0, minZ, maxX, 0.08, DOOR.z0, skirt, { collide: false, shadow: false });
     this.block(maxX - 0.02, 0, DOOR.z1, maxX, 0.08, maxZ, skirt, { collide: false, shadow: false });
 
-    // Schilderijtje boven de bank
-    this.block(minX, 1.3, -0.5, minX + 0.04, 1.9, 0.5, M.woodLight, { collide: false, shadow: false });
-    const art = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.5), lambert(0xf2b457));
+    // Schilderij boven de bank: een portret van... Puck! (easter egg)
+    this.block(minX, 1.25, -0.45, minX + 0.04, 1.95, 0.45, M.woodDark, { collide: false, shadow: false });
+    const art = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.6), new THREE.MeshLambertMaterial({ map: puckPortraitTexture() }));
     art.rotation.y = Math.PI / 2;
     art.position.set(minX + 0.045, 1.6, 0);
     this.group.add(art);
-    const sun = new THREE.Mesh(new THREE.CircleGeometry(0.12, 8), lambert(0xd7263d));
-    sun.rotation.y = Math.PI / 2;
-    sun.position.set(minX + 0.05, 1.65, -0.15);
-    this.group.add(sun);
+    this.zones.push({ x: -3.84, y: 0.88, z: 0, r: 0.8, h: 0.5, secret: 'portret', say: 'Watskebeurt? Dat ben ik!' });
   }
 
   buildOutside() {
-    this.scene.background = skyTexture();
+    this.background = skyTexture();
 
     const grass = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), M.grass);
     grass.rotation.x = -Math.PI / 2;
@@ -449,18 +379,6 @@ export class LivingRoom {
     this.addCollider(cx - 0.18, trunkTop - 0.03, cz - 0.18, cx + 0.18, trunkTop, cz + 0.18, { oneWay: true, name: 'kruin' });
   }
 
-  leafCluster(x, y, z, r) {
-    const geo = new THREE.IcosahedronGeometry(r, 0);
-    [[0, 0, 0, M.leaf], [r * 0.5, -r * 0.2, r * 0.3, M.leafDark], [-r * 0.4, -r * 0.1, -r * 0.3, M.leafDark]].forEach(
-      ([dx, dy, dz, mat]) => {
-        const m = new THREE.Mesh(geo, mat);
-        m.position.set(x + dx, y + dy, z + dz);
-        m.scale.set(1, 0.7, 1);
-        m.castShadow = true;
-        this.group.add(m);
-      },
-    );
-  }
 
   buildBookcase() {
     const x0 = -1.6;
@@ -514,9 +432,10 @@ export class LivingRoom {
     this.block(x - 0.06, 0, z1, x + 0.02, height + 0.06, z1 + 0.06, M.white, { collide: false });
     this.block(x - 0.06, height, z0 - 0.06, x + 0.02, height + 0.06, z1 + 0.06, M.white, { collide: false });
 
-    // Deur draait om scharnier bij z0
+    // Deur staat open naar buiten
     const hinge = new THREE.Group();
     hinge.position.set(x - 0.02, 0, z0);
+    hinge.rotation.y = 1.75;
     this.group.add(hinge);
     const w = z1 - z0;
     const panel = new THREE.Mesh(new THREE.BoxGeometry(0.05, height, w), lambert(0x9fc7c1));
@@ -531,18 +450,15 @@ export class LivingRoom {
     const knob = new THREE.Mesh(new THREE.IcosahedronGeometry(0.035, 0), M.gold);
     knob.position.set(-0.05, 1.0, w - 0.1);
     hinge.add(knob);
-    this.door = hinge;
-    this.doorCollider = this.addCollider(x - 0.05, 0, z0, x + 0.3, height, z1, { name: 'deur' });
 
-    // Lichtbundel die verschijnt als de deur opengaat
-    const beam = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.35, 0.35, 2.4, 10, 1, true),
-      new THREE.MeshBasicMaterial({ color: 0xfff2a8, transparent: true, opacity: 0.0, depthWrite: false, side: THREE.DoubleSide }),
+    // Zonnig licht van buiten
+    const glow = new THREE.Mesh(
+      new THREE.PlaneGeometry(w, height),
+      new THREE.MeshBasicMaterial({ color: 0xfff6d8, transparent: true, opacity: 0.85 }),
     );
-    beam.position.set(x + 0.8, 1.2, (z0 + z1) / 2);
-    beam.visible = false;
-    this.group.add(beam);
-    this.doorBeam = beam;
+    glow.rotation.y = -Math.PI / 2;
+    glow.position.set(x + 0.9, height / 2, (z0 + z1) / 2);
+    this.group.add(glow);
 
     // Deurmat
     const mat = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.8), lambert(0x8a6a4a));
@@ -640,7 +556,7 @@ export class LivingRoom {
   }
 
   buildNuts() {
-    // Tien verstopplekjes
+    // Tien verstopplekjes voor pistachenootjes
     const spots = [
       [3.1, 1.64, -2.5, 'op het dak van de kooi'],
       [-3.55, 0.45, 0.35, 'tussen de bankkussens'],
@@ -653,67 +569,25 @@ export class LivingRoom {
       [3.2, 0.02, 2.7, 'in een kartonnen doos'],
       [3.8, 0.0, -3.3, 'achter de kooi'],
     ];
-
-    const shell = new THREE.IcosahedronGeometry(0.055, 0);
-    shell.scale(1, 1.15, 1);
-    const cap = new THREE.CylinderGeometry(0.045, 0.05, 0.03, 6);
-    cap.translate(0, 0.055, 0);
-
-    const glowTex = makeGlowTexture();
     spots.forEach(([x, y, z, where]) => {
-      const g = new THREE.Group();
-      g.position.set(x, y + 0.07, z);
-      const s = new THREE.Mesh(shell, M.nut);
-      s.castShadow = true;
-      const c = new THREE.Mesh(cap, M.nutCap);
-      const glow = new THREE.Sprite(
-        new THREE.SpriteMaterial({ map: glowTex, color: 0xffe28a, transparent: true, opacity: 0.55, depthWrite: false }),
-      );
-      glow.scale.setScalar(0.3);
-      g.add(glow, s, c);
-      this.group.add(g);
-      this.nuts.push({ group: g, base: g.position.clone(), found: false, where, phase: Math.random() * 6.28 });
+      const p = makePistachio();
+      p.scale.setScalar(1.3);
+      this.addCollectible('pistache', p, x, y, z, { where });
     });
   }
 
   buildLights() {
-    const hemi = new THREE.HemisphereLight(0xfff1dc, 0x9a6f4a, 1.6);
-    this.scene.add(hemi);
-
-    // Warm zonlicht door het raam
-    const sun = new THREE.DirectionalLight(0xffd9a0, 2.2);
-    sun.position.set(2.5, 6, -7);
-    sun.target.position.set(0, 0, 0.5);
-    if (this.quality !== 'low') {
-      sun.castShadow = true;
-      const size = this.quality === 'high' ? 1024 : 512;
-      sun.shadow.mapSize.set(size, size);
-      const cam = sun.shadow.camera;
-      cam.left = -5.5;
-      cam.right = 5.5;
-      cam.top = 5.5;
-      cam.bottom = -5.5;
-      cam.near = 1;
-      cam.far = 20;
-      sun.shadow.bias = -0.0015;
-      sun.shadow.normalBias = 0.02;
-    }
-    this.scene.add(sun, sun.target);
-    this.sun = sun;
-
+    this.addLights({ sunPos: new THREE.Vector3(2.5, 6, -7), center: new THREE.Vector3(0, 0, 0.5), size: 5.5 });
     // Gezellige staande lamp
     const lamp = new THREE.PointLight(0xffb866, 2.2, 6, 1.4);
     lamp.position.copy(this.lampPosition);
-    this.scene.add(lamp);
+    this.group.add(lamp);
   }
 
   // ---------- Gameplay ----------
 
-  openDoor() {
-    if (this.doorOpening || this.doorOpen >= 1) return;
-    this.doorOpening = true;
-    this.doorCollider.enabled = false;
-    this.doorBeam.visible = true;
+  get pistachios() {
+    return this.collectibles.filter((c) => c.type === 'pistache');
   }
 
   /** Is punt p (wereld) binnen in een doos? Geeft de doos terug. */
@@ -731,53 +605,7 @@ export class LivingRoom {
   }
 
   update(dt, time) {
-    for (const n of this.nuts) {
-      if (n.found) continue;
-      n.group.rotation.y += dt * 1.5;
-      n.group.position.y = n.base.y + Math.sin(time * 2.5 + n.phase) * 0.02;
-    }
-
-    if (this.doorOpening) {
-      this.doorOpen = Math.min(1, this.doorOpen + dt * 0.7);
-      const e = 1 - Math.pow(1 - this.doorOpen, 3);
-      this.door.rotation.y = e * 1.75; // zwaait naar buiten open
-      this.doorBeam.material.opacity = 0.18 * e * (0.85 + Math.sin(time * 3) * 0.15);
-      if (this.doorOpen >= 1) this.doorOpening = false;
-      return true; // schaduwen verversen
-    }
-    if (this.doorBeam.visible) {
-      this.doorBeam.material.opacity = 0.18 * (0.85 + Math.sin(time * 3) * 0.15);
-    }
+    this.animateCollectibles(dt, time);
     return false;
   }
-
-  reset() {
-    this.nuts.forEach((n) => {
-      n.found = false;
-      n.group.visible = true;
-      n.group.position.copy(n.base);
-      n.group.scale.setScalar(1);
-    });
-    this.boxes.forEach((b) => (b.visited = false));
-    this.doorOpen = 0;
-    this.doorOpening = false;
-    this.door.rotation.y = 0;
-    this.doorCollider.enabled = true;
-    this.doorBeam.visible = false;
-  }
-}
-
-function makeGlowTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  g.addColorStop(0, 'rgba(255,255,255,1)');
-  g.addColorStop(0.4, 'rgba(255,255,255,0.35)');
-  g.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 64, 64);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
 }

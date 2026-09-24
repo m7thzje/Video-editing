@@ -7,64 +7,79 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <meta name="theme-color" content="#f3c98b" />
-    <title>Puck's Avontuur</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦜</text></svg>" />
+    <title>Puck's Adventure</title>
+    <link rel="icon" type="image/svg+xml" href="./logo.svg" />
     <link rel="stylesheet" href="./src/style.css" />
   </head>
   <body>
     <div id="app"></div>
 
     <div id="hud" class="hidden">
-      <div id="nut-counter" aria-live="polite">
-        <span class="nut-icon">🥜</span>
-        <span id="nut-count">0</span><span class="nut-total">/ 10</span>
-      </div>
+      <button id="stars" class="pill" aria-label="Voortgang">⭐ <span id="star-count">0</span>/<span id="star-total">4</span></button>
+      <div id="counter" class="pill hidden" aria-live="polite"></div>
+      <div id="power" class="hidden"><span>🍟 Patat-power!</span><div id="power-bar"><div id="power-fill"></div></div></div>
+      <button id="menu-button" class="pill" aria-label="Menu">☰</button>
       <div id="toast" aria-live="polite"></div>
+      <div id="prompt" class="hidden"></div>
+      <div id="speech" class="hidden"></div>
     </div>
 
     <div id="touch-ui" class="hidden">
       <div id="joystick">
         <div id="joystick-knob"></div>
       </div>
+      <button id="action-button" class="hidden" aria-label="Actie">💬</button>
       <button id="hop-button" aria-label="Hop">Hop!</button>
     </div>
 
+    <div id="song-panel" class="hidden">
+      <div id="song-title">🎵 Zing de merel na!</div>
+      <div id="song-buttons">
+        <button data-note="0" style="--c: #e9806e">1</button>
+        <button data-note="1" style="--c: #f2c230">2</button>
+        <button data-note="2" style="--c: #6ac46b">3</button>
+        <button data-note="3" style="--c: #5aa9e6">4</button>
+      </div>
+      <button id="song-stop" class="small-button">Stoppen</button>
+    </div>
+
+    <div id="fade"></div>
+
     <div id="start-screen" class="overlay">
       <div class="card">
-        <div class="logo">🦜</div>
-        <h1>Puck's Avontuur</h1>
+        <img class="logo-img" src="./logo.svg" alt="Puck's Adventure logo" />
+        <h1>Puck's Adventure</h1>
         <p class="intro">
-          Puck is een grijze roodstaart papegaai. Vliegen vindt hij maar niks —
-          hij loopt, klimt en hopt liever! Help hem de <strong>10 verstopte nootjes</strong>
-          in de woonkamer te vinden. Dan gaat de deur naar buiten open.
+          Puck is een grijze roodstaart papegaai. Vliegen? Nee hoor — hij loopt, klimt en hopt
+          liever! Stap uit de kooi, ga naar buiten en verdien <strong>4 sterren</strong> met de
+          minigames in de buurt. En let op: overal zitten geheimpjes verstopt…
         </p>
         <div class="controls desktop-only">
           <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> of pijltjes — lopen</div>
-          <div><kbd>Spatie</kbd> — hoppen</div>
-          <div><kbd>Muis</kbd> — camera draaien</div>
-          <div>Loop tegen de bank, kooi of plant aan om te <strong>klimmen</strong></div>
+          <div><kbd>Spatie</kbd> — hoppen · <kbd>E</kbd> — praten/doen</div>
+          <div><kbd>Muis</kbd> — camera · <kbd>Esc</kbd> — menu · <kbd>M</kbd> — geluid</div>
+          <div>Loop tegen meubels, bomen of kooien aan om te <strong>klimmen</strong></div>
         </div>
         <div class="controls touch-only">
-          <div>🕹️ Joystick links — lopen</div>
-          <div>🔴 Knop rechts — hoppen</div>
-          <div>👆 Veeg rechts — camera draaien</div>
-          <div>Loop tegen de bank, kooi of plant aan om te <strong>klimmen</strong></div>
+          <div>🕹️ Joystick links — lopen · 🔴 Hop! — hoppen</div>
+          <div>💬 Knop — praten/doen · 👆 Vegen — camera</div>
+          <div>Loop tegen meubels, bomen of kooien aan om te <strong>klimmen</strong></div>
         </div>
-        <p class="tip">Tip: kruip in een kartonnen doos voor een verrassing!</p>
+        <p class="tip">Tip: patat geeft Puck superkracht! 🍟</p>
         <button id="start-button" class="big-button">Speel!</button>
       </div>
     </div>
 
-    <div id="end-screen" class="overlay hidden">
+    <div id="menu" class="overlay hidden">
       <div class="card">
-        <div class="logo">🎉</div>
-        <h1>Level voltooid!</h1>
-        <p class="intro">
-          Puck heeft alle nootjes gevonden en stapt dapper naar buiten.
-          Het volgende level komt later — tot snel!
-        </p>
-        <p id="end-stats" class="tip"></p>
-        <button id="restart-button" class="big-button">Nog een keer</button>
+        <h2>Puck's avonturenboekje</h2>
+        <ul id="quest-list"></ul>
+        <p id="secret-line"></p>
+        <div class="menu-buttons">
+          <button id="menu-resume" class="big-button">Verder spelen</button>
+          <button id="menu-sound" class="small-button">Geluid: aan</button>
+          <button id="menu-reset" class="small-button">Opnieuw beginnen</button>
+        </div>
       </div>
     </div>
 

@@ -5,11 +5,11 @@ import * as THREE from 'three';
 
 export const RADIUS = 0.12;
 export const HEIGHT = 0.34;
+export const DEFAULT_HOP = 0.45;
 const GRAVITY = 12;
 const WALK_SPEED = 1.6;
 const ACCEL = 14;
-const HOP_HEIGHT = 0.45; // "hooguit een klein stukje hoppen"
-const HOP_VELOCITY = Math.sqrt(2 * GRAVITY * HOP_HEIGHT);
+const HOP_HEIGHT = DEFAULT_HOP; // "hooguit een klein stukje hoppen"
 const STEP_HEIGHT = 0.1;
 const CLIMB_SPEED = 1.1;
 const COYOTE_TIME = 0.1;
@@ -19,6 +19,8 @@ const FOOT_RADIUS = RADIUS * 0.55; // hoe ver Puck over een rand kan staan
 export class CharacterBody {
   constructor(colliders) {
     this.colliders = colliders;
+    this.walkSpeed = WALK_SPEED;
+    this.hopHeight = HOP_HEIGHT;
     this.pos = new THREE.Vector3();
     this.vel = new THREE.Vector3();
     this.yaw = 0;
@@ -54,8 +56,8 @@ export class CharacterBody {
     // Horizontale snelheid richting de gewenste snelheid
     const control = this.grounded || this.climbing ? 1 : 0.55;
     const k = 1 - Math.exp(-ACCEL * control * dt);
-    this.vel.x += (wish.x * WALK_SPEED - this.vel.x) * k;
-    this.vel.z += (wish.z * WALK_SPEED - this.vel.z) * k;
+    this.vel.x += (wish.x * this.walkSpeed - this.vel.x) * k;
+    this.vel.z += (wish.z * this.walkSpeed - this.vel.z) * k;
 
     // Draai Puck naar de looprichting
     const wishLen = Math.hypot(wish.x, wish.z);
@@ -68,7 +70,7 @@ export class CharacterBody {
 
     // Hoppen
     if (this.hopBuffer > 0 && (this.coyote > 0 || this.climbing)) {
-      this.vel.y = HOP_VELOCITY * (this.climbing ? 0.7 : 1);
+      this.vel.y = Math.sqrt(2 * GRAVITY * this.hopHeight) * (this.climbing ? 0.7 : 1);
       if (this.climbing) {
         // afzetten van de wand
         this.vel.x -= Math.sin(this.yaw) * 1.2;

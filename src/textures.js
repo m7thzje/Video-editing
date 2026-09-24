@@ -15,11 +15,10 @@ function canvasTexture(size, draw, repeat = [1, 1]) {
   return tex;
 }
 
-export function woodFloorTexture() {
+export function woodFloorTexture(colors = ['#c68a55', '#cf9560', '#bf8250', '#d39b67'], repeat = [4, 4]) {
   return canvasTexture(
     256,
     (ctx, s) => {
-      const colors = ['#c68a55', '#cf9560', '#bf8250', '#d39b67'];
       const plank = s / 4;
       for (let i = 0; i < 4; i++) {
         ctx.fillStyle = colors[i % colors.length];
@@ -40,8 +39,90 @@ export function woodFloorTexture() {
         }
       }
     },
-    [4, 4],
+    repeat,
   );
+}
+
+export function tileTexture(repeat = [2, 12]) {
+  return canvasTexture(
+    128,
+    (ctx, s) => {
+      ctx.fillStyle = '#3d3f42';
+      ctx.fillRect(0, 0, s, s);
+      ctx.fillStyle = '#46494c';
+      ctx.fillRect(4, 4, s / 2 - 8, s - 8);
+      ctx.fillRect(s / 2 + 4, 4, s / 2 - 8, s - 8);
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.fillRect(s / 2 - 2, 0, 4, s);
+      ctx.fillRect(0, 0, s, 3);
+    },
+    repeat,
+  );
+}
+
+/** Oude poolkaart (zoals boven de ladekast). */
+export function mapTexture() {
+  const c = document.createElement('canvas');
+  c.width = 192;
+  c.height = 256;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#f1ede3';
+  ctx.fillRect(0, 0, 192, 256);
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(8, 8, 176, 240);
+  ctx.lineWidth = 1;
+  for (let r = 20; r < 90; r += 16) {
+    ctx.beginPath();
+    ctx.arc(96, 140, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  for (let a = 0; a < 12; a++) {
+    ctx.beginPath();
+    ctx.moveTo(96, 140);
+    ctx.lineTo(96 + Math.cos((a * Math.PI) / 6) * 90, 140 + Math.sin((a * Math.PI) / 6) * 90);
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#7a8a8c';
+  ctx.beginPath();
+  ctx.moveTo(60, 110);
+  ctx.bezierCurveTo(80, 90, 130, 100, 140, 130);
+  ctx.bezierCurveTo(130, 170, 90, 180, 70, 160);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#333';
+  ctx.font = 'bold 13px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('NORTH POLAR CHART', 96, 30);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** Zwart letterbord met witte letters. */
+export function letterboardTexture(lines) {
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 200;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#c9a15a';
+  ctx.fillRect(0, 0, 256, 200);
+  ctx.fillStyle = '#161616';
+  ctx.fillRect(10, 10, 236, 180);
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  for (let y = 14; y < 190; y += 6) {
+    ctx.beginPath();
+    ctx.moveTo(10, y);
+    ctx.lineTo(246, y);
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#f4f4f4';
+  ctx.font = 'bold 26px monospace';
+  ctx.textAlign = 'center';
+  lines.forEach((l, i) => ctx.fillText(l, 128, 48 + i * 38));
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
 }
 
 export function wallpaperTexture() {
@@ -97,4 +178,72 @@ export function skyTexture() {
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
+}
+
+/** Geschilderd portret van Puck (voor schilderijen en de tv). */
+export function puckPortraitTexture(bg = '#f2b457') {
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 192;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 256, 192);
+  drawPuckHead(ctx, 128, 104, 1);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** Tekent een eenvoudige Puck-kop (zijaanzicht) op een canvas. */
+export function drawPuckHead(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(s, s);
+  // lijf + rode staart
+  ctx.fillStyle = '#d7263d';
+  ctx.beginPath();
+  ctx.moveTo(-40, 60);
+  ctx.lineTo(-75, 95);
+  ctx.lineTo(-50, 100);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#8f969c';
+  ctx.beginPath();
+  ctx.ellipse(-10, 45, 45, 55, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+  // rode spikkels
+  ctx.fillStyle = '#ef6b57';
+  [[5, 60], [15, 72], [-2, 80], [20, 55]].forEach(([px, py]) => {
+    ctx.beginPath();
+    ctx.ellipse(px, py, 5, 3, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  // kop
+  ctx.fillStyle = '#b3b9be';
+  ctx.beginPath();
+  ctx.arc(10, -20, 42, 0, Math.PI * 2);
+  ctx.fill();
+  // wit oogvlak
+  ctx.fillStyle = '#f5f2ec';
+  ctx.beginPath();
+  ctx.ellipse(26, -22, 20, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // oog
+  ctx.fillStyle = '#f3dc7a';
+  ctx.beginPath();
+  ctx.arc(26, -24, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#111';
+  ctx.beginPath();
+  ctx.arc(27, -24, 4, 0, Math.PI * 2);
+  ctx.fill();
+  // snavel
+  ctx.fillStyle = '#1d1d1f';
+  ctx.beginPath();
+  ctx.moveTo(40, -18);
+  ctx.quadraticCurveTo(78, -18, 66, 16);
+  ctx.quadraticCurveTo(58, 2, 42, 4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 }

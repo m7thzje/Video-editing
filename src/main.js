@@ -1,10 +1,13 @@
 import * as THREE from 'three';
+import { Outside, STONE_TARGET_TIME } from './areas/outside.js';
+import { PistachioHouse } from './areas/pistachioHouse.js';
+import { PuckHouse } from './areas/puckHouse.js';
 import { AudioManager } from './audio.js';
 import { FollowCamera } from './camera.js';
 import { Input } from './input.js';
-import { LivingRoom, ROOM } from './livingRoom.js';
-import { CharacterBody } from './physics.js';
+import { CharacterBody, DEFAULT_HOP } from './physics.js';
 import { Puck } from './puck.js';
+import { SongGame } from './songGame.js';
 
 // ---------- Setup ----------
 
@@ -24,15 +27,21 @@ renderer.toneMappingExposure = 1.05;
 app.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 80);
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 150);
 
-const level = new LivingRoom(scene, { quality: isTouch ? 'medium' : 'high' });
-renderer.shadowMap.needsUpdate = true;
+const quality = isTouch ? 'medium' : 'high';
+const areas = {
+  puckhuis: new PuckHouse({ quality }),
+  buiten: new Outside({ quality }),
+  pistachehuis: new PistachioHouse({ quality }),
+};
+Object.values(areas).forEach((a) => scene.add(a.group));
+let area = null;
 
 const puck = new Puck();
 scene.add(puck.root);
 
-// Zachte "blob"-schaduw onder Puck (goedkoop en handig om sprongen in te schatten)
+// Zachte "blob"-schaduw onder Puck
 const blob = new THREE.Mesh(
   new THREE.CircleGeometry(0.13, 16),
   new THREE.MeshBasicMaterial({ color: 0x3b2a1e, transparent: true, opacity: 0.3, depthWrite: false }),
@@ -41,35 +50,74 @@ blob.rotation.x = -Math.PI / 2;
 blob.renderOrder = 1;
 scene.add(blob);
 
-const body = new CharacterBody(level.colliders);
-const roomBounds = {
-  minX: ROOM.minX + 0.15,
-  maxX: ROOM.maxX - 0.15,
-  minZ: ROOM.minZ + 0.15,
-  maxZ: ROOM.maxZ - 0.15,
-  minY: 0.12,
-  maxY: ROOM.height - 0.15,
-};
-const followCam = new FollowCamera(camera, { ...roomBounds }, level.colliders);
+const body = new CharacterBody([]);
+const followCam = new FollowCamera(camera, null, []);
 const input = new Input(renderer.domElement, { isTouch });
 const audio = new AudioManager();
 input.onFirstInteraction = () => audio.unlock();
 
+// ---------- Voortgang (opgeslagen in de browser) ----------
+
+const STARS = [
+  { id: 'pistache', icon: '🥜', name: 'Pistachehuis', desc: 'Vind de 10 pistachenootjes bij de buren' },
+  { id: 'veren', icon: '🪶', name: 'Verenjacht', desc: 'Vind 8 rode veren in de buurt' },
+  { id: 'stenen', icon: '🪨', name: 'Stapstenen', desc: `Steek de vijver over binnen ${STONE_TARGET_TIME} seconden` },
+  { id: 'merel', icon: '🎵', name: 'Merel-liedjes', desc: 'Zing 3 liedjes van de merel na' },
+];
+const SECRETS = {
+  portret: 'Het schilderij bij de buren',
+  tv: 'Puck op tv',
+  letterbord: 'Het letterbord',
+  koekje: 'Een koekje!',
+  spiegel: 'De spiegels in de gang',
+  sigaret: 'Stoer sigaretje',
+  kaart: 'Zeldzaam vuurdraak-kaartje',
+  goud: 'De gouden pistache',
+  kabouter: 'De tuinkabouter',
+  eend: 'Het badeendje',
+  vliegen: 'Vliegen? Nee hoor!',
+  dans: 'Puck danst',
+};
+const SAVE_KEY = 'puck-avontuur-v2';
+
+function loadProgress() {
+  try {
+    const p = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (p && p.stars && p.secrets) return p;
+  } catch {
+    /* geen opslag beschikbaar */
+  }
+  return { stars: {}, secrets: {}, best: null, hat: null };
+}
+let progress = loadProgress();
+function saveProgress() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(progress));
+  } catch {
+    /* privé-venster o.i.d. */
+  }
+}
+const allStars = () => STARS.every((s) => progress.stars[s.id]);
+
 // ---------- HUD ----------
 
-const hud = document.getElementById('hud');
-const touchUI = document.getElementById('touch-ui');
-const nutCountEl = document.getElementById('nut-count');
-const nutCounter = document.getElementById('nut-counter');
-const nutTotalEl = document.querySelector('.nut-total');
-const toastEl = document.getElementById('toast');
-const startScreen = document.getElementById('start-screen');
-const endScreen = document.getElementById('end-screen');
-const endStats = document.getElementById('end-stats');
-document.getElementById('loading').remove();
+const $ = (id) => document.getElementById(id);
+const hud = $('hud');
+const touchUI = $('touch-ui');
+const counterEl = $('counter');
+const toastEl = $('toast');
+const speechEl = $('speech');
+const promptEl = $('prompt');
+const actionBtn = $('action-button');
+const powerEl = $('power');
+const powerFill = $('power-fill');
+const fadeEl = $('fade');
+const menuEl = $('menu');
+$('loading').remove();
+$('star-total').textContent = STARS.length;
 
-const TOTAL = level.nuts.length;
-nutTotalEl.textContent = `/ ${TOTAL}`;
+const PISTACHIO_ICON =
+  '<svg viewBox="0 0 40 40"><ellipse cx="20" cy="21" rx="16" ry="11" fill="#dcc79b" stroke="#6b4423" stroke-width="2.5" transform="rotate(-20 20 21)"/><ellipse cx="23" cy="17" rx="8" ry="5" fill="#93c24a" transform="rotate(-20 23 17)"/></svg>';
 
 let toastTimer = 0;
 function toast(text, seconds = 3) {
@@ -78,11 +126,66 @@ function toast(text, seconds = 3) {
   toastTimer = seconds;
 }
 
-function setCount(n) {
-  nutCountEl.textContent = n;
-  nutCounter.classList.remove('bump');
-  void nutCounter.offsetWidth; // animatie opnieuw starten
-  nutCounter.classList.add('bump');
+let speechTimer = 0;
+function say(text, { seconds = 2.6, sound = 'talk' } = {}) {
+  speechEl.textContent = text;
+  speechEl.classList.remove('hidden');
+  speechTimer = seconds;
+  if (sound) audio.play(sound);
+}
+
+let counterKey = '';
+function setCounter(key, html) {
+  if (counterKey === key) return;
+  const bump = counterKey.split(':')[0] === key.split(':')[0];
+  counterKey = key;
+  counterEl.innerHTML = html;
+  if (bump) {
+    counterEl.classList.remove('bump');
+    void counterEl.offsetWidth;
+    counterEl.classList.add('bump');
+  }
+}
+
+function updateStarHud() {
+  $('star-count').textContent = STARS.filter((s) => progress.stars[s.id]).length;
+}
+
+function applyHat() {
+  puck.setHat(allStars() ? 'kroon' : progress.hat);
+}
+
+function award(id) {
+  const star = STARS.find((s) => s.id === id);
+  if (progress.stars[id]) {
+    toast(`${star.icon} ${star.name}: nog een keer gelukt! Knap hoor.`, 3);
+    audio.play('level-complete');
+    return;
+  }
+  progress.stars[id] = true;
+  saveProgress();
+  updateStarHud();
+  audio.play('star');
+  setTimeout(() => audio.play('level-complete'), 400);
+  burst(starTex, tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 10, 0.3);
+  const n = STARS.filter((s) => progress.stars[s.id]).length;
+  if (n === STARS.length) {
+    applyHat();
+    toast('Alle sterren verdiend! Puck is de koning van de buurt 👑', 6);
+    setTimeout(() => say('Watskebeurt? Ik ben de koning!'), 1200);
+  } else {
+    toast(`⭐ Ster verdiend: ${star.name}! (${n}/${STARS.length})`, 4);
+  }
+}
+
+function secret(id) {
+  if (progress.secrets[id]) return false;
+  progress.secrets[id] = true;
+  saveProgress();
+  audio.play('secret');
+  const n = Object.keys(SECRETS).filter((k) => progress.secrets[k]).length;
+  setTimeout(() => toast(`🥚 Geheimpje gevonden: ${SECRETS[id]} (${n}/${Object.keys(SECRETS).length})`, 3.5), 300);
+  return true;
 }
 
 // ---------- Effecten ----------
@@ -101,6 +204,8 @@ function emojiTexture(emoji) {
 }
 const heartTex = emojiTexture('❤️');
 const sparkleTex = emojiTexture('✨');
+const starTex = emojiTexture('⭐');
+const dropTex = emojiTexture('💧');
 const particles = [];
 
 function burst(tex, pos, count, spread = 0.25) {
@@ -135,80 +240,178 @@ function updateParticles(dt) {
   }
 }
 
-// Nootjesradar: lichtzuil boven het dichtstbijzijnde nootje
+// Pistacheradar (bonus uit de kartonnen dozen)
 const beacon = new THREE.Mesh(
   new THREE.CylinderGeometry(0.1, 0.1, 3, 10, 1, true),
-  new THREE.MeshBasicMaterial({ color: 0xffe066, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide }),
+  new THREE.MeshBasicMaterial({ color: 0xb6e36a, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide }),
 );
 beacon.visible = false;
 scene.add(beacon);
 let radarTime = 0;
-let radarNut = null;
-
-// Vliegende nootjes na het oppakken
-const flying = [];
+let radarItem = null;
 
 // ---------- Spelstatus ----------
 
 const state = {
-  mode: 'start', // start | play | end
-  found: 0,
+  mode: 'start', // start | play | menu
+  frozen: false,
+  transitioning: false,
+  portalLock: true,
+  insideBox: null,
+  zonesInside: new Set(),
+  activeZone: null,
+  powerTime: 0,
+  beakTime: 0,
+  airHops: 0,
+  tapCount: 0,
+  tapTimer: 0,
+  idleTalk: 14,
   time: 0,
-  sinceLastFind: 0,
-  hintGiven: false,
-  boxVisits: 0,
 };
-let insideBox = null;
 
-function resetGame() {
-  level.reset();
-  renderer.shadowMap.needsUpdate = true;
-  state.found = 0;
-  state.time = 0;
-  state.sinceLastFind = 0;
-  state.boxVisits = 0;
-  nutCountEl.textContent = '0';
-  body.teleport(level.spawn, level.spawnYaw);
-  followCam.bounds = { ...roomBounds };
-  followCam.pitch = 0.35;
-  followCam.snap(new THREE.Vector3(level.spawn.x, 0.3, level.spawn.z), level.spawnYaw + Math.PI);
-  radarTime = 0;
-  beacon.visible = false;
-  insideBox = null;
+const song = new SongGame({
+  audio,
+  toast,
+  onWin: () => award('merel'),
+  onEnd: () => (state.frozen = false),
+});
+
+const visited = {};
+
+function enterArea(name, spawnName, { instant = false } = {}) {
+  const doSwitch = () => {
+    if (area) {
+      area.exit();
+      if (area.stopStoneRun) area.stopStoneRun();
+    }
+    area = areas[name];
+    area.enter();
+    body.colliders = area.colliders;
+    followCam.colliders = area.colliders;
+    followCam.bounds = area.cameraBounds;
+    followCam.distance = area.cameraDistance;
+    scene.background = area.background;
+    const sp = area.spawns[spawnName];
+    body.teleport(sp.pos, sp.yaw);
+    followCam.pitch = 0.35;
+    followCam.snap(tmpV.set(sp.pos.x, sp.pos.y + 0.3, sp.pos.z), sp.camYaw ?? sp.yaw + Math.PI);
+    state.portalLock = true;
+    state.insideBox = null;
+    state.zonesInside.clear();
+    radarTime = 0;
+    beacon.visible = false;
+    renderer.shadowMap.needsUpdate = true;
+    onAreaEntered(name);
+  };
+  if (instant) return doSwitch();
+  state.transitioning = true;
+  fadeEl.classList.add('on');
+  audio.play('door');
+  setTimeout(() => {
+    doSwitch();
+    setTimeout(() => {
+      fadeEl.classList.remove('on');
+      state.transitioning = false;
+    }, 80);
+  }, 260);
+}
+
+function onAreaEntered(name) {
+  if (state.mode === 'start') return;
+  const first = !visited[name];
+  visited[name] = true;
+  if (name === 'buiten' && first) {
+    toast('Buiten! Verdien sterren bij het Pistachehuis, de vijver, de merel en met de verenjacht ⭐', 5);
+  } else if (name === 'pistachehuis') {
+    const left = area.pistachios.filter((c) => !c.found).length;
+    toast(left ? `Het Pistachehuis! Er liggen hier nog ${left} pistachenootjes verstopt.` : 'Alle pistachenootjes zijn al op. Lekker!', 4);
+  } else if (name === 'puckhuis' && !first) {
+    toast('Weer thuis! 🏠', 2);
+  }
 }
 
 function startGame() {
+  if (state.mode !== 'start') return;
   audio.unlock();
-  startScreen.classList.add('hidden');
-  endScreen.classList.add('hidden');
+  $('start-screen').classList.add('hidden');
   hud.classList.remove('hidden');
   if (isTouch) touchUI.classList.remove('hidden');
   state.mode = 'play';
   input.enabled = true;
-  toast(isTouch ? 'Zoek de 10 nootjes! 🥜' : 'Zoek de 10 nootjes! Klik in beeld om de muis te gebruiken.', 4);
+  visited.puckhuis = true;
+  updateStarHud();
+  applyHat();
+  setTimeout(() => say('Watskebeurt?'), 600);
+  toast('Welkom thuis, Puck! Loop door de gang naar de voordeur om naar buiten te gaan.', 5);
 }
 
-function finishLevel() {
-  state.mode = 'end';
-  input.enabled = false;
+function openMenu() {
+  if (state.mode !== 'play') return;
+  state.mode = 'menu';
   input.releasePointer();
-  hud.classList.add('hidden');
-  touchUI.classList.add('hidden');
-  const m = Math.floor(state.time / 60);
-  const s = Math.floor(state.time % 60).toString().padStart(2, '0');
-  endStats.textContent = `Tijd: ${m}:${s} · Dozen bezocht: ${state.boxVisits} van ${level.boxes.length}`;
-  endScreen.classList.remove('hidden');
+  const list = $('quest-list');
+  list.innerHTML = '';
+  STARS.forEach((s) => {
+    const li = document.createElement('li');
+    const done = progress.stars[s.id];
+    li.className = done ? 'done' : '';
+    const extra = s.id === 'stenen' && progress.best ? ` — beste tijd ${progress.best.toFixed(1)} s` : '';
+    li.textContent = `${done ? '⭐' : '☆'} ${s.icon} ${s.name}: ${s.desc}${extra}`;
+    list.appendChild(li);
+  });
+  const found = Object.keys(SECRETS).filter((k) => progress.secrets[k]);
+  $('secret-line').textContent = `🥚 Geheimpjes: ${found.length}/${Object.keys(SECRETS).length}${found.length ? ' — ' + found.map((k) => SECRETS[k]).join(', ') : ''}`;
+  $('menu-sound').textContent = `Geluid: ${audio.muted ? 'uit' : 'aan'}`;
+  menuEl.classList.remove('hidden');
 }
 
-document.getElementById('start-button').addEventListener('click', startGame);
-document.getElementById('restart-button').addEventListener('click', () => {
-  resetGame();
-  startGame();
+function closeMenu() {
+  menuEl.classList.add('hidden');
+  state.mode = 'play';
+}
+
+$('start-button').addEventListener('click', startGame);
+$('menu-button').addEventListener('click', openMenu);
+$('stars').addEventListener('click', openMenu);
+$('menu-resume').addEventListener('click', closeMenu);
+$('menu-sound').addEventListener('click', () => {
+  audio.toggleMute();
+  $('menu-sound').textContent = `Geluid: ${audio.muted ? 'uit' : 'aan'}`;
+});
+$('menu-reset').addEventListener('click', () => {
+  if (!confirm('Weet je het zeker? Alle sterren en geheimpjes worden gewist.')) return;
+  progress = { stars: {}, secrets: {}, best: null, hat: null };
+  saveProgress();
+  location.reload();
 });
 window.addEventListener('keydown', (e) => {
   if (e.code === 'KeyM') toast(audio.toggleMute() ? 'Geluid uit 🔇' : 'Geluid aan 🔊', 1.5);
   if ((e.code === 'Enter' || e.code === 'Space') && state.mode === 'start') startGame();
+  if (e.code === 'Escape' && state.mode === 'menu') closeMenu();
+  else if ((e.code === 'KeyP' || e.code === 'Escape') && state.mode === 'play' && !document.pointerLockElement) openMenu();
 });
+
+// Tikken op Puck: hij praat terug, en 5x snel tikken laat hem dansen
+const raycaster = new THREE.Raycaster();
+const tapSphere = new THREE.Sphere(new THREE.Vector3(), 0.3);
+input.onTap = (x, y) => {
+  if (state.mode !== 'play') return;
+  raycaster.setFromCamera({ x: (x / window.innerWidth) * 2 - 1, y: -(y / window.innerHeight) * 2 + 1 }, camera);
+  tapSphere.center.set(body.pos.x, body.pos.y + 0.2, body.pos.z);
+  if (!raycaster.ray.intersectsSphere(tapSphere)) return;
+  state.tapCount++;
+  state.tapTimer = 2;
+  if (state.tapCount >= 5) {
+    state.tapCount = 0;
+    puck.dance(8);
+    audio.playLong('puck-dans');
+    say('We gaan doen wat we doen! 🎶', { seconds: 4, sound: null });
+    secret('dans');
+  } else {
+    say(Math.random() < 0.5 ? 'Watskebeurt?' : 'Mag ik een koekje?');
+    puck.cheer(0.6);
+  }
+};
 
 // ---------- Gameplay ----------
 
@@ -216,127 +419,288 @@ const tmpV = new THREE.Vector3();
 const fwd = new THREE.Vector3();
 const right = new THREE.Vector3();
 const wish = new THREE.Vector3();
-const puckCenter = new THREE.Vector3();
+const center = new THREE.Vector3();
+const flying = [];
 
-function nearestNut(from) {
-  let best = null;
-  let bestD = Infinity;
-  for (const n of level.nuts) {
-    if (n.found) continue;
-    const d = n.base.distanceToSquared(from);
-    if (d < bestD) {
-      bestD = d;
-      best = n;
-    }
-  }
-  return best;
+function eat() {
+  audio.play('puck-lekker');
+  say('Lekker!', { sound: null, seconds: 1.6 });
 }
 
-function collectNuts() {
-  puckCenter.set(body.pos.x, body.pos.y + 0.17, body.pos.z);
-  for (const n of level.nuts) {
-    if (n.found) continue;
-    const dx = n.group.position.x - puckCenter.x;
-    const dy = n.group.position.y - puckCenter.y;
-    const dz = n.group.position.z - puckCenter.z;
-    if (dx * dx + dz * dz < 0.3 * 0.3 && Math.abs(dy) < 0.3) {
-      n.found = true;
-      state.found++;
-      state.sinceLastFind = 0;
-      state.hintGiven = false;
-      setCount(state.found);
+function collect() {
+  center.set(body.pos.x, body.pos.y + 0.17, body.pos.z);
+  for (const c of area.collectibles) {
+    if (c.found) continue;
+    const p = c.group.position;
+    const dx = p.x - center.x;
+    const dz = p.z - center.z;
+    if (dx * dx + dz * dz > 0.32 * 0.32 || Math.abs(p.y - center.y) > 0.32) continue;
+    c.found = true;
+    c.timer = 45;
+    flying.push({ item: c, t: 0 });
+    burst(sparkleTex, p, 6);
+    if (radarItem === c) {
+      radarTime = 0;
+      beacon.visible = false;
+    }
+    onCollect(c);
+  }
+}
+
+function onCollect(c) {
+  switch (c.type) {
+    case 'pistache': {
       audio.play('nut');
+      eat();
       puck.cheer(0.8);
-      burst(sparkleTex, n.group.position, 6);
-      flying.push({ nut: n, t: 0 });
-      if (radarNut === n) {
-        radarTime = 0;
-        beacon.visible = false;
-      }
-
-      if (state.found === TOTAL) {
-        setTimeout(() => {
-          audio.play('level-complete');
-          toast('Alle nootjes gevonden! 🎉 De deur naar buiten gaat open!', 5);
-          level.openDoor();
-          followCam.bounds.maxX = ROOM.maxX + 3;
-        }, 500);
-      } else {
-        const left = TOTAL - state.found;
-        toast(`Nootje gevonden ${n.where}! Nog ${left} te gaan.`, 2.5);
-      }
+      const all = area.pistachios;
+      const got = all.filter((x) => x.found).length;
+      if (got === all.length) setTimeout(() => award('pistache'), 500);
+      else toast(`Pistache gevonden ${c.where}! Nog ${all.length - got} te gaan.`, 2.5);
+      break;
     }
+    case 'veer': {
+      audio.play('feather');
+      puck.cheer(0.8);
+      const all = area.feathers;
+      const got = all.filter((x) => x.found).length;
+      if (got === all.length) setTimeout(() => award('veren'), 400);
+      else toast(`Rode veer gevonden ${c.where}! (${got}/${all.length})`, 2.5);
+      break;
+    }
+    case 'patat':
+      audio.play('fries');
+      eat();
+      state.powerTime = 15;
+      toast('🍟 Patat-power! Supersnel en superhoog hoppen!', 3);
+      break;
+    case 'koekje':
+      eat();
+      secret('koekje');
+      break;
+    case 'goud':
+      audio.play('star');
+      say('Watskebeurt? Goud!');
+      secret('goud');
+      break;
+    case 'sigaret':
+    case 'kaart':
+      puck.setBeakItem(c.type);
+      state.beakTime = 20;
+      say(c.type === 'sigaret' ? 'Watskebeurt? Stoer hè!' : 'Vuurdraak, 150 HP! 🔥');
+      secret(c.type);
+      break;
   }
 }
 
-function checkBoxes() {
-  const box = level.boxAt(body.pos);
-  if (box && box !== insideBox) {
-    audio.play('box');
-    puck.cheer(1.6);
-    burst(heartTex, tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 5, 0.12);
-    if (!box.visited) {
-      box.visited = true;
-      state.boxVisits++;
-      const target = nearestNut(body.pos);
-      if (target) {
-        radarNut = target;
-        radarTime = 12;
-        beacon.visible = true;
-        toast('Knus! Bonus: nootjesradar! Volg de lichtstraal ✨', 3.5);
-      } else {
-        toast('Heerlijk knus in de doos! 📦', 2.5);
-      }
-    } else {
-      toast('Nog steeds een fijne doos 📦', 1.5);
-    }
-  }
-  insideBox = box;
-  // In een doos kijkt de camera van bovenaf mee
-  followCam.minPitch = box ? 0.95 : -0.25;
-}
-
-function updateFlyingNuts(dt) {
+function updateFlying(dt) {
   for (let i = flying.length - 1; i >= 0; i--) {
     const f = flying[i];
     f.t += dt * 2.5;
-    const g = f.nut.group;
+    const g = f.item.group;
+    f.item.flying = true;
     g.position.lerp(tmpV.set(body.pos.x, body.pos.y + 0.35, body.pos.z), Math.min(1, dt * 10));
     g.scale.setScalar(Math.max(0.01, 1 - f.t));
     g.rotation.y += dt * 12;
     if (f.t >= 1) {
       g.visible = false;
+      f.item.flying = false;
       flying.splice(i, 1);
     }
   }
 }
 
+function checkBoxes() {
+  if (!area.boxAt) {
+    followCam.minPitch = -0.25;
+    return;
+  }
+  const box = area.boxAt(body.pos);
+  if (box && box !== state.insideBox) {
+    audio.play('box');
+    say('Watskebeurt?');
+    puck.cheer(1.6);
+    burst(heartTex, tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 5, 0.12);
+    if (!box.visited) {
+      box.visited = true;
+      const target = area.pistachios
+        .filter((c) => !c.found)
+        .sort((a, b) => a.base.distanceToSquared(body.pos) - b.base.distanceToSquared(body.pos))[0];
+      if (target) {
+        radarItem = target;
+        radarTime = 12;
+        beacon.visible = true;
+        toast('Knus! Bonus: pistacheradar! Volg de groene lichtstraal ✨', 3.5);
+      } else {
+        toast('Heerlijk knus in de doos! 📦', 2.5);
+      }
+    }
+  }
+  state.insideBox = box;
+  // In een doos kijkt de camera van bovenaf mee
+  followCam.minPitch = box ? 0.95 : -0.25;
+}
+
+function inZone(z) {
+  const dx = body.pos.x - z.x;
+  const dz = body.pos.z - z.z;
+  const y = body.pos.y;
+  const zy = z.y ?? 0;
+  return dx * dx + dz * dz < z.r * z.r && y > zy - 0.25 && y < zy + (z.h ?? 1);
+}
+
+function checkZones() {
+  let prompt = null;
+  for (const z of area.zones) {
+    const inside = inZone(z);
+    const was = state.zonesInside.has(z);
+    if (inside && !was) {
+      state.zonesInside.add(z);
+      if (z.secret) secret(z.secret);
+      if (z.sound) audio.play(z.sound);
+      if (z.say) setTimeout(() => say(z.say), z.sound ? 350 : 0);
+      if (z.hat && !allStars()) {
+        progress.hat = z.hat;
+        saveProgress();
+        applyHat();
+      }
+      if (z.onEnter) z.onEnter();
+      if (z.id === 'stenen-start' && !area.stoneRun.active) {
+        area.startStoneRun();
+        audio.play('checkpoint');
+        toast(`Go! Hop over de stenen door de gele ringen naar de finish (${STONE_TARGET_TIME} s)`, 3);
+      }
+    } else if (!inside && was) {
+      state.zonesInside.delete(z);
+    }
+    if (inside && z.prompt) prompt = z;
+  }
+  state.activeZone = prompt;
+  const show = !!prompt && !song.active;
+  promptEl.classList.toggle('hidden', !show || isTouch);
+  actionBtn.classList.toggle('hidden', !show || !isTouch);
+  if (show) promptEl.textContent = `E — ${prompt.prompt}`;
+}
+
+function interact() {
+  const z = state.activeZone;
+  if (!z || song.active) return;
+  if (z.id === 'merel') {
+    state.frozen = true;
+    input.releasePointer();
+    song.start();
+  }
+}
+
+function updateStoneRun(dt) {
+  if (!area.updateStoneRun) return;
+  const res = area.updateStoneRun(dt, body.pos);
+  if (res === 'checkpoint') audio.play('checkpoint');
+  if (res === 'finish') {
+    const t = area.stoneRun.time;
+    if (!progress.best || t < progress.best) {
+      progress.best = t;
+      saveProgress();
+    }
+    if (t <= STONE_TARGET_TIME) award('stenen');
+    else toast(`Finish in ${t.toFixed(1)} s — net te langzaam! Probeer het onder de ${STONE_TARGET_TIME} s.`, 4);
+  }
+}
+
+function updateCounter() {
+  if (area.stoneRun?.active) {
+    counterEl.classList.remove('hidden');
+    counterKey = 'timer';
+    counterEl.textContent = `⏱ ${area.stoneRun.time.toFixed(1)} s`;
+    return;
+  }
+  let key = null;
+  let html = '';
+  if (area.name === 'pistachehuis') {
+    const all = area.pistachios;
+    const n = all.filter((c) => c.found).length;
+    key = `pistache:${n}`;
+    html = `${PISTACHIO_ICON}<span>${n}</span><small>/ ${all.length}</small>`;
+  } else if (area.name === 'buiten') {
+    const all = area.feathers;
+    const n = all.filter((c) => c.found).length;
+    key = `veer:${n}`;
+    html = `🪶 <span>${n}</span><small>/ ${all.length}</small>`;
+  }
+  counterEl.classList.toggle('hidden', !key);
+  if (key) setCounter(key, html);
+}
+
 function update(dt) {
   state.time += dt;
-  state.sinceLastFind += dt;
 
-  // Camera draaien
   const look = input.consumeLook();
   followCam.rotate(look.x, look.y);
 
-  // Looprichting t.o.v. de camera
+  const frozen = state.frozen || state.transitioning || puck.dancing > 0;
   const move = input.poll();
   followCam.forward(fwd);
   right.set(-fwd.z, 0, fwd.x);
-  wish.set(0, 0, 0).addScaledVector(fwd, move.y).addScaledVector(right, move.x);
+  wish.set(0, 0, 0);
+  if (!frozen) wish.addScaledVector(fwd, move.y).addScaledVector(right, move.x);
 
-  if (input.consumeHop()) body.requestHop();
+  const hops = input.consumeHop();
+  if (hops && !frozen) {
+    // Wie in de lucht blijft drukken, probeert te vliegen...
+    const airborne = !body.grounded && !body.climbing;
+    if (airborne) state.airHops += hops;
+    if (state.airHops >= 3 && !state.flewTried) {
+      state.flewTried = true;
+      say('Vliegen? Nee hoor, ik loop wel!');
+      secret('vliegen');
+    }
+    body.requestHop();
+  }
+  if (body.grounded && !hops) {
+    state.airHops = 0;
+    state.flewTried = false;
+  }
+  if (input.consumeInteract()) interact();
+
+  // Patat-power
+  if (state.powerTime > 0) {
+    state.powerTime -= dt;
+    if (state.powerTime <= 0) toast('De patat-power is op. Nog meer patat? 🍟', 2.5);
+  }
+  const powered = state.powerTime > 0;
+  body.walkSpeed = area.walkSpeed * (powered ? 1.6 : 1);
+  body.hopHeight = powered ? 1.5 : DEFAULT_HOP;
+  powerEl.classList.toggle('hidden', !powered);
+  if (powered) powerFill.style.width = `${(state.powerTime / 15) * 100}%`;
+  puck.setPower(powered ? 1 : 0, state.time);
+
   body.update(dt, wish);
-
-  if (body.events.hopped) audio.play('hop', { volume: 0.7 });
+  if (body.events.hopped) audio.play('hop', { volume: 0.7, rate: powered ? 1.3 : 1 });
   if (body.events.landed > 2) puck.land(body.events.landed);
+  if (powered && body.speed > 0.5 && Math.random() < dt * 8) burst(sparkleTex, tmpV.set(body.pos.x, body.pos.y + 0.1, body.pos.z), 1, 0.05);
 
-  // Puck-model volgen
+  // In het water gevallen, of uit de wereld
+  const hazard = area.hazardAt(body.pos);
+  if (hazard || body.pos.y < -3) {
+    audio.play('splash');
+    burst(dropTex, tmpV.copy(body.pos), 6, 0.3);
+    const sp = hazard ? hazard.respawn : Object.values(area.spawns)[0].pos;
+    body.teleport(sp, hazard ? hazard.yaw : 0);
+    if (area.stoneRun?.active) {
+      area.stopStoneRun();
+      toast('Plons! Papegaaien zwemmen niet… Probeer het nog eens vanaf START.', 3);
+    } else {
+      toast('Plons! Papegaaien zwemmen niet 💦', 2);
+    }
+    say('Watskebeurt?!');
+  }
+
   puck.root.position.copy(body.pos);
   puck.root.rotation.y = body.yaw;
   puck.update(dt, { speed: body.speed, grounded: body.grounded, climbing: body.climbing, vy: body.vel.y });
+  puck.applyDance(dt);
+  if (puck.dancing <= 0 && audio.long) audio.stopLong();
 
-  // Blob-schaduw op de grond eronder
   const gh = body.groundHeight(body.pos.y + 0.01);
   const h = body.pos.y - gh;
   blob.position.set(body.pos.x, gh + 0.006, body.pos.z);
@@ -344,32 +708,61 @@ function update(dt) {
   blob.scale.setScalar(bs);
   blob.material.opacity = 0.3 * bs;
 
-  collectNuts();
+  collect();
+  updateFlying(dt);
   checkBoxes();
-  updateFlyingNuts(dt);
+  checkZones();
+  updateStoneRun(dt);
+  updateCounter();
+
+  // Iets in de snavel?
+  if (state.beakTime > 0) {
+    state.beakTime -= dt;
+    if (state.beakTime <= 0) puck.setBeakItem(null);
+  }
+
+  // Tikken op Puck telt alleen snel achter elkaar
+  if (state.tapTimer > 0) {
+    state.tapTimer -= dt;
+    if (state.tapTimer <= 0) state.tapCount = 0;
+  }
+
+  // Puck kletst af en toe uit zichzelf
+  state.idleTalk -= dt;
+  if (state.idleTalk <= 0) {
+    state.idleTalk = 18 + Math.random() * 20;
+    if (!song.active && speechTimer <= 0) {
+      const lines = ['Watskebeurt?', 'Mag ik een koekje?', 'Watskebeurt?', 'Mag ik een koekje?', 'Hallo!'];
+      say(lines[Math.floor(Math.random() * lines.length)]);
+    }
+  }
 
   // Radar
   if (radarTime > 0) {
     radarTime -= dt;
-    if (radarNut && !radarNut.found) {
-      beacon.position.set(radarNut.base.x, radarNut.base.y + 1.5, radarNut.base.z);
+    if (radarItem && !radarItem.found) {
+      beacon.position.set(radarItem.base.x, radarItem.base.y + 1.5, radarItem.base.z);
       beacon.material.opacity = 0.25 + Math.sin(state.time * 6) * 0.1;
     }
     if (radarTime <= 0) beacon.visible = false;
   }
 
-  // Tip na een tijdje niets vinden
-  if (!state.hintGiven && state.sinceLastFind > 50 && state.found < TOTAL) {
-    const n = nearestNut(body.pos);
-    if (n) toast(`Tip: kijk eens ${n.where}…`, 4);
-    state.hintGiven = true;
-  }
+  // Deuren
+  const portal = area.portalAt(body.pos);
+  if (!portal) state.portalLock = false;
+  else if (!state.portalLock && !state.transitioning) enterArea(portal.to, portal.spawn);
 
-  // Naar buiten = level voltooid
-  if (level.doorOpen > 0.6 && body.pos.x > ROOM.maxX + 0.35) finishLevel();
-
-  // Camera volgen
   followCam.update(dt, tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z));
+}
+
+function updateSpeechBubble() {
+  if (speechTimer <= 0) return;
+  tmpV.set(body.pos.x, body.pos.y + 0.48, body.pos.z).project(camera);
+  const offscreen = tmpV.z > 1;
+  speechEl.classList.toggle('hidden', offscreen);
+  if (offscreen) return;
+  speechEl.style.left = `${(tmpV.x * 0.5 + 0.5) * window.innerWidth}px`;
+  speechEl.style.top = `${(-tmpV.y * 0.5 + 0.5) * window.innerHeight}px`;
 }
 
 // ---------- Hoofdlus ----------
@@ -380,7 +773,7 @@ let elapsed = 0;
 let perfTime = 0;
 let perfFrames = 0;
 
-resetGame();
+enterArea('puckhuis', 'start', { instant: true });
 
 function frame(timestamp) {
   timer.update(timestamp);
@@ -389,19 +782,25 @@ function frame(timestamp) {
 
   if (state.mode === 'play') {
     update(dt);
-  } else {
-    // Rustig ronddraaiende camera in het menu
-    followCam.yaw += dt * 0.15;
+    song.update(dt);
+  } else if (state.mode === 'start') {
+    followCam.yaw += dt * 0.05;
+    puck.root.position.copy(body.pos);
+    puck.root.rotation.y = body.yaw;
     puck.update(dt, { speed: 0, grounded: true, climbing: false, vy: 0 });
     followCam.update(dt);
   }
 
-  if (level.update(dt, elapsed)) renderer.shadowMap.needsUpdate = true;
+  if (area.update(dt, elapsed)) renderer.shadowMap.needsUpdate = true;
   updateParticles(dt);
 
   if (toastTimer > 0) {
     toastTimer -= dt;
     if (toastTimer <= 0) toastEl.classList.remove('show');
+  }
+  if (speechTimer > 0) {
+    speechTimer -= dt;
+    if (speechTimer <= 0) speechEl.classList.add('hidden');
   }
 
   // Automatisch de resolutie verlagen als het niet soepel loopt
@@ -418,6 +817,7 @@ function frame(timestamp) {
   }
 
   renderer.render(scene, camera);
+  updateSpeechBubble();
 }
 renderer.setAnimationLoop(frame);
 
@@ -431,4 +831,4 @@ window.addEventListener('resize', onResize);
 onResize();
 
 // Debug-hulpje in de console
-window.__puck = { body, level, state, cam: followCam };
+window.__puck = { body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };

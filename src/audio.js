@@ -5,7 +5,15 @@
 const SOUND_DIR = `${import.meta.env.BASE_URL}assets/sounds/`;
 const EXTENSIONS = ['mp3', 'ogg', 'wav'];
 
-export const SOUND_NAMES = ['nut', 'box', 'hop', 'level-complete'];
+export const SOUND_NAMES = [
+  'nut', 'box', 'hop', 'level-complete', 'feather', 'fries', 'secret', 'splash', 'squeak', 'star', 'door', 'checkpoint',
+  'puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5', 'puck-dans', 'puck-lekker',
+];
+
+// Groepen: er wordt willekeurig een geladen variant gekozen.
+const GROUPS = {
+  talk: ['puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5'],
+};
 
 export class AudioManager {
   constructor() {
@@ -49,9 +57,13 @@ export class AudioManager {
     console.info(`[audio] ${name}: geen bestand gevonden, placeholder-geluid wordt gebruikt.`);
   }
 
-  play(name, { volume = 1, rate = 1 } = {}) {
+  play(name, { volume = 1, rate = 1, freq } = {}) {
     if (!this.unlocked || this.muted || !this.ctx) return;
     if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (GROUPS[name]) {
+      const loaded = GROUPS[name].filter((n) => this.buffers.has(n));
+      if (loaded.length) name = loaded[Math.floor(Math.random() * loaded.length)];
+    }
     const buffer = this.buffers.get(name);
     if (buffer) {
       const src = this.ctx.createBufferSource();
@@ -63,8 +75,32 @@ export class AudioManager {
       src.start();
       return;
     }
-    const synth = PLACEHOLDERS[name];
-    if (synth) synth(this.ctx, this.master, volume);
+    const synth = PLACEHOLDERS[name] || (name.startsWith('puck-') ? PLACEHOLDERS.talk : null);
+    if (synth) synth(this.ctx, this.master, volume, freq);
+  }
+
+  /** Stopt een lopend lang geluid (bijv. de dans). */
+  playLong(name) {
+    this.stopLong();
+    if (!this.unlocked || this.muted || !this.ctx) return;
+    const buffer = this.buffers.get(name);
+    if (!buffer) return this.play('talk');
+    const src = this.ctx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(this.master);
+    src.start();
+    this.long = src;
+  }
+
+  stopLong() {
+    if (this.long) {
+      try {
+        this.long.stop();
+      } catch {
+        /* al gestopt */
+      }
+      this.long = null;
+    }
   }
 
   toggleMute() {
@@ -106,6 +142,52 @@ const PLACEHOLDERS = {
   // Klein "boing" bij een hop
   hop(ctx, out, v) {
     tone(ctx, out, { type: 'sine', from: 320, to: 620, dur: 0.12, vol: 0.25 * v });
+  },
+  feather(ctx, out, v) {
+    tone(ctx, out, { type: 'sine', from: 1200, to: 1800, dur: 0.18, vol: 0.25 * v });
+    tone(ctx, out, { type: 'sine', from: 1600, to: 2400, start: 0.1, dur: 0.2, vol: 0.2 * v });
+  },
+  fries(ctx, out, v) {
+    [392, 523, 659, 784, 1047].forEach((f, i) => tone(ctx, out, { type: 'square', from: f, to: f * 1.02, start: i * 0.06, dur: 0.09, vol: 0.12 * v }));
+  },
+  secret(ctx, out, v) {
+    [784, 988, 1175, 1568].forEach((f, i) => tone(ctx, out, { type: 'triangle', from: f, start: i * 0.09, dur: 0.2, vol: 0.22 * v }));
+  },
+  splash(ctx, out, v) {
+    const t = ctx.currentTime;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.4, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const f = ctx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.setValueAtTime(2000, t);
+    f.frequency.exponentialRampToValueAtTime(300, t + 0.4);
+    const g = ctx.createGain();
+    g.gain.value = 0.5 * v;
+    src.connect(f).connect(g).connect(out);
+    src.start();
+  },
+  squeak(ctx, out, v) {
+    tone(ctx, out, { type: 'square', from: 1400, to: 900, dur: 0.12, vol: 0.12 * v });
+    tone(ctx, out, { type: 'square', from: 1500, to: 1000, start: 0.15, dur: 0.12, vol: 0.12 * v });
+  },
+  star(ctx, out, v) {
+    [523, 659, 784, 1047, 1319].forEach((f, i) => tone(ctx, out, { type: 'triangle', from: f, start: i * 0.08, dur: 0.25, vol: 0.25 * v }));
+  },
+  door(ctx, out, v) {
+    tone(ctx, out, { type: 'sine', from: 220, to: 140, dur: 0.18, vol: 0.3 * v });
+  },
+  checkpoint(ctx, out, v) {
+    tone(ctx, out, { type: 'triangle', from: 988, to: 1319, dur: 0.12, vol: 0.25 * v });
+  },
+  note(ctx, out, v, freq = 660) {
+    tone(ctx, out, { type: 'sine', from: freq, to: freq * 1.03, dur: 0.32, vol: 0.3 * v });
+    tone(ctx, out, { type: 'triangle', from: freq * 2, dur: 0.12, vol: 0.06 * v });
+  },
+  talk(ctx, out, v) {
+    [700, 1100, 850, 1300].forEach((f, i) => tone(ctx, out, { type: 'sawtooth', from: f, to: f * 1.2, start: i * 0.09, dur: 0.08, vol: 0.06 * v }));
   },
   // Fanfare bij level voltooid
   'level-complete'(ctx, out, v) {

@@ -7,7 +7,9 @@ export class Input {
     this.keys = new Set();
     this.move = { x: 0, y: 0 }; // x = rechts, y = vooruit
     this.look = { x: 0, y: 0 }; // opgespaarde camera-delta (pixels)
-    this.hopPressed = false;
+    this.hopPressed = 0;
+    this.interactPressed = false;
+    this.onTap = null;
     this.enabled = false;
     this.onFirstInteraction = null;
 
@@ -35,10 +37,11 @@ export class Input {
       this.firstInteraction();
       if (!this.enabled) return;
       if (hopKeys.has(e.code)) {
-        if (!e.repeat) this.hopPressed = true;
+        if (!e.repeat) this.hopPressed++;
         e.preventDefault();
       }
       if (e.code.startsWith('Arrow')) e.preventDefault();
+      if (e.code === 'KeyE' || e.code === 'Enter') this.interactPressed = true;
       this.keys.add(e.code);
     });
     window.addEventListener('keyup', (e) => this.keys.delete(e.code));
@@ -106,7 +109,7 @@ export class Input {
 
     hopBtn.addEventListener('pointerdown', (e) => {
       this.firstInteraction();
-      if (this.enabled) this.hopPressed = true;
+      if (this.enabled) this.hopPressed++;
       hopBtn.classList.add('pressed');
       e.preventDefault();
     });
@@ -114,6 +117,28 @@ export class Input {
     hopBtn.addEventListener('pointerup', release);
     hopBtn.addEventListener('pointercancel', release);
     hopBtn.addEventListener('pointerleave', release);
+
+    const actionBtn = document.getElementById('action-button');
+    actionBtn.addEventListener('pointerdown', (e) => {
+      this.firstInteraction();
+      if (this.enabled) this.interactPressed = true;
+      e.preventDefault();
+    });
+
+    // Tikken/klikken op het speelveld (bijv. op Puck)
+    let down = null;
+    this.canvas.addEventListener('pointerdown', (e) => {
+      down = { x: e.clientX, y: e.clientY, t: performance.now() };
+    });
+    this.canvas.addEventListener('pointerup', (e) => {
+      if (!down || !this.enabled) return;
+      const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+      if (moved < 12 && performance.now() - down.t < 350 && this.onTap) {
+        const locked = document.pointerLockElement === this.canvas;
+        this.onTap(locked ? window.innerWidth / 2 : e.clientX, locked ? window.innerHeight / 2 : e.clientY);
+      }
+      down = null;
+    });
 
     // Vegen over het speelveld draait de camera
     this.canvas.addEventListener('pointerdown', (e) => {
@@ -188,8 +213,14 @@ export class Input {
 
   consumeHop() {
     const h = this.hopPressed;
-    this.hopPressed = false;
+    this.hopPressed = 0;
     return h;
+  }
+
+  consumeInteract() {
+    const i = this.interactPressed;
+    this.interactPressed = false;
+    return i;
   }
 
   consumeLook() {
