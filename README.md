@@ -11,6 +11,9 @@ Dus bedenkt Puck een plan: hij geeft een groot **fluitconcert** op het plein, ne
 Daarvoor moet hij heel Stad warm krijgen: verdien alle 9 sterren, dan komt iedereen luisteren. Het concert zelf is een
 ritmespel: tonen vallen in drie banen en je fluit mee op de beat (`A` `S` `D`, pijltjes, of tikken op de banen).
 
+**Intro-film:** bij het opstarten vliegt een drone over Groningen naar de Donderslaanflat, gaat omhoog naar de 9e
+verdieping en eindigt bij Puck in zijn kooi. Overslaan kan met de knop of `Esc` (of open het spel met `?nointro`).
+
 ## Het spel
 
 Je begint in Puck's appartement, op zijn roze zitstok naast de grote zwarte kooi bij het raam. Het appartement is
@@ -33,6 +36,14 @@ met uitzicht over Stad en de gang met de zwarte voordeur.
 **De Jumbo** kun je in: pak een zak pistachenoten uit de aanbiedingsbak en reken af bij Kassière Anja (met een
 glimmend knoopje), of loop zonder betalen door de poortjes. Dan gaat het alarm af en ontploft Bedrijfsleider Gerrit:
 knalrood hoofd, stoom uit zijn oren, en hij rent je achterna naar buiten.
+
+In de Jumbo staat verder een kartonnen reclamebord ("Hallo! Ik ben Frank. Van karton."), een piramide van
+wc-rollen (max. 40 pakken per klant), een kaastoren met Groninger nagelkaas, een natte vloer, een statiegeldautomaat
+die natuurlijk buiten gebruik is, Meneer Kuipers die al een half uur twijfelt over hagelslag, en af en toe een
+omroepbericht.
+
+**Elke uitdaging** begint met een kaart met titel en doel, dan 3-2-1-GO!, en tijdens het spelen staat het doel
+bovenin beeld.
 
 **De Groningers** zijn droog en kort van stof: Postbode Harm, Visser Geert, Studente Sjoukje, Duivenman Jan (en
 duif Henk), Buurman Klaas, Oma Moi, Jumbo-Bas en Eline van de Jumbo, Buurvrouw Tineke (klaagt over scheef geparkeerde
@@ -72,7 +83,7 @@ meubels, tafels en dozen blokkeren haar zicht. Na binnenkomen heb je 2,5 seconde
 
 ### Geheimpjes (easter eggs) 🥚
 
-Er zijn 27 geheimpjes. Bij elk geheimpje hoor je een eigen deuntje en verschijnt een kaartje met uitleg van de grap. Een paar hints (spoilers!):
+Er zijn 31 geheimpjes. Bij elk geheimpje hoor je een eigen deuntje en verschijnt een kaartje met uitleg van de grap. Een paar hints (spoilers!):
 
 <details>
 <summary>Toon hints</summary>

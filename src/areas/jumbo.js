@@ -47,6 +47,7 @@ export class JumboStore extends Area {
     this.buildPistachios();
     this.buildGates();
     this.buildPeople();
+    this.buildExtras();
     this.addLights({ sunPos: new THREE.Vector3(3, 8, 2), center: new THREE.Vector3(0, 0, 0), size: 6, hemi: 2.1 });
   }
 
@@ -57,7 +58,7 @@ export class JumboStore extends Area {
     this.group.add(floor);
     for (let x = R.minX + 0.6; x < R.maxX; x += 0.6) this.block(x, 0, R.minZ, x + 0.015, 0.002, R.maxZ, P.joint, { collide: false, shadow: false });
     for (let z = R.minZ + 0.6; z < R.maxZ; z += 0.6) this.block(R.minX, 0, z, R.maxX, 0.002, z + 0.015, P.joint, { collide: false, shadow: false });
-    const ceil = new THREE.Mesh(new THREE.PlaneGeometry(10, 8), lambert(0xf8f7f3));
+    const ceil = new THREE.Mesh(new THREE.PlaneGeometry(10, 8), lambert(0xf8f7f3, { emissive: 0xc8c7c2 }));
     ceil.rotation.x = Math.PI / 2;
     ceil.position.y = R.h;
     this.group.add(ceil);
@@ -213,6 +214,161 @@ export class JumboStore extends Area {
     this.gerrit.person.root.add(badge);
   }
 
+  buildExtras() {
+    const add = (geo, mat, x, y, z, parent = this.group) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      parent.add(m);
+      return m;
+    };
+    // Kartonnen reclamebord van "Frank van de reclame" bij de ingang, met tekstballon
+    const frank = new THREE.Group();
+    const board = new THREE.Mesh(new THREE.BoxGeometry(0.62, 1.75, 0.03), lambert(0xc89b62));
+    board.position.y = 0.875;
+    frank.add(board);
+    const face = document.createElement('canvas');
+    face.width = 128;
+    face.height = 360;
+    const fx = face.getContext('2d');
+    fx.fillStyle = '#ffd200';
+    fx.fillRect(0, 0, 128, 360);
+    fx.fillStyle = '#f0c7a8';
+    fx.beginPath();
+    fx.ellipse(64, 70, 36, 44, 0, 0, Math.PI * 2);
+    fx.fill();
+    fx.fillStyle = '#6b4a2e';
+    fx.fillRect(30, 26, 68, 14);
+    fx.fillStyle = '#222';
+    fx.fillRect(48, 64, 8, 6);
+    fx.fillRect(72, 64, 8, 6);
+    fx.strokeStyle = '#8a3b36';
+    fx.lineWidth = 4;
+    fx.beginPath();
+    fx.arc(64, 88, 16, 0.15 * Math.PI, 0.85 * Math.PI);
+    fx.stroke();
+    fx.fillStyle = '#ffd200';
+    fx.fillRect(18, 118, 92, 150);
+    fx.fillStyle = '#1b1b1d';
+    fx.font = 'bold 18px sans-serif';
+    fx.textAlign = 'center';
+    fx.fillText('JUMBO', 64, 170);
+    fx.fillStyle = '#2b2f3a';
+    fx.fillRect(28, 268, 30, 92);
+    fx.fillRect(70, 268, 30, 92);
+    fx.fillStyle = '#f0c7a8';
+    fx.fillRect(4, 130, 16, 80);
+    fx.fillRect(108, 110, 16, 60);
+    fx.fillRect(108, 96, 16, 16);
+    const tex = new THREE.CanvasTexture(face);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const print = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 1.72), new THREE.MeshLambertMaterial({ map: tex }));
+    print.position.set(0, 0.875, 0.017);
+    frank.add(print);
+    const stand = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.2, 0.4), lambert(0xa87c47));
+    stand.position.set(0, 0.6, -0.2);
+    stand.rotation.x = -0.35;
+    frank.add(stand);
+    const bubble = makeSign(['Hallo!', 'Ik ben Frank.', 'Van karton.'], { width: 0.7, height: 0.42, bg: '#ffffff', fg: '#1b1b1d', border: '#1b1b1d' });
+    bubble.position.set(0.5, 1.95, 0.03);
+    frank.add(bubble);
+    frank.position.set(3.35, 0, -1.0);
+    frank.rotation.y = Math.PI / 2 - 0.4;
+    frank.traverse((o) => (o.castShadow = true));
+    this.group.add(frank);
+    this.addCollider(3.15, 0, -1.25, 3.55, 1.75, -0.75, { name: 'frank' });
+    this.zones.push({ x: 3.0, y: 0, z: -0.9, r: 0.6, h: 1.4, id: 'npc', npc: { id: 'frank', name: 'Frank (van karton)', person: { talk() {} } }, prompt: 'Praat met Frank (van karton) 💬' });
+
+    // Piramide van wc-rollen (klimbaar, met een geheimpje bovenop)
+    const rollGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.12, 10);
+    const rollMat = lambert(0xfbfbf6);
+    const px = -2.2;
+    const pz = 2.9;
+    let n = 0;
+    for (let level = 0; level < 5; level++) {
+      const w = 5 - level;
+      for (let i = 0; i < w; i++) {
+        for (let j = 0; j < w; j++) {
+          add(rollGeo, rollMat, px + (i - (w - 1) / 2) * 0.15, 0.06 + level * 0.12, pz + (j - (w - 1) / 2) * 0.15);
+          n++;
+        }
+      }
+      this.addCollider(px - w * 0.075, level * 0.12, pz - w * 0.075, px + w * 0.075, (level + 1) * 0.12, pz + w * 0.075, { climbable: true, name: 'wc-rollen' });
+    }
+    const tp = makeSign(['WC-PAPIER', 'Max. 40 pakken', 'per klant'], { width: 0.7, height: 0.4, bg: '#ffffff', fg: '#d7263d', border: '#d7263d' });
+    tp.position.set(px, 0.95, pz - 0.42);
+    this.group.add(tp);
+    this.block(px - 0.02, 0, pz - 0.44, px + 0.02, 0.75, pz - 0.4, M.metalDark, { collide: false });
+    this.zones.push({ x: px, y: 0.55, z: pz, r: 0.35, h: 0.6, secret: 'wcpapier', say: 'Watskebeurt? Ik ben de koning van het wc-papier!' });
+
+    // Kaastoren: Groninger nagelkaas en gewone Goudse
+    const cheese = new THREE.CylinderGeometry(0.2, 0.2, 0.12, 14);
+    [[0, 0xf2c230], [1, 0xe8b04b], [2, 0xd9a441], [3, 0xf2c230]].forEach(([i, c]) => {
+      const w = add(cheese, lambert(c), -3.6 + (i % 2) * 0.05, 0.06 + i * 0.12, 2.9);
+      w.rotation.y = i;
+    });
+    this.addCollider(-3.8, 0, 2.7, -3.4, 0.48, 3.1, { climbable: true, name: 'kaas' });
+    const kaas = makeSign(['Nagelkaas', 'Gronings!', '€ 4,99'], { width: 0.5, height: 0.34, bg: '#fff6e6', fg: '#6b4423' });
+    kaas.position.set(-3.6, 0.8, 2.66);
+    this.group.add(kaas);
+
+    // "Pas op, natte vloer"-bordje met een plasje
+    const sign = new THREE.Group();
+    [-1, 1].forEach((side) => {
+      const p = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.55, 0.02), lambert(0xffd200));
+      p.position.set(0, 0.26, side * 0.08);
+      p.rotation.x = side * 0.28;
+      sign.add(p);
+    });
+    const warn = makeSign(['⚠', 'NAT!'], { width: 0.24, height: 0.26, bg: '#ffd200', fg: '#1b1b1d', border: '#ffd200' });
+    warn.position.set(0, 0.3, 0.12);
+    warn.rotation.x = 0.28;
+    sign.add(warn);
+    sign.position.set(-1.6, 0, 3.4);
+    sign.traverse((o) => (o.castShadow = true));
+    this.group.add(sign);
+    const puddle = new THREE.Mesh(new THREE.CircleGeometry(0.45, 16), new THREE.MeshLambertMaterial({ color: 0xbfe6f5, transparent: true, opacity: 0.55 }));
+    puddle.rotation.x = -Math.PI / 2;
+    puddle.position.set(-1.0, 0.004, 3.2);
+    puddle.scale.set(1.4, 0.8, 1);
+    this.group.add(puddle);
+    this.zones.push({ x: -1.0, y: 0, z: 3.2, r: 0.45, h: 0.4, secret: 'natte-vloer', say: 'Wiieee! Watskebeurt?!', sound: 'splash' });
+
+    // Statiegeldautomaat: buiten gebruik, natuurlijk
+    this.block(4.35, 0, 2.7, 4.95, 1.8, 3.6, lambert(0x2f6e4a), { name: 'automaat' });
+    this.block(4.34, 0.9, 2.95, 4.36, 1.3, 3.35, lambert(0x111111), { collide: false, shadow: false });
+    const bg = makeSign(['BUITEN', 'GEBRUIK'], { width: 0.46, height: 0.3, bg: '#ffffff', fg: '#d7263d', border: '#d7263d' });
+    bg.rotation.y = -Math.PI / 2;
+    bg.position.set(4.33, 1.45, 3.15);
+    this.group.add(bg);
+    const sg = makeSign('Statiegeld', { width: 0.5, height: 0.12, bg: '#2f6e4a', fg: '#ffffff', border: '#2f6e4a' });
+    sg.rotation.y = -Math.PI / 2;
+    sg.position.set(4.33, 1.7, 3.15);
+    this.group.add(sg);
+    this.zones.push({ x: 4.0, y: 0, z: 3.15, r: 0.45, h: 1.2, id: 'automaat', prompt: 'Lever een flesje in ♻️' });
+
+    // Een winkelwagentje in het pad, met een komkommer en een fles cola
+    const cart = new THREE.Group();
+    const cm = lambert(0x9aa3aa);
+    add(new THREE.BoxGeometry(0.5, 0.35, 0.7), cm, 0, 0.7, 0, cart);
+    add(new THREE.BoxGeometry(0.5, 0.04, 0.04), P.yellow, 0, 0.95, -0.38, cart);
+    [[-0.18, -0.28], [0.18, -0.28], [-0.18, 0.28], [0.18, 0.28]].forEach(([x, z]) => {
+      add(new THREE.BoxGeometry(0.03, 0.5, 0.03), cm, x, 0.3, z, cart);
+      add(new THREE.CylinderGeometry(0.045, 0.045, 0.03, 8), lambert(0x1b1b1d), x, 0.045, z, cart).rotation.z = Math.PI / 2;
+    });
+    add(new THREE.CylinderGeometry(0.035, 0.035, 0.3, 8), lambert(0x3f8f3a), 0.1, 0.9, 0.1, cart).rotation.x = Math.PI / 2;
+    add(new THREE.CylinderGeometry(0.04, 0.04, 0.26, 8), lambert(0x14224a), -0.12, 0.98, -0.1, cart);
+    cart.position.set(1.0, 0, -0.5);
+    cart.rotation.y = 0.4;
+    this.group.add(cart);
+    this.addCollider(0.7, 0, -0.9, 1.3, 0.9, -0.1, { climbable: true, name: 'karretje' });
+
+    // Een klant die al een half uur twijfelt tussen twee soorten hagelslag
+    this.addNPC('twijfel', 'Meneer Kuipers', -1.8, -0.5 + 0.45, Math.PI, { shirt: 0x6c7d5b, pants: 0x3a3d40, hairStyle: 'bald', hair: 0xb9b9b9, glasses: true, mood: 'flat' });
+    // Omroepberichten
+    this.announceTimer = 12;
+  }
+
   /** Poortjes knipperen tijdens het alarm. */
   alarm(seconds = 3) {
     this.alarmTime = seconds;
@@ -220,6 +376,7 @@ export class JumboStore extends Area {
 
   update(dt, time) {
     this.animateCollectibles(dt, time);
+    this.announceTimer -= dt;
     if (this.alarmTime > 0) {
       this.alarmTime -= dt;
       const on = Math.sin(time * 18) > 0 && this.alarmTime > 0;

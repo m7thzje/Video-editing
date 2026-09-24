@@ -99,6 +99,21 @@ export const NPC_LINES = {
     'Zie je dat bordje? "Niet voor papegaaien." Heb ik zelf geschreven. Met stift.',
     'Mijn moeder zegt dat ik te streng ben. Mijn moeder koopt bij de Lidl.',
   ],
+  frank: [
+    'Hallo! Ik ben Frank. Van karton.',
+    '…',
+    'Ik sta hier al sinds de reclame. Niemand heeft me ooit opgehaald.',
+    'Ik glimlach altijd. Dat is geprint. Ik kan nait anders.',
+    'Als het waait val ik om. Gerrit zet me dan weer rechtop. Gerrit is mijn enige vriend.',
+    'Hallo! Ik ben Frank. Van karton. (Dit zeg ik elke keer. Het staat erop.)',
+  ],
+  twijfel: [
+    'Hagelslag melk of puur. Ik sta hier sinds half tien.',
+    'Mijn vrouw zei: neem gewoon de melk. Maar wat als ze puur bedoelde?',
+    'Ik heb ze allebei in mijn hand. Nu weet ik het nog minder.',
+    'Vorige week was het vlokken. Dat ging beter. Toen heb ik niks gekocht.',
+    'Weet jij het? Nee. Jij bent een papegaai. Dat helpt ook nait.',
+  ],
   basIdle: ['Plat is plat.', 'Morgen komen er weer honderd. Dozen houden nooit op.', 'Mooi werk. Nou ja. Werk.', 'Ik heb een keer een doos plat gesprongen waar nog koekjes in zaten. Dat was mijn beste dag.', 'Gerrit zegt dat ik te hard spring. Gerrit springt nooit.'],
   torenIdle: [
     'De echte is 97 meter. Deze is kleiner. Zeg het tegen niemand.',

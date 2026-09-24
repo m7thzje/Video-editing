@@ -97,7 +97,7 @@ export class PuckHouse extends Area {
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this.group.add(floor);
-    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(10, 14), lambert(0xfbfaf6));
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(10, 14), lambert(0xfbfaf6, { emissive: 0xb8b6b0 }));
     ceiling.rotation.x = Math.PI / 2;
     ceiling.position.set(0, H, 3.5);
     this.group.add(ceiling);

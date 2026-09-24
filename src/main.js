@@ -206,6 +206,10 @@ const SECRETS = {
   ben: 'OP WELK NUMMER WOON JIJ?',
   betaald: 'Netjes betaald (met een knoop)',
   winkeldief: 'Winkeldief!',
+  frank: 'Frank van karton',
+  wcpapier: 'Koning van het wc-papier',
+  'natte-vloer': 'Uitglijden op de natte vloer',
+  statiegeld: 'Statiegeldautomaat: buiten gebruik',
 };
 
 // Uitleg bij elk geheimpje: waarom is dit grappig?
@@ -236,6 +240,10 @@ const SECRET_JOKES = {
   cola: 'Puck zegt geen "Wat is dat?", Puck zegt "Watskebeurt?". En bij een blikje cola wordt het dus: Watskecola!',
   ben: 'Buurman Ben hangt altijd in de lift en vraagt elke keer op welk nummer je woont. Puck woont op 141. Ben vergeet het meteen weer.',
   betaald: 'Puck betaalt een zak pistache van €2,49 met een glimmend knoopje. Kassière Anja neemt het gewoon aan. Het is maandag.',
+  frank: 'Een levensgroot kartonnen reclamebord van de man uit de Jumbo-reclames. Hij zegt elke keer hetzelfde, want het staat erop gedrukt.',
+  wcpapier: 'Een piramide van wc-rollen met een bordje "max. 40 pakken per klant". Puck klimt erop en is nu officieel de koning van het wc-papier.',
+  'natte-vloer': 'Er staat een geel bordje "Pas op, natte vloer". Puck loopt er natuurlijk gewoon doorheen en glijdt uit. Bordjes lezen kan hij niet.',
+  statiegeld: 'De statiegeldautomaat is buiten gebruik. Dat is hij altijd. In elke supermarkt. Overal. Al jaren.',
   winkeldief: 'Puck loopt zonder betalen door de poortjes. Alarm! Bedrijfsleider Gerrit ontploft bijna. Stelen is niet netjes. Maar zijn hoofd…',
 };
 const SAVE_KEY = 'puck-avontuur-v2';
@@ -662,7 +670,7 @@ function enterArea(name, spawnName, { instant = false } = {}) {
     radarTime = 0;
     beacon.visible = false;
     renderer.shadowMap.needsUpdate = true;
-    if (state.mode !== 'start' && !state.party) music.play(musicFor(name));
+    if (state.mode !== 'start' && state.mode !== 'intro' && !state.party) music.play(musicFor(name));
     onAreaEntered(name);
   };
   if (instant) return doSwitch();
@@ -699,7 +707,7 @@ function jumboGate() {
 }
 
 function onAreaEntered(name) {
-  if (state.mode === 'start') return;
+  if (state.mode === 'start' || state.mode === 'intro') return;
   if (name === 'buiten' && state.jumboBag && state.lastArea === 'jumbo') {
     const stolen = state.jumboBag === 'stolen';
     state.jumboBag = null;
@@ -1121,6 +1129,13 @@ function interact() {
     talkToOma();
     return;
   }
+  if (z.id === 'automaat') {
+    audio.play('alarm', { volume: 0.3 });
+    say('Watskebeurt? Buiten gebruik!', { sound: 'piep' });
+    dialog.show('Statiegeldautomaat', 'PIEP. Deze automaat is tijdelijk buiten gebruik. Tijdelijk sinds 2019. Excuses voor het ongemak.', 4);
+    secret('statiegeld');
+    return;
+  }
   if (z.id === 'pistachebak') {
     if (state.jumboBag) return dialog.show('Puck', 'Eén zak is genoeg. Twee zakken is hebberig. Drie zakken is een hobby.', 3.5);
     state.jumboBag = 'unpaid';
@@ -1263,6 +1278,10 @@ function talkTo(npc) {
   const pitch = 0.85 + ((npc.id.charCodeAt(0) * 7 + npc.id.length * 13) % 30) / 100;
   audio.playSlice('npc-praat', 0.55 + Math.random() * 0.35, { volume: 0.3, rate: pitch });
   const o = areas.buiten;
+  if (npc.id === 'frank') {
+    if (dialog.index.frank === 1) secret('frank');
+    return dialog.show(npc.name, dialog.next('frank'));
+  }
   if (npc.id === 'mehmet') {
     o.mehmetPaused = true;
     clearTimeout(state.mehmetTimer);
@@ -1906,6 +1925,66 @@ let perfFrames = 0;
 
 enterArea('puckhuis', 'start', { instant: true });
 
+// ---------- Intro-film: drone over Groningen, omhoog langs de flat, dan Puck alleen in zijn kooi ----------
+const introEl = $('intro');
+const captionEl = $('intro-caption');
+const SHOTS = [
+  { area: 'buiten', until: 7, caption: ['Groningen', 'Er gaat niets boven Groningen'],
+    from: { pos: [34, 44, 42], look: [0, 12, -18] }, to: { pos: [-20, 26, 12], look: [0, 16, -20] } },
+  { area: 'buiten', until: 11.5, caption: ['De Donderslaanflat', '9e verdieping · nummer 141'],
+    from: { pos: [7, 5, -3], look: [0, 8, -16] }, to: { pos: [3, 27.5, -8.5], look: [0, 26, -16] } },
+  { area: 'puckhuis', until: 18, caption: ['Hier woont Puck.', 'Alleen thuis. Veel te stil…'],
+    from: { pos: [0.4, 1.7, 0.6], look: [3.4, 1.3, -2.9] }, to: { pos: [2.55, 1.45, -2.15], look: [3.35, 1.3, -2.95] } },
+];
+const introSkip = location.search.includes('nointro');
+const intro = { t: 0, shot: -1 };
+const ease = (x) => x * x * (3 - 2 * x);
+function setCaption(lines) {
+  captionEl.classList.remove('show');
+  setTimeout(() => {
+    captionEl.innerHTML = lines ? `${lines[0]}${lines[1] ? `<small>${lines[1]}</small>` : ''}` : '';
+    if (lines) captionEl.classList.add('show');
+  }, lines ? 250 : 0);
+}
+function endIntro() {
+  if (state.mode !== 'intro') return;
+  state.mode = 'start';
+  introEl.classList.add('hidden');
+  puck.root.visible = true;
+  enterArea('puckhuis', 'start', { instant: true });
+  followCam.update(0.016);
+  $('start-screen').classList.remove('hidden');
+}
+function updateIntro(dt) {
+  intro.t += dt;
+  const idx = SHOTS.findIndex((s) => intro.t < s.until);
+  if (idx < 0) return endIntro();
+  const shot = SHOTS[idx];
+  if (idx !== intro.shot) {
+    intro.shot = idx;
+    if (area.name !== shot.area) enterArea(shot.area, shot.area === 'buiten' ? 'lift' : 'start', { instant: true });
+    puck.root.visible = shot.area === 'puckhuis';
+    setCaption(shot.caption.slice(0, 1));
+    if (shot.caption[1]) setTimeout(() => state.mode === 'intro' && intro.shot === idx && setCaption(shot.caption), 1800);
+    if (shot.area === 'puckhuis') setTimeout(() => (puck.fluffing = 1.4), 3300);
+  }
+  const start = idx ? SHOTS[idx - 1].until : 0;
+  const k = ease(Math.min(1, (intro.t - start) / (shot.until - start)));
+  const lerp3 = (a, b) => tmpV.set(a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k);
+  camera.position.copy(lerp3(shot.from.pos, shot.to.pos));
+  camera.lookAt(lerp3(shot.from.look, shot.to.look));
+  puck.root.position.copy(body.pos);
+  puck.root.rotation.y = body.yaw;
+  puck.update(dt, { speed: 0, grounded: true, climbing: false, vy: 0 });
+}
+if (!introSkip) {
+  state.mode = 'intro';
+  introEl.classList.remove('hidden');
+  $('start-screen').classList.add('hidden');
+  $('intro-skip').addEventListener('click', endIntro);
+  window.addEventListener('keydown', (e) => e.code === 'Escape' && endIntro());
+}
+
 function frame(timestamp) {
   timer.update(timestamp);
   const dt = Math.min(timer.getDelta(), 1 / 20);
@@ -1916,6 +1995,8 @@ function frame(timestamp) {
     update(dt);
     song.update(dt);
     dialog.update(dt);
+  } else if (state.mode === 'intro') {
+    updateIntro(dt);
   } else if (state.mode === 'start') {
     followCam.yaw += dt * 0.05;
     puck.root.position.copy(body.pos);
@@ -1932,6 +2013,20 @@ function frame(timestamp) {
   if (busy !== !!state.tenseMusic) {
     state.tenseMusic = busy;
     music.play(busy ? 'spannend' : musicFor(area.name));
+  }
+  // Omroepberichten in de Jumbo
+  if (area === areas.jumbo && state.mode === 'play' && areas.jumbo.announceTimer <= 0) {
+    areas.jumbo.announceTimer = 35 + Math.random() * 20;
+    const lines = [
+      'Collega Bas naar kassa 1. Bas. Naar kassa 1. Bas? Laat maar.',
+      'Er loopt een papegaai in de winkel. Dit is geen grap. Collega Gerrit weet ervan.',
+      'De eigenaar van de witte DS3 met kenteken P-UCK-141: u staat scheef. Groeten van mevrouw Tineke.',
+      'Vandaag in de aanbieding: pistachenoten. Niet voor vogels. Vogels, lees de bordjes.',
+      'Wilt u uw kind ophalen bij de klantenservice? Het staat er al sinds dinsdag. Het heet Henk. O nee, dat is een duif.',
+      'De statiegeldautomaat is tijdelijk buiten gebruik. Dat was hij gisteren ook. En morgen ook.',
+    ];
+    audio.play('kassa', { volume: 0.5 });
+    toast(`📢 ${lines[Math.floor(Math.random() * lines.length)]}`, 5.5);
   }
   // Omgevingsgeluid per plek
   const ambKind = state.mode !== 'play' || state.concert ? null : { buiten: 'buiten', galerij: 'galerij', lift: 'lift', puckhuis: 'binnen', bakkerij: 'binnen', jumbo: 'binnen' }[area.name] || null;
@@ -2104,4 +2199,4 @@ buildSettingsUI();
 applySettings();
 
 // Debug-hulpje in de console
-window.__puck = { THREE, music, concert, startConcert, talkTo, perf, renderer, bloom: () => bloomOn, audio, body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };
+window.__puck = { intro, THREE, music, concert, startConcert, talkTo, perf, renderer, bloom: () => bloomOn, audio, body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };
