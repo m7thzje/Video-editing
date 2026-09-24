@@ -171,21 +171,63 @@ export class Walker {
     person.root.position.copy(this.points[0]);
     parent.add(person.root);
     this.puffs = [];
+    this.flies = [];
     if (stink) {
-      const c = document.createElement('canvas');
-      c.width = c.height = 32;
-      const ctx = c.getContext('2d');
-      const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      g.addColorStop(0, 'rgba(150,200,60,0.8)');
-      g.addColorStop(1, 'rgba(150,200,60,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 32, 32);
-      const tex = new THREE.CanvasTexture(c);
-      for (let k = 0; k < 8; k++) {
-        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.5 }));
-        s.userData.phase = k / 8;
+      // Groene stinkwolkjes (drie tinten) en golvende stinklijntjes
+      const puffTex = (rgb) => {
+        const c = document.createElement('canvas');
+        c.width = c.height = 64;
+        const ctx = c.getContext('2d');
+        // Wolkje uit een paar overlappende bollen
+        [[32, 36, 20], [20, 30, 14], [44, 30, 14], [32, 22, 13]].forEach(([x, y, r]) => {
+          const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+          g.addColorStop(0, `rgba(${rgb},0.95)`);
+          g.addColorStop(0.6, `rgba(${rgb},0.6)`);
+          g.addColorStop(1, `rgba(${rgb},0)`);
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        const t = new THREE.CanvasTexture(c);
+        t.colorSpace = THREE.SRGBColorSpace;
+        return t;
+      };
+      const lineTex = (() => {
+        const c = document.createElement('canvas');
+        c.width = 32;
+        c.height = 64;
+        const ctx = c.getContext('2d');
+        ctx.strokeStyle = 'rgba(90,150,30,0.95)';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        for (let y = 60; y >= 4; y -= 2) ctx.lineTo(16 + Math.sin(y * 0.2) * 9, y);
+        ctx.stroke();
+        const t = new THREE.CanvasTexture(c);
+        t.colorSpace = THREE.SRGBColorSpace;
+        return t;
+      })();
+      const texes = [puffTex('130,200,40'), puffTex('170,215,60'), puffTex('95,160,45')];
+      for (let k = 0; k < 12; k++) {
+        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: texes[k % 3], transparent: true, depthWrite: false, opacity: 0.8 }));
+        s.userData.phase = k / 12;
         parent.add(s);
         this.puffs.push(s);
+      }
+      for (let k = 0; k < 4; k++) {
+        const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: lineTex, transparent: true, depthWrite: false }));
+        s.userData.phase = k / 4;
+        s.userData.line = true;
+        parent.add(s);
+        this.puffs.push(s);
+      }
+      // Twee vliegjes die rondzoemen
+      for (let k = 0; k < 2; k++) {
+        const f = new THREE.Mesh(new THREE.SphereGeometry(0.018, 5, 4), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+        f.userData.phase = k * Math.PI;
+        parent.add(f);
+        this.flies.push(f);
       }
     }
   }
@@ -219,11 +261,21 @@ export class Walker {
       }
     }
     this.puffs.forEach((s) => {
-      const k = (t * 0.35 + s.userData.phase) % 1;
+      const k = (t * 0.3 + s.userData.phase) % 1;
       const a = s.userData.phase * Math.PI * 2 + t * 0.5;
-      s.position.set(p.x + Math.cos(a) * (0.4 + k * 0.5), 0.4 + k * 1.6, p.z + Math.sin(a) * (0.4 + k * 0.5));
-      s.scale.setScalar(0.3 + k * 0.5);
-      s.material.opacity = 0.5 * (1 - k);
+      if (s.userData.line) {
+        s.position.set(p.x + Math.cos(a) * 0.35, 1.2 + k * 0.9, p.z + Math.sin(a) * 0.35);
+        s.scale.set(0.18, 0.36, 1);
+        s.material.opacity = Math.sin(k * Math.PI) * 0.9;
+        return;
+      }
+      s.position.set(p.x + Math.cos(a) * (0.35 + k * 0.6), 0.5 + k * 1.7, p.z + Math.sin(a) * (0.35 + k * 0.6));
+      s.scale.setScalar(0.35 + k * 0.65);
+      s.material.opacity = 0.8 * Math.min(1, k * 5) * (1 - k);
+    });
+    this.flies.forEach((f) => {
+      const a = t * 7 + f.userData.phase;
+      f.position.set(p.x + Math.cos(a) * 0.45 + Math.sin(t * 13) * 0.05, 1.15 + Math.sin(t * 5 + f.userData.phase) * 0.15, p.z + Math.sin(a * 1.3) * 0.45);
     });
   }
 }

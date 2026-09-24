@@ -176,6 +176,7 @@ const SECRETS = {
   stink: 'De geur van Pasja de kat',
   tasje: 'Het tasje!',
   balkon: 'Uitzicht vanaf het balkon',
+  radio: 'Radio Moskou in de merelboom',
   ben: 'OP WELK NUMMER WOON JIJ?',
 };
 const SAVE_KEY = 'puck-avontuur-v2';
@@ -628,7 +629,7 @@ function onAreaEntered(name) {
   } else if (name === 'buiten' && first) {
     toast('Moi! Welkom in Groningen ⭐ Bakkerij Haafs, de vijver, de merel en rode veren wachten op je.', 5);
   } else if (name === 'lift' && first) {
-    toast('De lift! Druk op de knop om naar beneden of boven te gaan. (Hop eens op de leuning…)', 4);
+    toast('De lift! Druk op de knop om naar beneden of boven te gaan. Klim via het bierkrat op de leuning en kijk in de spiegel!', 4);
   } else if (name === 'bakkerij') {
     toast(progress.stars.koek ? 'Bakkerij Haafs ruikt naar vers gebakken koek 🍪' : 'Bakkerij Haafs! Praat met oma Moi achter de toonbank.', 3.5);
   } else if (name === 'pistachehuis') {
@@ -1063,7 +1064,9 @@ function updateStoneRun(dt) {
 
 function talkTo(npc) {
   npc.person.talk(3);
-  audio.play('talk', { volume: 0.25, rate: 0.7 });
+  // Kort stukje "game-gebrabbel" bij elk bericht van een NPC, iets hoger of lager per persoon
+  const pitch = 0.85 + ((npc.id.charCodeAt(0) * 7 + npc.id.length * 13) % 30) / 100;
+  audio.playSlice('npc-praat', 0.55 + Math.random() * 0.35, { volume: 0.7, rate: pitch });
   const o = areas.buiten;
   if (npc.id === 'mehmet') {
     o.mehmetPaused = true;
@@ -1722,6 +1725,17 @@ function frame(timestamp) {
 
   fxTime.value = elapsed;
   if (area.update(dt, elapsed)) renderer.shadowMap.needsUpdate = true;
+  // Omgevingsgeluid per plek
+  const ambKind = state.mode !== 'play' || state.concert ? null : { buiten: 'buiten', galerij: 'galerij', lift: 'lift', puckhuis: 'binnen', bakkerij: 'binnen' }[area.name] || null;
+  if (ambKind !== state.ambKind) {
+    state.ambKind = ambKind;
+    audio.setAmbience(ambKind);
+  }
+  audio.updateAmbience(state.time);
+  // Russische radio in de merelboom: harder naarmate Puck dichterbij komt
+  const radio = areas.buiten.radio;
+  const rd = area === areas.buiten && state.mode === 'play' && !state.concert ? body.pos.distanceTo(radio) : 99;
+  audio.setLoopVolume('radio-russisch', rd < 12 ? 0.9 * Math.pow(1 - rd / 12, 2) : 0);
   updateParticles(dt);
   updateJuice(dt);
 

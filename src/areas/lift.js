@@ -55,6 +55,30 @@ function buildCage(parent, withColliders, area) {
     parent.add(rail);
     if (withColliders) area.addCollider(side > 0 ? X - 0.1 : -X, 0.86, -0.65, side > 0 ? X : -X + 0.1, 0.94, 0.55, { oneWay: true, name: 'leuning' });
   });
+  // Bierkrat van Buurman Ben in de hoek: opstapje naar de leuning (en de spiegel)
+  const crate = lambert(0xb3261e);
+  const cx0 = 0.2;
+  const cx1 = X - 0.02;
+  const cz0 = -Z + 0.02;
+  const cz1 = -0.35;
+  const ch = 0.54;
+  block(cx0, 0, cz0, cx1, 0.06, cz1, crate, { climbable: true, name: 'bierkrat' });
+  block(cx0, 0, cz0, cx1, ch, cz0 + 0.03, crate, { collide: false });
+  block(cx0, 0, cz1 - 0.03, cx1, ch, cz1, crate, { collide: false });
+  block(cx0, 0, cz0, cx0 + 0.03, ch, cz1, crate, { collide: false });
+  block(cx1 - 0.03, 0, cz0, cx1, ch, cz1, crate, { collide: false });
+  block(cx0, ch - 0.06, cz0, cx1, ch - 0.03, cz1, crate, { collide: false });
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 2; j++) {
+      const b = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.2, 6), lambert(0x3d5a2a));
+      b.position.set(cx0 + 0.08 + i * 0.12, ch - 0.16, cz0 + 0.1 + j * 0.15);
+      parent.add(b);
+    }
+  }
+  if (withColliders) {
+    area.addCollider(cx0, 0, cz0, cx1, ch, cz1, { climbable: true, name: 'bierkrat' });
+    area.addCollider(cx0, ch - 0.02, cz0, cx1, ch + 0.02, cz1, { oneWay: true, name: 'bierkrat' });
+  }
   // Lichtpaneel en rooster
   block(-0.3, H - 0.03, -0.25, 0.3, H, 0.25, P.light, { collide: false });
   block(-0.2, H - 0.02, 0.35, 0.2, H, 0.45, P.floor, { collide: false });
@@ -149,7 +173,7 @@ export class Lift extends Area {
       },
     });
     // Op de leuning zie je jezelf in de spiegel
-    this.zones.push({ x: 0, y: 0.86, z: -0.35, r: 0.75, h: 0.5, secret: 'liftspiegel', say: 'Watskebeurt? Wat een knappe vogel in de spiegel!' });
+    this.zones.push({ x: 0, y: 0.72, z: -0.35, r: 0.75, h: 0.6, secret: 'liftspiegel', say: 'Watskebeurt? Wat een knappe vogel in de spiegel!' });
     // Deuropening: uitgang (bestemming hangt af van de verdieping)
     this.portals.push({ x0: -0.42, z0: Z + 0.02, x1: 0.42, z1: Z + 1.5, to: 'lift-uit', spawn: '' });
     // Vloertje in de deuropening zodat Puck naar buiten kan stappen

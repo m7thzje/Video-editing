@@ -6,6 +6,7 @@ const SOUND_DIR = `${import.meta.env.BASE_URL}assets/sounds/`;
 const EXTENSIONS = ['mp3', 'ogg', 'wav'];
 
 export const SOUND_NAMES = [
+  'npc-praat', 'radio-russisch',
   'nut', 'box', 'hop', 'level-complete', 'feather', 'fries', 'secret', 'splash', 'squeak', 'star', 'door', 'checkpoint',
   'puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5', 'puck-dans', 'puck-lekker',
   'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
@@ -130,6 +131,108 @@ export class AudioManager {
     if (synth) synth(this.ctx, this.synthOut, volume, freq);
   }
 
+  /** Speelt een kort willekeurig stukje van een lang geluid (NPC-gebrabbel), met zachte in- en uitfade. */
+  playSlice(name, dur = 0.7, { volume = 1, rate = 1 } = {}) {
+    if (!this.unlocked || this.muted || !this.ctx) return;
+    const buffer = this.buffers.get(name);
+    if (!buffer) return this.play('talk', { volume: 0.25, rate: 0.7 });
+    const ctx = this.ctx;
+    const t = ctx.currentTime;
+    const offset = Math.random() * Math.max(0, buffer.duration - dur - 0.45);
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.playbackRate.value = rate;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(volume, t + 0.04);
+    g.gain.setValueAtTime(volume, t + dur - 0.1);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(g).connect(this.sfxOut);
+    src.start(t, offset, dur + 0.05);
+  }
+
+  /** Doorlopend geluid (radio); het volume wordt per frame gezet met setLoopVolume. */
+  setLoopVolume(name, volume) {
+    this.loops = this.loops || {};
+    let l = this.loops[name];
+    if (!l) {
+      if (volume <= 0.001 || !this.unlocked || !this.ctx || !this.buffers.has(name)) return;
+      const src = this.ctx.createBufferSource();
+      src.buffer = this.buffers.get(name);
+      src.loop = true;
+      const gain = this.ctx.createGain();
+      gain.gain.value = 0;
+      src.connect(gain).connect(this.sfxOut);
+      src.start();
+      l = this.loops[name] = { src, gain };
+    }
+    const v = this.muted ? 0 : volume;
+    l.gain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.15);
+  }
+
+  /**
+   * Achtergrondgeluid per plek: 'buiten' (stadsgeruis + vogels), 'binnen' (tikkende klok), 'lift' (zoem) of null.
+   * Alles wordt hier gemaakt, er zijn geen extra bestanden nodig.
+   */
+  setAmbience(kind) {
+    if (!this.ctx || !this.unlocked) return;
+    const ctx = this.ctx;
+    if (!this.amb) {
+      // Bruine ruis als basis voor stadsgeruis en liftzoem
+      const len = ctx.sampleRate * 4;
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < len; i++) {
+        last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
+        d[i] = last * 3.5;
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 500;
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      src.connect(filter).connect(gain).connect(this.sfxOut);
+      src.start();
+      this.amb = { src, filter, gain, kind: null, next: 0 };
+    }
+    this.amb.kind = kind;
+    const target = kind === 'buiten' ? 0.1 : kind === 'lift' ? 0.07 : kind === 'galerij' ? 0.12 : 0;
+    this.amb.filter.frequency.setTargetAtTime(kind === 'lift' ? 180 : kind === 'galerij' ? 700 : 450, ctx.currentTime, 0.2);
+    this.amb.gain.gain.setTargetAtTime(this.muted ? 0 : target, ctx.currentTime, 0.4);
+  }
+
+  /** Per frame: losse geluidjes van de omgeving (vogels buiten, klok binnen, soms een fietsbel of meeuw). */
+  updateAmbience(time) {
+    const a = this.amb;
+    if (!a || !a.kind || this.muted || time < a.next) return;
+    const ctx = this.ctx;
+    const out = this.sfxOut;
+    if (a.kind === 'buiten' || a.kind === 'galerij') {
+      const r = Math.random();
+      if (r < 0.7) {
+        // Vogeltje: een paar snelle fluitjes
+        const base = 2200 + Math.random() * 1800;
+        const n = 2 + Math.floor(Math.random() * 4);
+        for (let i = 0; i < n; i++) tone(ctx, out, { type: 'sine', from: base * (1 + Math.random() * 0.3), to: base * (0.8 + Math.random() * 0.5), start: i * 0.09, dur: 0.07, vol: 0.035 });
+      } else if (r < 0.85) {
+        // Meeuw in de verte
+        tone(ctx, out, { type: 'sawtooth', from: 1400, to: 900, dur: 0.35, vol: 0.012 });
+        tone(ctx, out, { type: 'sawtooth', from: 1300, to: 850, start: 0.4, dur: 0.3, vol: 0.01 });
+      } else {
+        // Fietsbel verderop
+        [0, 0.14].forEach((st) => tone(ctx, out, { type: 'sine', from: 2600, start: st, dur: 0.25, vol: 0.02 }));
+      }
+      a.next = time + 1.5 + Math.random() * 4;
+    } else if (a.kind === 'binnen') {
+      tone(ctx, out, { type: 'square', from: 3000, to: 2500, dur: 0.012, vol: 0.02 });
+      a.next = time + 1;
+    } else a.next = time + 1;
+  }
+
   /** Stopt een lopend lang geluid (bijv. de dans). */
   playLong(name) {
     this.stopLong();
@@ -159,11 +262,12 @@ export class AudioManager {
     if (!this.ctx) return;
     this.sfxOut.gain.value = sfx;
     this.voiceOut.gain.value = voice;
-    this.musicOut.gain.value = music * 0.6;
+    this.musicOut.gain.value = music * 1.5;
   }
 
   toggleMute() {
     this.muted = !this.muted;
+    if (this.amb) this.setAmbience(this.amb.kind);
     return this.muted;
   }
 }
@@ -318,13 +422,13 @@ const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 const TRACKS = {
   // grondtoon, bpm, akkoorden (intervallen), golfvorm, toonladder
   thuis: { root: 57, bpm: 80, prog: [[0, 4, 7, 11], [5, 9, 12, 16], [2, 5, 9, 12], [7, 11, 14, 17]], pad: 'sine', lead: 'triangle', scale: [0, 2, 4, 7, 9], swing: 0 },
-  galerij: { root: 55, bpm: 96, prog: [[0, 4, 7], [9, 12, 16], [5, 9, 12], [7, 11, 14]], pad: 'triangle', lead: 'sine', scale: [0, 2, 4, 7, 9], swing: 0.1 },
-  buiten: { root: 60, bpm: 112, prog: [[0, 4, 7], [5, 9, 12], [9, 12, 16], [7, 11, 14]], pad: 'triangle', lead: 'square', scale: [0, 2, 4, 7, 9], swing: 0.15 },
-  bakkerij: { root: 53, bpm: 88, prog: [[0, 4, 7, 10], [5, 9, 12], [7, 10, 14], [0, 4, 7]], pad: 'sine', lead: 'triangle', scale: [0, 2, 4, 5, 7, 9], swing: 0.2 },
+  galerij: { drums: 1, root: 55, bpm: 96, prog: [[0, 4, 7], [9, 12, 16], [5, 9, 12], [7, 11, 14]], pad: 'triangle', lead: 'sine', scale: [0, 2, 4, 7, 9], swing: 0.1 },
+  buiten: { drums: 2, root: 60, bpm: 112, prog: [[0, 4, 7], [5, 9, 12], [9, 12, 16], [7, 11, 14]], pad: 'triangle', lead: 'square', scale: [0, 2, 4, 7, 9], swing: 0.15 },
+  bakkerij: { drums: 1, root: 53, bpm: 88, prog: [[0, 4, 7, 10], [5, 9, 12], [7, 10, 14], [0, 4, 7]], pad: 'sine', lead: 'triangle', scale: [0, 2, 4, 5, 7, 9], swing: 0.2 },
   pistachehuis: { root: 50, bpm: 104, prog: [[0, 3, 7], [0, 3, 7], [5, 8, 12], [7, 10, 14]], pad: 'triangle', lead: 'triangle', scale: [0, 3, 5, 7, 10], swing: 0, staccato: true },
   // Liftmuzak: zoete bossa met maj7-akkoorden
   lift: { root: 58, bpm: 92, prog: [[0, 4, 7, 11], [2, 5, 9, 12], [7, 11, 14, 17], [0, 4, 7, 11]], pad: 'sine', lead: 'sine', scale: [0, 2, 4, 7, 9, 11], swing: 0.25, bossa: true },
-  feest: { root: 62, bpm: 128, prog: [[0, 4, 7], [7, 11, 14], [9, 12, 16], [5, 9, 12]], pad: 'square', lead: 'square', scale: [0, 2, 4, 7, 9], swing: 0 },
+  feest: { drums: 1, root: 62, bpm: 128, prog: [[0, 4, 7], [7, 11, 14], [9, 12, 16], [5, 9, 12]], pad: 'square', lead: 'square', scale: [0, 2, 4, 7, 9], swing: 0 },
 };
 
 export class MusicPlayer {
@@ -352,7 +456,7 @@ export class MusicPlayer {
       this.nextTime = ctx.currentTime + 0.1;
       this.makeMelody();
       out.gain.cancelScheduledValues(ctx.currentTime);
-      out.gain.setTargetAtTime((this.audio.volumes?.music ?? 0.5) * 0.6, ctx.currentTime, 0.3);
+      out.gain.setTargetAtTime((this.audio.volumes?.music ?? 0.5) * 1.5, ctx.currentTime, 0.3);
       if (!this.timer) this.timer = setInterval(() => this.tick(), 30);
     };
     if (this.track) {
@@ -426,11 +530,48 @@ export class MusicPlayer {
         const deg = t.scale[m % t.scale.length];
         this.note(midi(t.root + 12 + oct * 12 + deg), time, eighth * (t.staccato ? 0.5 : 1.4), t.lead, t.lead === 'square' ? 0.018 : 0.035);
       }
+      // Lichte beat: zachte bassdrum op 1 en 3, hihat op de achtsten
+      if (t.drums) {
+        if (s % 4 === 0) this.kick(time, 0.22);
+        if (s % 2 === 1) this.hat(time, 0.025);
+        if (s % 8 === 4 && t.drums > 1) this.clap(time);
+      }
       // Feest: klap op 2 en 4
       if (this.track === 'feest' && s % 4 === 2) this.clap(time);
       this.nextTime += eighth;
       this.step++;
     }
+  }
+
+  kick(time, vol) {
+    const ctx = this.audio.ctx;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.frequency.setValueAtTime(120, time);
+    o.frequency.exponentialRampToValueAtTime(45, time + 0.12);
+    g.gain.setValueAtTime(vol, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+    o.connect(g).connect(this.audio.musicOut);
+    o.start(time);
+    o.stop(time + 0.2);
+  }
+
+  hat(time, vol) {
+    const ctx = this.audio.ctx;
+    if (!this.hatBuf) {
+      this.hatBuf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+      const d = this.hatBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = this.hatBuf;
+    const f = ctx.createBiquadFilter();
+    f.type = 'highpass';
+    f.frequency.value = 7000;
+    const g = ctx.createGain();
+    g.gain.value = vol;
+    src.connect(f).connect(g).connect(this.audio.musicOut);
+    src.start(time);
   }
 
   clap(time) {

@@ -125,6 +125,8 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | `puck-dans.mp3` | Het dansje (tik 5x op Puck) |
 | `puck-geluid-1.mp3` … `puck-geluid-7.mp3`, `puck-geluid-10.mp3` | Fluitjes (1, 3, 4, 5, 7: vaak) en hoge piepjes (2, 6, 10: af en toe) |
 | `puck-watskecola.mp3` | "Watskecola!" aan het eind van het fluitconcert |
+| `npc-praat.mp3` | Game-gebrabbel: bij elk bericht van een Groninger speelt een kort willekeurig stukje (per persoon iets hoger of lager) |
+| `radio-russisch.mp3` | De radio bovenop het vogelhuisje in de merelboom (harder naarmate je dichterbij komt) |
 | `puck-wauw.mp3` | "Wauw wauw wauw!" bij een ster of een geheimpje (tot er eigen `star.mp3` / `secret.mp3` zijn) |
 | `puck-hallo.mp3`, `puck-hallo-2.mp3` | "Hallo!" bij de start en als Puck spontaan hallo zegt |
 
@@ -150,7 +152,8 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | `bell.mp3` | fietsbel en de klok van de Martinitoren |
 | `crunch.mp3` | een doos plat springen |
 
-De achtergrondmuziek wordt in de browser zelf gemaakt, met een eigen deuntje per plek: thuis, de galerij, Stad,
+Omgevingsgeluid (stadsgeruis, vogels, meeuwen, fietsbellen, de klok thuis, de liftzoem) wordt ook in de browser
+gemaakt. De achtergrondmuziek wordt in de browser zelf gemaakt, met een eigen deuntje per plek: thuis, de galerij, Stad,
 de bakkerij, het Pistachehuis, de lift (liftmuziek) en het concert.
 
 Wil je een Puck-geluid vervangen door een beter fragment? Overschrijf dan gewoon het bestand met dezelfde naam.

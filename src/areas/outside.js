@@ -466,6 +466,29 @@ export class Outside extends Area {
     this.zones.push({ x: x + 1.0, y: 0, z, r: 1.3, h: 1.6, id: 'merel', prompt: 'Zing met de merel 🎵' });
     this.sign(['🎵 Zing met', 'de merel'], x + 2.2, 0.9, z + 0.8, -Math.PI / 2 + 0.5, { width: 0.8, height: 0.4 });
     this.block(x + 2.15, 0, z + 0.75, x + 2.2, 0.7, z + 0.8, M.woodDark, { collide: false });
+    // Een oude radio bovenop het vogelhuisje. Waarom? Niemand weet het. Hij speelt Russisch.
+    const radio = new THREE.Group();
+    const caseMat = lambert(0x6b3a22);
+    const box = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.22, 0.14), caseMat);
+    const grill = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.14), lambert(0xd8c8a0));
+    grill.position.set(-0.07, 0, 0.071);
+    const dial = new THREE.Mesh(new THREE.CircleGeometry(0.035, 12), lambert(0xf2c230, { emissive: 0x8a5a00, emissiveIntensity: 0.5 }));
+    dial.position.set(0.1, 0.02, 0.071);
+    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.03, 8), lambert(0x1f1f22));
+    knob.rotation.x = Math.PI / 2;
+    knob.position.set(0.1, -0.06, 0.08);
+    const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.45, 4), M.metal);
+    antenna.position.set(0.12, 0.3, 0);
+    antenna.rotation.z = -0.4;
+    radio.add(box, grill, dial, knob, antenna);
+    radio.traverse((m) => (m.castShadow = true));
+    radio.position.set(x, 3.0, z - 0.33);
+    radio.rotation.y = 0.5;
+    radio.userData.dynamic = true;
+    this.group.add(radio);
+    this.radio = new THREE.Vector3(x, 3.0, z - 0.33);
+    this.fx.push({ update: (dt, t) => (radio.position.y = 3.0 + Math.abs(Math.sin(t * 9)) * 0.012) });
+    this.zones.push({ x, y: 0, z: z - 0.33, r: 1.4, h: 3.5, secret: 'radio', say: 'Watskebeurt? De merel luistert Russische radio!' });
   }
 
   buildShed() {
@@ -938,23 +961,18 @@ export class Outside extends Area {
     this.addNPC('toren', 'Torenwachter Wiebe', this.towerStart.x + 0.9, this.towerStart.z + 1.2, -Math.PI / 2, { shirt: 0x2f6e4a, pants: 0x3a3d40, beard: true, hair: 0x8a8a8a, hat: 'cap', hatColor: 0x1f8a4c });
     // Meneer Mehmet met zijn oranje kat Pasja loopt zijn rondje
     const mehmet = makePerson({ shirt: 0x5b6a7a, pants: 0x3a3d40, hair: 0x1b1b1d, beard: true, skin: 2 });
-    const cat = new THREE.Group();
-    const catMat = lambert(0xf08a2c);
-    const cb = new THREE.Mesh(new THREE.IcosahedronGeometry(0.15, 1), catMat);
-    cb.scale.set(1, 0.8, 1.5);
-    const ch = new THREE.Mesh(new THREE.IcosahedronGeometry(0.09, 1), catMat);
-    ch.position.set(0, 0.08, 0.2);
-    [-1, 1].forEach((sd) => {
-      const ear = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.07, 4), catMat);
-      ear.position.set(sd * 0.05, 0.17, 0.2);
-      cat.add(ear);
+    const cat = makeCat();
+    this.catTail = cat.userData.tail;
+    this.catHead = cat.userData.head;
+    this.fx.push({
+      update: (dt, t) => {
+        this.catTail.rotation.z = Math.sin(t * 2.2) * 0.5;
+        this.catHead.rotation.y = -1.2 + Math.sin(t * 0.7) * 0.35;
+      },
     });
-    const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.3, 5), catMat);
-    tail.rotation.x = 1.2;
-    tail.position.set(0.12, -0.05, -0.22);
-    cat.add(cb, ch, tail);
     cat.rotation.y = Math.PI / 2;
-    cat.position.set(0, 1.05, 0.28);
+    cat.position.set(0, 1.02, 0.3);
+    cat.scale.setScalar(0.85);
     mehmet.root.add(cat);
     mehmet.arms.forEach((a) => (a.rotation.x = -1.1));
     this.mehmet = new Walker(this.group, mehmet, [[-2, -6], [6, -5], [4.2, 4.5], [4, 12], [-4, 12], [-3, 4], [-3, -4]], { speed: 0.6, stink: true });
@@ -1139,4 +1157,78 @@ function speakerTexture() {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
+}
+
+/** Pasja: dikke oranje gestreepte kat met witte snuit en borst, groene ogen en een krulstaart. */
+function makeCat() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#f39a3c';
+  ctx.fillRect(0, 0, 64, 64);
+  ctx.fillStyle = '#c9661c';
+  for (let x = 2; x < 64; x += 9) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.quadraticCurveTo(x + 5, 32, x - 1, 64);
+    ctx.lineTo(x + 3, 64);
+    ctx.quadraticCurveTo(x + 8, 32, x + 3, 0);
+    ctx.fill();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const fur = new THREE.MeshLambertMaterial({ map: tex, flatShading: true });
+  const white = lambert(0xfbf3e6);
+  const pink = lambert(0xf29aa8);
+  const eye = lambert(0x7ccf4a, { emissive: 0x2a5a10, emissiveIntensity: 0.4 });
+  const dark = lambert(0x1b1b1b);
+  const cat = new THREE.Group();
+  const add = (geo, mat, x, y, z, parent = cat) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    parent.add(m);
+    return m;
+  };
+  add(new THREE.SphereGeometry(0.15, 12, 9), fur, 0, 0, 0).scale.set(1, 0.85, 1.45);
+  add(new THREE.SphereGeometry(0.1, 10, 8), white, 0, -0.04, 0.12).scale.set(0.9, 0.8, 0.9);
+  // Pootjes
+  [[-0.07, 0.17], [0.07, 0.17], [-0.08, -0.15], [0.08, -0.15]].forEach(([x, z]) => add(new THREE.SphereGeometry(0.045, 8, 6), white, x, -0.11, z).scale.set(1, 0.7, 1.3));
+  // Kop
+  const head = new THREE.Group();
+  head.position.set(0, 0.09, 0.22);
+  cat.add(head);
+  add(new THREE.SphereGeometry(0.1, 12, 10), fur, 0, 0, 0, head).scale.set(1.1, 0.95, 1);
+  add(new THREE.SphereGeometry(0.05, 10, 8), white, 0, -0.03, 0.07, head).scale.set(1.3, 0.8, 0.8);
+  add(new THREE.SphereGeometry(0.012, 6, 4), pink, 0, -0.005, 0.105, head);
+  [-1, 1].forEach((sd) => {
+    const ear = add(new THREE.ConeGeometry(0.04, 0.08, 4), fur, sd * 0.06, 0.09, -0.005, head);
+    ear.rotation.z = -sd * 0.25;
+    add(new THREE.ConeGeometry(0.022, 0.05, 4), pink, sd * 0.06, 0.085, 0.008, head).rotation.z = -sd * 0.25;
+    add(new THREE.SphereGeometry(0.018, 8, 6), eye, sd * 0.042, 0.025, 0.083, head);
+    add(new THREE.BoxGeometry(0.005, 0.022, 0.005), dark, sd * 0.042, 0.025, 0.1, head);
+    // Snorharen
+    [-0.012, 0.008].forEach((dy) => {
+      const w = add(new THREE.CylinderGeometry(0.0025, 0.0025, 0.12, 3), white, sd * 0.07, -0.025 + dy, 0.08, head);
+      w.rotation.z = Math.PI / 2 + sd * dy * 8;
+      w.castShadow = false;
+    });
+  });
+  // Krulstaart in segmenten
+  const tail = new THREE.Group();
+  tail.position.set(0, 0.02, -0.2);
+  cat.add(tail);
+  let parent = tail;
+  for (let i = 0; i < 5; i++) {
+    const seg = new THREE.Group();
+    seg.position.set(0, i ? 0.06 : 0, i ? 0 : 0);
+    seg.rotation.x = i ? -0.35 : -0.9;
+    parent.add(seg);
+    add(new THREE.CylinderGeometry(0.022, 0.026, 0.07, 6), i === 4 ? lambert(0xc9661c) : fur, 0, 0.03, 0, seg);
+    parent = seg;
+  }
+  cat.userData.tail = tail;
+  cat.userData.head = head;
+  cat.userData.dynamic = true;
+  return cat;
 }
