@@ -21,6 +21,8 @@ export class Area {
     this.cameraDistance = 1.7;
     this.walkSpeed = 1.6;
     this.background = new THREE.Color(0xf3c98b);
+    this.fog = null;
+    this.fx = []; // objecten met update(dt, t)
   }
 
   addSpawn(name, x, y, z, yaw) {
@@ -94,7 +96,7 @@ export class Area {
   addCollectible(type, object, x, y, z, extra = {}) {
     const g = new THREE.Group();
     g.position.set(x, y + 0.07, z);
-    g.add(glowSprite(extra.glow ?? 0xffe28a, extra.glowSize ?? 0.3), object);
+    g.add(glowSprite(extra.glow ?? 0xffe28a, (extra.glowSize ?? 0.3) * 1.4), object);
     this.group.add(g);
     const item = { type, group: g, base: g.position.clone(), found: false, timer: 0, phase: Math.random() * 6.28, ...extra };
     this.collectibles.push(item);
@@ -102,6 +104,7 @@ export class Area {
   }
 
   animateCollectibles(dt, time) {
+    for (const f of this.fx) f.update(dt, time);
     for (const c of this.collectibles) {
       if (c.found) {
         if (c.respawn && !c.flying) {
@@ -115,8 +118,11 @@ export class Area {
         }
         continue;
       }
-      c.group.rotation.y += dt * 1.5;
-      c.group.position.y = c.base.y + Math.sin(time * 2.5 + c.phase) * 0.02;
+      c.group.rotation.y += dt * 2.2;
+      c.group.position.y = c.base.y + Math.sin(time * 2.5 + c.phase) * 0.03;
+      const glow = c.group.children[0];
+      glow.material.opacity = 0.55 + Math.sin(time * 4 + c.phase) * 0.25;
+      glow.scale.setScalar(glow.userData.size * (1 + Math.sin(time * 4 + c.phase) * 0.15));
     }
   }
 
@@ -255,9 +261,10 @@ export function glowSprite(color = 0xffe28a, size = 0.3, opacity = 0.55) {
     glowTexture.colorSpace = THREE.SRGBColorSpace;
   }
   const s = new THREE.Sprite(
-    new THREE.SpriteMaterial({ map: glowTexture, color, transparent: true, opacity, depthWrite: false }),
+    new THREE.SpriteMaterial({ map: glowTexture, color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending }),
   );
   s.scale.setScalar(size);
+  s.userData.size = size;
   return s;
 }
 

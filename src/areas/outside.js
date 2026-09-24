@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { skyTexture } from '../textures.js';
+import { applyWind, Birds, bunting, Butterflies, Clouds, Fountain, makeSkyDome, waterTexture } from '../world/fx.js';
 import { Area, glowSprite, makeFeather, makeFries, makePistachio, makeSign } from '../world/area.js';
 import { lambert, M } from '../world/materials.js';
 
@@ -18,7 +18,8 @@ export const STONE_TARGET_TIME = 18;
 export class Outside extends Area {
   constructor(opts) {
     super('buiten', opts);
-    this.background = skyTexture();
+    this.background = new THREE.Color(0xbfe6ff);
+    this.fog = new THREE.Fog(0xe4eef0, 30, 105);
     this.walkSpeed = 2.6;
     this.cameraDistance = 2.3;
     this.cameraBounds = { minX: -SIZE + 0.5, maxX: SIZE - 0.5, minZ: -SIZE + 0.5, maxZ: SIZE - 0.5, minY: 0.15, maxY: 14 };
@@ -46,6 +47,7 @@ export class Outside extends Area {
     this.buildFlowers();
     this.buildFeathers();
     this.buildFries();
+    this.buildAtmosphere();
     this.addLights({ sunPos: new THREE.Vector3(-18, 30, 14), center: new THREE.Vector3(0, 0, 0), size: 31, sun: 2.4, hemi: 1.5 });
   }
 
@@ -476,7 +478,7 @@ export class Outside extends Area {
     const colors = [0xe9806e, 0xf2c230, 0xffffff, 0xd96fb4, 0x9ad3ff];
     const count = 220;
     const geo = new THREE.IcosahedronGeometry(0.07, 0);
-    const flowers = new THREE.InstancedMesh(geo, new THREE.MeshLambertMaterial({ flatShading: true }), count);
+    const flowers = new THREE.InstancedMesh(geo, applyWind(new THREE.MeshLambertMaterial({ flatShading: true }), 1.5), count);
     const m = new THREE.Matrix4();
     const c = new THREE.Color();
     let seed = 7;
@@ -516,6 +518,63 @@ export class Outside extends Area {
     [[-5.5, 1.0, -0.4], [4.2, 0, 13.5], [-9.5, 0, -2.5], [14, 0, -14]].forEach(([x, y, z]) =>
       this.addCollectible('patat', makeFries(), x, y, z, { respawn: true, glow: 0xffe066, glowSize: 0.5 }),
     );
+  }
+
+  buildAtmosphere() {
+    // Lucht, wolken, vogels, vlinders
+    this.group.add(makeSkyDome(new THREE.Vector3(-18, 30, 14)));
+    this.fx.push(new Clouds(this.group));
+    this.fx.push(new Birds(this.group));
+    this.fx.push(
+      new Butterflies(this.group, [
+        [-3, 8], [5, 3], [-8, -3], [12, -3], [-14, 12], [8, 16], [-2, -8], [18, 10], [-20, -4], [3, -20],
+      ]),
+    );
+    // Fontein op het plein
+    this.fountain = new Fountain(this.group, 0, 0.6, M.stone, M.water);
+    this.fx.push(this.fountain);
+    this.addCollider(-1.2, 0, -0.6, 1.2, 0.45, 1.8, { climbable: true, name: 'fontein' });
+    this.addCollider(-0.2, 0.45, 0.4, 0.2, 1.1, 0.8, { climbable: true, name: 'fontein' });
+    // Vlaggetjes over het plein
+    bunting(this.group, new THREE.Vector3(-3.4, 2.35, 3), new THREE.Vector3(3.4, 2.35, -3), 18, 0.6);
+    bunting(this.group, new THREE.Vector3(-8, 2.35, 3.5), new THREE.Vector3(-3.4, 2.35, 3), 12, 0.45);
+    bunting(this.group, new THREE.Vector3(3.4, 2.35, -3), new THREE.Vector3(0, 2.35, -12), 22, 0.7);
+    // Glinsterend water en waterlelies
+    M.water.map = waterTexture();
+    M.water.color.set(0xffffff);
+    M.water.needsUpdate = true;
+    const pad = new THREE.CircleGeometry(0.35, 7, 0.3, Math.PI * 1.8);
+    [[8.5, 5.5], [12.2, 10.6], [7.2, 10.2], [13.8, 5.6], [10.2, 4.1]].forEach(([x, z], i) => {
+      const lp = new THREE.Mesh(pad, M.leaf);
+      lp.rotation.x = -Math.PI / 2;
+      lp.rotation.z = i;
+      lp.position.set(x, 0.065, z);
+      this.group.add(lp);
+      if (i % 2 === 0) {
+        const fl = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.1, 6), new THREE.MeshLambertMaterial({ color: 0xf6a5c8, flatShading: true }));
+        fl.position.set(x + 0.1, 0.1, z);
+        this.group.add(fl);
+      }
+    });
+    // Graspollen die meewiegen
+    const tuftGeo = new THREE.ConeGeometry(0.06, 0.28, 3);
+    tuftGeo.translate(0, 0.14, 0);
+    const tufts = new THREE.InstancedMesh(tuftGeo, applyWind(new THREE.MeshLambertMaterial({ color: 0x6fae4f, flatShading: true }), 2.5), 500);
+    const m = new THREE.Matrix4();
+    let seed = 3;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < 500; i++) {
+      let x;
+      let z;
+      do {
+        x = (rnd() - 0.5) * 56;
+        z = (rnd() - 0.5) * 56;
+      } while (Math.abs(x) < 1.2 || Math.hypot(x, z) < 3.4 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.5 || (Math.abs(x) < 9 && z < -15) || (x > -21 && x < -11 && z > 1 && z < 10));
+      const sc = 0.7 + rnd() * 0.8;
+      m.compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6), new THREE.Vector3(sc, sc, sc));
+      tufts.setMatrixAt(i, m);
+    }
+    this.group.add(tufts);
   }
 
   // ---------- Gameplay ----------
@@ -577,6 +636,10 @@ export class Outside extends Area {
     this.checkpoints.forEach((c) => {
       if (c.ring.visible) c.ring.rotation.x = time * 2;
     });
+    if (M.water.map) {
+      M.water.map.offset.x = time * 0.02;
+      M.water.map.offset.y = Math.sin(time * 0.3) * 0.03;
+    }
     return false;
   }
 }

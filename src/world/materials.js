@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { applyWind } from './fx.js';
 
 // Gedeelde lowpoly-materialen (Lambert + flat shading: zacht en snel op telefoons).
 
@@ -47,3 +48,8 @@ export const M = {
   fries: lambert(0xf7cf4a, { emissive: 0x6b4a00, emissiveIntensity: 0.2 }),
   friesBag: lambert(0xe23b3b),
 };
+
+// Bladeren wiegen zachtjes in de wind
+applyWind(M.leaf);
+applyWind(M.leafDark);
+applyWind(M.treeLeaf, 0.6);

@@ -474,3 +474,116 @@ body:not(.is-touch) .touch-only {
   .logo-img { width: 60px; height: 60px; }
   #song-buttons button { width: 52px; height: 52px; }
 }
+
+/* ---------- Juice ---------- */
+#banner {
+  position: fixed;
+  left: 50%;
+  top: 34%;
+  transform: translate(-50%, -50%) scale(0);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+}
+
+#banner.show {
+  animation: banner-pop 2.6s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+}
+
+.banner-title {
+  position: relative;
+  font-size: clamp(38px, 9vw, 72px);
+  font-weight: 900;
+  color: #ffd84a;
+  -webkit-text-stroke: 3px #8e1424;
+  text-shadow: 0 6px 0 #8e1424, 0 0 30px rgba(255, 216, 74, 0.9);
+  white-space: nowrap;
+}
+
+.banner-sub {
+  position: relative;
+  margin-top: 6px;
+  font-size: clamp(18px, 4.5vw, 26px);
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 2px 0 var(--brown), 0 0 12px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+.banner-rays {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 420px;
+  height: 420px;
+  margin: -210px 0 0 -210px;
+  background: repeating-conic-gradient(rgba(255, 230, 120, 0.35) 0deg 10deg, transparent 10deg 20deg);
+  border-radius: 50%;
+  mask-image: radial-gradient(circle, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle, black 30%, transparent 70%);
+  animation: rays-spin 6s linear infinite;
+}
+
+@keyframes rays-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes banner-pop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(-8deg); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(2deg); }
+  25% { transform: translate(-50%, -50%) scale(1) rotate(0); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(0.9); }
+}
+
+#power-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(255, 170, 40, 0.45) 100%);
+}
+
+body.powered #power-vignette {
+  opacity: 1;
+  animation: power-pulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes power-pulse {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.4); }
+}
+
+/* Vrolijker startscherm */
+.logo-img {
+  animation: logo-bob 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 6px 0 rgba(107, 68, 35, 0.25));
+}
+
+@keyframes logo-bob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-8px) rotate(4deg); }
+}
+
+h1 {
+  background: linear-gradient(180deg, #ff5a5f, #d7263d 60%, #a3162b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 3px 0 rgba(107, 68, 35, 0.3));
+}
+
+.big-button {
+  background: linear-gradient(180deg, #ff4f5e, #d7263d);
+  transition: transform 0.1s;
+}
+
+.big-button:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.pill {
+  background: linear-gradient(180deg, #fffaf0, #fdebd0);
+}

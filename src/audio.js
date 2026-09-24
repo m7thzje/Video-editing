@@ -18,6 +18,18 @@ const GROUPS = {
   chirp: ['puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7'],
 };
 
+// Volume per opname (de hoge krijsjes zijn fel)
+const VOLUMES = {
+  'puck-geluid-1': 0.55,
+  'puck-geluid-2': 0.55,
+  'puck-geluid-3': 0.55,
+  'puck-geluid-4': 0.55,
+  'puck-geluid-5': 0.55,
+  'puck-geluid-6': 0.55,
+  'puck-geluid-7': 0.55,
+  'puck-wauw': 0.8,
+};
+
 // Ontbreekt een eigen bestand (bijv. box.mp3), gebruik dan eerst een geluidje van Puck zelf.
 const FALLBACKS = {
   box: 'chirp',
@@ -44,6 +56,10 @@ export class AudioManager {
     this.master = this.ctx.createGain();
     this.master.gain.value = 0.8;
     this.master.connect(this.ctx.destination);
+    // Gesynthetiseerde piepjes (placeholders) een stuk zachter dan echte opnames
+    this.synthOut = this.ctx.createGain();
+    this.synthOut.gain.value = 0.35;
+    this.synthOut.connect(this.master);
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.unlocked = true;
     SOUND_NAMES.forEach((name) => this.load(name));
@@ -85,13 +101,13 @@ export class AudioManager {
       src.buffer = buffer;
       src.playbackRate.value = rate;
       const gain = this.ctx.createGain();
-      gain.gain.value = volume;
+      gain.gain.value = volume * (VOLUMES[name] ?? 1);
       src.connect(gain).connect(this.master);
       src.start();
       return;
     }
     const synth = PLACEHOLDERS[name] || (name.startsWith('puck-') || name === 'chirp' ? PLACEHOLDERS.talk : null);
-    if (synth) synth(this.ctx, this.master, volume, freq);
+    if (synth) synth(this.ctx, this.synthOut, volume, freq);
   }
 
   /** Stopt een lopend lang geluid (bijv. de dans). */

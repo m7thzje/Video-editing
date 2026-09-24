@@ -9,6 +9,7 @@ import {
   woodFloorTexture,
 } from '../textures.js';
 import { Area, makeCard, makeCigarette, makeCookie } from '../world/area.js';
+import { addShaft, DustMotes } from '../world/fx.js';
 import { lambert, M } from '../world/materials.js';
 
 // Puck's eigen appartement, nagebouwd naar de foto's:
@@ -70,6 +71,10 @@ export class PuckHouse extends Area {
     this.buildDresser();
     this.buildHallway();
     this.addLights({ sunPos: new THREE.Vector3(-7, 6, 2.5), center: new THREE.Vector3(0, 0, 3.2), size: 7.8, hemi: 1.7 });
+    // Zonnestralen door de grote ramen, met zwevende stofjes
+    [-2.4, -0.3, 1.8].forEach((z) => addShaft(this.group, new THREE.Vector3(-5, 2.1, z), new THREE.Vector3(-2.6, 0, z - 0.85), 1.1));
+    [2.0, 3.6].forEach((x) => addShaft(this.group, new THREE.Vector3(x, 2.1, -3.5), new THREE.Vector3(x + 0.4, 0, -1.6), 0.9, 0.08));
+    this.fx.push(new DustMotes(this.group, new THREE.Box3(new THREE.Vector3(-4.6, 0.3, -3.2), new THREE.Vector3(-1.8, 2.3, 2.3))));
     const hallLamp = new THREE.PointLight(0xffd6a0, 1.4, 5, 1.5);
     hallLamp.position.set(1, 2.3, 7);
     this.group.add(hallLamp);

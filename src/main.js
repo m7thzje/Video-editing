@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { Outside, STONE_TARGET_TIME } from './areas/outside.js';
 import { PistachioHouse } from './areas/pistachioHouse.js';
 import { PuckHouse } from './areas/puckHouse.js';
@@ -8,6 +12,7 @@ import { Input } from './input.js';
 import { CharacterBody, DEFAULT_HOP } from './physics.js';
 import { Puck } from './puck.js';
 import { SongGame } from './songGame.js';
+import { fxTime } from './world/fx.js';
 
 // ---------- Setup ----------
 
@@ -27,7 +32,16 @@ renderer.toneMappingExposure = 1.05;
 app.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 150);
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 250);
+
+// Gloed (bloom) op alles wat glimt; valt automatisch weg op trage apparaten
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth / 2, window.innerHeight / 2), 0.5, 0.55, 0.8);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+let bloomOn = true;
+let baseFov = 60;
 
 const quality = isTouch ? 'medium' : 'high';
 const areas = {
@@ -168,7 +182,10 @@ function award(id) {
   audio.play('star');
   setTimeout(() => audio.play('level-complete'), 400);
   burst(starTex, tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 10, 0.3);
+  confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 60);
+  shockwave(tmpV.set(body.pos.x, body.pos.y + 0.02, body.pos.z), 0xffd84a, 3);
   const n = STARS.filter((s) => progress.stars[s.id]).length;
+  banner('⭐ STER! ⭐', `${star.icon} ${star.name} (${n}/${STARS.length})`);
   if (n === STARS.length) {
     applyHat();
     toast('Alle sterren verdiend! Puck is de koning van de buurt 👑', 6);
@@ -184,6 +201,7 @@ function secret(id) {
   saveProgress();
   audio.play('secret');
   const n = Object.keys(SECRETS).filter((k) => progress.secrets[k]).length;
+  confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 25);
   setTimeout(() => toast(`🥚 Geheimpje gevonden: ${SECRETS[id]} (${n}/${Object.keys(SECRETS).length})`, 3.5), 300);
   return true;
 }
@@ -240,6 +258,109 @@ function updateParticles(dt) {
   }
 }
 
+// Schokgolf-ring op de grond
+const rings = [];
+const ringGeo = new THREE.RingGeometry(0.8, 1, 32);
+ringGeo.rotateX(-Math.PI / 2);
+function shockwave(pos, color = 0xfff1a8, size = 1) {
+  const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }));
+  m.position.copy(pos);
+  m.scale.setScalar(0.05);
+  scene.add(m);
+  rings.push({ m, age: 0, size });
+}
+
+// Confetti
+const confetti = [];
+const confettiGeo = new THREE.PlaneGeometry(0.05, 0.08);
+const confettiColors = [0xd7263d, 0xf2c230, 0x3d9be0, 0x6ac46b, 0xe86fb4, 0xff9f43, 0xffffff];
+function confettiBurst(pos, count = 40) {
+  for (let i = 0; i < count; i++) {
+    const m = new THREE.Mesh(confettiGeo, new THREE.MeshBasicMaterial({ color: confettiColors[i % confettiColors.length], side: THREE.DoubleSide, transparent: true }));
+    m.position.copy(pos);
+    scene.add(m);
+    const a = Math.random() * Math.PI * 2;
+    const sp = 1 + Math.random() * 2;
+    confetti.push({ m, vel: new THREE.Vector3(Math.cos(a) * sp, 3 + Math.random() * 2.5, Math.sin(a) * sp), spin: new THREE.Vector3(Math.random() * 10, Math.random() * 10, 0), age: 0 });
+  }
+}
+
+// Stofwolkjes bij landen en rennen
+const puffTex = (() => {
+  const c = document.createElement('canvas');
+  c.width = c.height = 32;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  g.addColorStop(0, 'rgba(255,250,240,0.9)');
+  g.addColorStop(1, 'rgba(255,250,240,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 32, 32);
+  return new THREE.CanvasTexture(c);
+})();
+const puffs = [];
+function dustPuff(pos, count = 5, spread = 1) {
+  for (let i = 0; i < count; i++) {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTex, transparent: true, depthWrite: false, opacity: 0.8 }));
+    s.position.set(pos.x, pos.y + 0.03, pos.z);
+    s.scale.setScalar(0.08);
+    scene.add(s);
+    const a = Math.random() * Math.PI * 2;
+    puffs.push({ s, vel: new THREE.Vector3(Math.cos(a) * 0.6 * spread, 0.25, Math.sin(a) * 0.6 * spread), age: 0 });
+  }
+}
+
+function updateJuice(dt) {
+  for (let i = rings.length - 1; i >= 0; i--) {
+    const r = rings[i];
+    r.age += dt;
+    const t = r.age / 0.6;
+    r.m.scale.setScalar(0.05 + t * 0.9 * r.size);
+    r.m.material.opacity = 0.9 * (1 - t);
+    if (t >= 1) {
+      scene.remove(r.m);
+      r.m.material.dispose();
+      rings.splice(i, 1);
+    }
+  }
+  for (let i = confetti.length - 1; i >= 0; i--) {
+    const c = confetti[i];
+    c.age += dt;
+    c.vel.y -= 6 * dt;
+    c.vel.multiplyScalar(1 - dt * 1.2);
+    c.m.position.addScaledVector(c.vel, dt);
+    c.m.rotation.x += c.spin.x * dt;
+    c.m.rotation.y += c.spin.y * dt;
+    c.m.material.opacity = Math.min(1, 2.6 - c.age);
+    if (c.age > 2.6) {
+      scene.remove(c.m);
+      c.m.material.dispose();
+      confetti.splice(i, 1);
+    }
+  }
+  for (let i = puffs.length - 1; i >= 0; i--) {
+    const p = puffs[i];
+    p.age += dt;
+    p.s.position.addScaledVector(p.vel, dt);
+    p.vel.multiplyScalar(1 - dt * 3);
+    const t = p.age / 0.7;
+    p.s.scale.setScalar(0.08 + t * 0.18);
+    p.s.material.opacity = 0.8 * (1 - t);
+    if (t >= 1) {
+      scene.remove(p.s);
+      p.s.material.dispose();
+      puffs.splice(i, 1);
+    }
+  }
+}
+
+const bannerEl = $('banner');
+function banner(title, sub) {
+  bannerEl.innerHTML = `<div class="banner-rays"></div><div class="banner-title">${title}</div><div class="banner-sub">${sub}</div>`;
+  bannerEl.classList.remove('show');
+  void bannerEl.offsetWidth;
+  bannerEl.classList.add('show');
+}
+
 // Pistacheradar (bonus uit de kartonnen dozen)
 const beacon = new THREE.Mesh(
   new THREE.CylinderGeometry(0.1, 0.1, 3, 10, 1, true),
@@ -291,6 +412,7 @@ function enterArea(name, spawnName, { instant = false } = {}) {
     followCam.bounds = area.cameraBounds;
     followCam.distance = area.cameraDistance;
     scene.background = area.background;
+    scene.fog = area.fog;
     const sp = area.spawns[spawnName];
     body.teleport(sp.pos, sp.yaw);
     followCam.pitch = 0.35;
@@ -446,7 +568,8 @@ function collect() {
     c.found = true;
     c.timer = 45;
     flying.push({ item: c, t: 0 });
-    burst(sparkleTex, p, 6);
+    burst(sparkleTex, p, 8);
+    shockwave(tmpV.set(p.x, body.pos.y + 0.02, p.z), c.type === 'veer' ? 0xff8a8a : c.type === 'patat' ? 0xffc34a : 0xd8f59a, 1.2);
     if (radarItem === c) {
       radarTime = 0;
       beacon.visible = false;
@@ -478,6 +601,7 @@ function onCollect(c) {
     }
     case 'patat':
       audio.play('fries');
+      confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 20);
       eat();
       state.powerTime = 15;
       toast('🍟 Patat-power! Supersnel en superhoog hoppen!', 3);
@@ -711,7 +835,17 @@ function update(dt) {
 
   body.update(dt, wish);
   if (body.events.hopped) audio.play('hop', { volume: 0.7, rate: powered ? 1.3 : 1 });
-  if (body.events.landed > 2) puck.land(body.events.landed);
+  if (body.events.landed > 2) {
+    puck.land(body.events.landed);
+    dustPuff(body.pos, Math.min(10, Math.round(body.events.landed * 1.5)), 1);
+  }
+  if (body.grounded && body.speed > 2.2 && Math.random() < dt * 6) dustPuff(body.pos, 1, 0.4);
+  document.body.classList.toggle('powered', powered);
+  const wantFov = baseFov + (powered ? 8 : 0);
+  if (Math.abs(camera.fov - wantFov) > 0.05) {
+    camera.fov += (wantFov - camera.fov) * Math.min(1, dt * 4);
+    camera.updateProjectionMatrix();
+  }
   if (powered && body.speed > 0.5 && Math.random() < dt * 8) burst(sparkleTex, tmpV.set(body.pos.x, body.pos.y + 0.1, body.pos.z), 1, 0.05);
 
   // In het water gevallen, of uit de wereld
@@ -832,8 +966,10 @@ function frame(timestamp) {
     followCam.update(dt);
   }
 
+  fxTime.value = elapsed;
   if (area.update(dt, elapsed)) renderer.shadowMap.needsUpdate = true;
   updateParticles(dt);
+  updateJuice(dt);
 
   if (toastTimer > 0) {
     toastTimer -= dt;
@@ -844,32 +980,40 @@ function frame(timestamp) {
     if (speechTimer <= 0) speechEl.classList.add('hidden');
   }
 
-  // Automatisch de resolutie verlagen als het niet soepel loopt
-  perfTime += dt;
+  // Automatisch lichter renderen als het niet soepel loopt: eerst resolutie, dan de gloed
+  const now = performance.now();
+  if (!perfTime) perfTime = now;
   perfFrames++;
-  if (perfTime > 2) {
-    const fps = perfFrames / perfTime;
+  if (now - perfTime > 2500) {
+    const fps = (perfFrames * 1000) / (now - perfTime);
     if (fps < 45 && pixelRatio > 1) {
       pixelRatio = Math.max(1, pixelRatio - 0.25);
       renderer.setPixelRatio(pixelRatio);
+      composer.setPixelRatio(pixelRatio);
+    } else if (fps < 40 && bloomOn) {
+      bloomOn = false;
     }
-    perfTime = 0;
+    perfTime = now;
     perfFrames = 0;
   }
 
-  renderer.render(scene, camera);
+  if (bloomOn) composer.render();
+  else renderer.render(scene, camera);
   updateSpeechBubble();
 }
 renderer.setAnimationLoop(frame);
 
 function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
-  camera.fov = camera.aspect < 1 ? 72 : 60;
+  baseFov = camera.aspect < 1 ? 72 : 60;
+  camera.fov = baseFov;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setPixelRatio(pixelRatio);
+  composer.setSize(window.innerWidth, window.innerHeight);
 }
 window.addEventListener('resize', onResize);
 onResize();
 
 // Debug-hulpje in de console
-window.__puck = { audio, body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };
+window.__puck = { bloom: () => bloomOn, audio, body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };

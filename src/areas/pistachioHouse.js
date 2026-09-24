@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { puckPortraitTexture, rugTexture, skyTexture, wallpaperTexture, woodFloorTexture } from '../textures.js';
 import { Area, makePistachio } from '../world/area.js';
 import { Neighbor } from './neighbor.js';
+import { addShaft, DustMotes } from '../world/fx.js';
 import { lambert, M } from '../world/materials.js';
 
 // Het Pistachehuis van de buren: hier verstopt de buurvrouw 10 pistachenootjes.
@@ -41,6 +42,10 @@ export class PistachioHouse extends Area {
     this.buildBoxes();
     this.buildNuts();
     this.buildLights();
+
+    // Zonnestralen door het raam en stofjes
+    [0.0, 0.9].forEach((x) => addShaft(this.group, new THREE.Vector3(x, 1.9, -3.5), new THREE.Vector3(x - 0.7, 0, -1.3), 0.8));
+    this.fx.push(new DustMotes(this.group, new THREE.Box3(new THREE.Vector3(-1.2, 0.3, -3.3), new THREE.Vector3(1.6, 2.2, -0.8)), 50));
 
     // De chagrijnige buurvrouw loopt haar vaste rondje
     this.neighbor = new Neighbor(this.group, [
