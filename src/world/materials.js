@@ -5,10 +5,69 @@ import { applyWind } from './fx.js';
 
 export const lambert = (color, extra = {}) => new THREE.MeshLambertMaterial({ color, flatShading: true, ...extra });
 
+// Kleine procedurele textures (vermenigvuldigd met de materiaalkleur) voor meer detail zonder downloads
+function canvasTex(size, draw, repeat = 1) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  draw(c.getContext('2d'), size);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(repeat, repeat);
+  return t;
+}
+
+/** Bladerdek: lichte en donkere blaadjes door elkaar. */
+const leafTex = canvasTex(64, (ctx, n) => {
+  ctx.fillStyle = '#d9d9d9';
+  ctx.fillRect(0, 0, n, n);
+  for (let i = 0; i < 140; i++) {
+    const light = Math.random() < 0.45;
+    ctx.fillStyle = light ? 'rgba(255,255,230,0.55)' : 'rgba(0,30,0,0.28)';
+    ctx.beginPath();
+    ctx.ellipse(Math.random() * n, Math.random() * n, 2 + Math.random() * 3, 1 + Math.random() * 1.5, Math.random() * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}, 2);
+
+/** Schors: verticale groeven. */
+const barkTex = canvasTex(64, (ctx, n) => {
+  ctx.fillStyle = '#e0e0e0';
+  ctx.fillRect(0, 0, n, n);
+  for (let i = 0; i < 26; i++) {
+    const x = Math.random() * n;
+    ctx.strokeStyle = `rgba(0,0,0,${0.15 + Math.random() * 0.2})`;
+    ctx.lineWidth = 1 + Math.random() * 2;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.bezierCurveTo(x + 4, n * 0.3, x - 4, n * 0.6, x + 2, n);
+    ctx.stroke();
+  }
+}, 1);
+
+/** Houtnerf voor meubels en planken. */
+const grainTex = canvasTex(64, (ctx, n) => {
+  ctx.fillStyle = '#ececec';
+  ctx.fillRect(0, 0, n, n);
+  for (let y = 0; y < n; y += 3) {
+    ctx.strokeStyle = `rgba(90,50,20,${0.08 + Math.random() * 0.12})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    for (let x = 0; x <= n; x += 8) ctx.lineTo(x, y + Math.sin(x * 0.2 + y) * 1.2);
+    ctx.stroke();
+  }
+}, 1);
+
+const withMap = (mat, map) => {
+  mat.map = map;
+  return mat;
+};
+
 export const M = {
-  wood: lambert(0xa86b3c),
-  woodDark: lambert(0x7a4a26),
-  woodLight: lambert(0xd9a86c),
+  wood: withMap(lambert(0xa86b3c), grainTex),
+  woodDark: withMap(lambert(0x7a4a26), grainTex),
+  woodLight: withMap(lambert(0xd9a86c), grainTex),
   white: lambert(0xfaf3e8),
   sofa: lambert(0x4f8a8b),
   sofaDark: lambert(0x3f7475),
@@ -23,9 +82,9 @@ export const M = {
   cageBase: lambert(0xefe6d8),
   pot: lambert(0xc4643a),
   soil: lambert(0x5a3b22),
-  trunk: lambert(0x7b5a3a),
-  leaf: lambert(0x5aa05a),
-  leafDark: lambert(0x468a4e),
+  trunk: withMap(lambert(0x8a6644), barkTex),
+  leaf: withMap(lambert(0x62ab60), leafTex),
+  leafDark: withMap(lambert(0x4e9555), leafTex),
   glass: new THREE.MeshLambertMaterial({ color: 0xcfeaff, transparent: true, opacity: 0.25, depthWrite: false }),
   windowBlue: lambert(0x9fd3ef, { emissive: 0x6fa8c8, emissiveIntensity: 0.25 }),
   gold: lambert(0xf2c230, { emissive: 0x8a5a00, emissiveIntensity: 0.35 }),
@@ -36,7 +95,7 @@ export const M = {
   stone: lambert(0xb9b2a6),
   stoneDark: lambert(0x948d82),
   water: new THREE.MeshLambertMaterial({ color: 0x6cc3e0, transparent: true, opacity: 0.85, flatShading: true }),
-  treeLeaf: lambert(0x5fae5a),
+  treeLeaf: withMap(lambert(0x68b862), leafTex),
   brick: lambert(0xd98b6a),
   roof: lambert(0x9c4a3a),
   roofDark: lambert(0x7d3a2e),

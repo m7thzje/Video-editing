@@ -55,7 +55,9 @@ export function installDetailShader() {
         float blotch = dNoise(vDWPos * 1.7) * 0.6 + dNoise(vDWPos * 5.3) * 0.4;
         float grain = dHash(floor(vDWPos * 48.0)) - 0.5;
         float grainFade = 1.0 - smoothstep(3.0, 11.0, camDist);
-        float shade = 1.0 + (blotch - 0.5) * 0.12 + grain * 0.07 * grainFade;
+        float up = smoothstep(0.7, 0.95, vDWNormal.y);
+        float patches = dNoise(vDWPos * 0.33) - 0.5;
+        float shade = 1.0 + (blotch - 0.5) * 0.14 + grain * 0.07 * grainFade + patches * 0.16 * up;
         // Contactschaduw: alleen op schuine/verticale vlakken, vlak boven de vloer
         float side = 1.0 - smoothstep(0.55, 0.85, abs(vDWNormal.y));
         float ao = mix(0.74, 1.0, smoothstep(0.0, 0.5, vDWPos.y));

@@ -13,14 +13,15 @@ import { lambert, M } from '../world/materials.js';
 const L = 32;
 const W = 1.8;
 const H = 2.6;
-export const GALLERY_DOORS = { puck: 3.5, buurvrouw: 12.5, lift: 29.8 };
+export const GALLERY_DOORS = { puck: 3.5, buurvrouw: 7.5, lift: 29.8 };
 
 const P = {
-  floor: lambert(0x8f9396),
+  floor: lambert(0x9a9fa3),
   joint: lambert(0x2a2c2e),
-  beam: lambert(0xf1efea),
+  beam: lambert(0xf6f5f1, { emissive: 0x77766f }),
+  ceiling: lambert(0xf2f1ec, { emissive: 0x8f8d86 }),
   gutter: lambert(0x1f2123),
-  panel: lambert(0x2b3a6b),
+  panel: lambert(0x3a5486),
   frame: lambert(0xf4f1ea),
   glass: lambert(0x9fb4c4, { emissive: 0x3b5266, emissiveIntensity: 0.35 }),
   red: lambert(0xb3121f),
@@ -28,7 +29,7 @@ const P = {
   concreteDark: lambert(0xb3ac9f),
   tiles: lambert(0x9d978c),
   railing: lambert(0xa9b0b3),
-  wall: lambert(0xece4d6),
+  wall: lambert(0xf1f0eb),
   door: lambert(0x2a2b2e),
   doorGreen: lambert(0x4d6660),
   doorRed: lambert(0x8e3b36),
@@ -68,7 +69,10 @@ export class Gallery extends Area {
     this.block(-0.5, -0.3, -0.2, L + 0.5, 0, W + 0.35, P.floor, { collide: false, shadow: false });
     for (let x = 1.5; x < L; x += 3.2) this.block(x, 0, 0, x + 0.05, 0.004, W, P.joint, { collide: false, shadow: false });
     // Galerij erboven: plafond met witte uitkragende liggers en een zwarte goot
-    this.block(-0.5, H, -0.2, L + 0.5, H + 0.3, W + 0.4, P.concrete, { collide: false });
+    this.block(-0.5, H, -0.2, L + 0.5, H + 0.3, W + 0.4, P.ceiling, { collide: false });
+    // Kopse rand van de galerij erboven, met de zwarte goot eronder (zoals op de foto)
+    this.block(-0.5, H - 0.05, W + 0.3, L + 0.5, H + 0.3, W + 0.45, P.beam, { collide: false });
+    this.block(-0.5, H - 0.2, W + 0.3, L + 0.5, H - 0.05, W + 0.36, P.gutter, { collide: false });
     for (let x = 0; x <= L; x += 3.2) this.block(x - 0.12, H - 0.3, -0.1, x + 0.12, H, W + 0.4, P.beam, { collide: false });
     const gutter = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, L + 1, 6), P.gutter);
     gutter.rotation.z = Math.PI / 2;
@@ -82,31 +86,32 @@ export class Gallery extends Area {
     // Onzichtbare hoge botsvorm: Puck valt nooit naar beneden.
     this.block(-0.5, 0, W, L + 0.5, 0.12, W + 0.3, P.concreteDark, { collide: false });
     this.addCollider(-0.5, 0, W, L + 0.5, 3.0, W + 0.35, { name: 'balustrade', camIgnore: true });
-    const top = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, L + 1, 8), P.railing);
-    top.rotation.z = Math.PI / 2;
-    top.position.set(L / 2, 1.06, W + 0.14);
-    this.group.add(top);
-    const low = top.clone();
-    low.scale.set(0.6, 1, 0.6);
-    low.position.y = 0.18;
-    this.group.add(low);
-    const count = Math.floor((L + 1) / 0.13);
-    const bars = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.014, 0.014, 0.88, 5), P.railing, count);
+    // Platte bovenregel en onderregel, daartussen dichte ronde spijlen, elke 3 regels een staander
+    this.block(-0.5, 1.02, W + 0.1, L + 0.5, 1.08, W + 0.2, P.railing, { collide: false });
+    this.block(-0.5, 0.2, W + 0.12, L + 0.5, 0.24, W + 0.18, P.railing, { collide: false });
+    const count = Math.floor((L + 1) / 0.11);
+    const bars = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.012, 0.012, 0.82, 5), P.railing, count);
     const m = new THREE.Matrix4();
-    for (let i = 0; i < count; i++) bars.setMatrixAt(i, m.makeTranslation(-0.5 + i * 0.13, 0.62, W + 0.14));
+    for (let i = 0; i < count; i++) bars.setMatrixAt(i, m.makeTranslation(-0.5 + i * 0.11, 0.62, W + 0.15));
+    bars.castShadow = true;
     this.group.add(bars);
-    for (let x = 0; x <= L; x += 3.2) {
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, H, 8), P.railing);
-      post.position.set(x, H / 2, W + 0.22);
+    for (let x = 0; x <= L; x += 1.6) this.block(x - 0.025, 0.12, W + 0.1, x + 0.025, 1.02, W + 0.2, P.railing, { collide: false });
+    // Ronde stalen kolommen tot aan het plafond, vlak achter de reling
+    for (let x = 0; x <= L; x += 6.4) {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, H, 10), P.railing);
+      post.position.set(x, H / 2, W + 0.02);
       post.castShadow = true;
       this.group.add(post);
+      this.addCollider(x - 0.06, 0, W - 0.04, x + 0.06, H, W + 0.08, { name: 'kolom' });
     }
     // Ramen met witte kozijnen en donkerblauwe borstwering tussen de deuren
     const doorXs = [GALLERY_DOORS.puck, 7.5, GALLERY_DOORS.buurvrouw, 17, 21.5, 25.5, GALLERY_DOORS.lift];
     for (let x = -0.3; x < L; x += 1.25) {
       if (doorXs.some((d) => x + 1.2 > d - 0.35 && x < d + 1.6)) continue;
       this.block(x, 0.1, 0.0, x + 1.2, 0.95, 0.03, P.panel, { collide: false, shadow: false });
+      this.block(x, 0.05, 0.0, x + 1.2, 0.1, 0.06, P.frame, { collide: false, shadow: false });
       this.block(x + 0.06, 1.05, 0.0, x + 1.14, 2.35, 0.025, P.glass, { collide: false, shadow: false });
+      this.block(x, 1.98, 0.0, x + 1.2, 2.03, 0.05, P.frame, { collide: false, shadow: false });
       this.block(x, 0.95, 0.0, x + 1.2, 1.05, 0.05, P.frame, { collide: false, shadow: false });
       this.block(x, 2.35, 0.0, x + 1.2, 2.45, 0.05, P.frame, { collide: false, shadow: false });
       this.block(x, 0.95, 0.0, x + 0.06, 2.45, 0.05, P.frame, { collide: false, shadow: false });
@@ -127,10 +132,10 @@ export class Gallery extends Area {
       this.group.add(s);
     };
     door(GALLERY_DOORS.puck, P.door, 'nr. 141', 'Puck 🦜');
-    door(7.5, P.doorGreen, 'nr. 92');
     door(GALLERY_DOORS.buurvrouw, P.doorRed, 'nr. 143', 'Mw. Zuur');
-    door(17, P.door, 'nr. 94');
-    door(21.5, P.doorGreen, 'nr. 95');
+    door(12.5, P.doorGreen, 'nr. 145');
+    door(17, P.door, 'nr. 147');
+    door(21.5, P.doorGreen, 'nr. 149');
     // Deurmatten
     const mat = (x, text) => {
       const m = makeSign(text, { width: 0.7, height: 0.45, bg: '#6b4423', fg: '#f3c98b', border: '#4a2f18' });
