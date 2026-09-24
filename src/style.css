@@ -1206,3 +1206,57 @@ body.has-goal #objective {
   bottom: calc(11vh + 16px);
   pointer-events: auto;
 }
+
+#item-button {
+  position: absolute;
+  right: calc(28px + env(safe-area-inset-right));
+  bottom: calc(210px + env(safe-area-inset-bottom));
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 4px solid var(--brown);
+  background: #fff6e6;
+  font-size: 26px;
+  pointer-events: auto;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Minikaart ---------- */
+#minimap {
+  position: absolute;
+  left: calc(12px + env(safe-area-inset-left));
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 4px solid var(--brown);
+  background: #6fa84f;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#minimap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+body.is-touch #minimap {
+  bottom: auto;
+  top: calc(64px + env(safe-area-inset-top));
+  width: 120px;
+  height: 120px;
+}
+
+body.is-touch.has-minimap #inventory {
+  top: calc(196px + env(safe-area-inset-top));
+}
+
+/* Tijdens een film (intro/finale) geen spel-knoppen in beeld */
+body.cinema #hud,
+body.cinema #touch-ui,
+body.cinema #dialog,
+body.cinema #speech {
+  display: none !important;
+}

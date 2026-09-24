@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { woodFloorTexture } from '../textures.js';
 import { Area, makeHaafsBoard } from '../world/area.js';
 import { addShaft, DustMotes } from '../world/fx.js';
 import { lambert, M } from '../world/materials.js';
+import { worldTexture } from '../world/phototex.js';
 
 // Bakkerij Haafs: het bakstenen huis beneden in Groningen. Oma Moi wil Groninger koek
 // bakken, maar ze mist 5 ingrediënten die ergens in de stad liggen.
@@ -51,7 +51,7 @@ export class Bakery extends Area {
   }
 
   buildRoom() {
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(6, 5), new THREE.MeshLambertMaterial({ map: woodFloorTexture(['#b98150', '#c38b58', '#ad764a', '#c9925f'], [3, 3]) }));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(6, 5), worldTexture(new THREE.MeshLambertMaterial(), 'planks', 2.2, 0xe2b48c));
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this.group.add(floor);

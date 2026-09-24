@@ -203,7 +203,7 @@ export class JumboStore extends Area {
   buildPeople() {
     this.anja = this.addNPC('anja', 'Kassière Anja', 2.5, 3.2, Math.PI, { height: 1.64, shirt: 0xffd200, pants: 0x1b1b1d, hairStyle: 'ponytail', hair: 0x9a4a2a, mood: 'flat' }, { solid: false, r: 0.1 });
     this.gerrit = this.addNPC('gerrit', 'Bedrijfsleider Gerrit', 3.4, -2.6, -Math.PI / 2 - 0.4, {
-      shirt: 0xffffff, pants: 0x2b2f3a, hairStyle: 'short', hair: 0x4a3322, glasses: true, mood: 'frown', height: 1.8,
+      shirt: 0xffffff, pants: 0x2b2f3a, hairStyle: 'short', hair: 0x4a3322, glasses: true, mood: 'frown', height: 1.8, activity: 'coffee',
     });
     // Stropdas en naambordje
     const tie = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.34, 0.02), lambert(0xffd200));
@@ -364,7 +364,7 @@ export class JumboStore extends Area {
     this.addCollider(0.7, 0, -0.9, 1.3, 0.9, -0.1, { climbable: true, name: 'karretje' });
 
     // Een klant die al een half uur twijfelt tussen twee soorten hagelslag
-    this.addNPC('twijfel', 'Meneer Kuipers', -1.8, -0.5 + 0.45, Math.PI, { shirt: 0x6c7d5b, pants: 0x3a3d40, hairStyle: 'bald', hair: 0xb9b9b9, glasses: true, mood: 'flat' });
+    this.addNPC('twijfel', 'Meneer Kuipers', -1.8, -0.5 + 0.45, Math.PI, { shirt: 0x6c7d5b, pants: 0x3a3d40, hairStyle: 'bald', hair: 0xb9b9b9, glasses: true, mood: 'flat', activity: 'phone' });
     // Omroepberichten
     this.announceTimer = 12;
   }

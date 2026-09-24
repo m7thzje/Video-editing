@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import { worldTexture } from '../world/phototex.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { puckPortraitTexture, rugTexture, skyTexture, wallpaperTexture, woodFloorTexture } from '../textures.js';
+import { puckPortraitTexture, rugTexture, skyTexture, wallpaperTexture } from '../textures.js';
 import { Area, makePistachio } from '../world/area.js';
 import { Neighbor } from './neighbor.js';
 import { addShaft, DustMotes, makeSkyDome } from '../world/fx.js';
@@ -77,11 +78,7 @@ export class PistachioHouse extends Area {
     const { minX, maxX, minZ, maxZ, height } = ROOM;
     const t = 0.3; // wanddikte (buiten de kamer)
 
-    const floorTex = woodFloorTexture();
-    const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(maxX - minX, maxZ - minZ),
-      new THREE.MeshLambertMaterial({ map: floorTex }),
-    );
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(maxX - minX, maxZ - minZ), worldTexture(new THREE.MeshLambertMaterial(), 'oak', 2));
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this.group.add(floor);

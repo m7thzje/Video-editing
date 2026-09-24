@@ -159,7 +159,7 @@ export class Lift extends Area {
 
     this.zones.push({ x: 0.2, y: 0, z: 0.3, r: 0.6, h: 1.4, id: 'liftknop', prompt: 'Druk op de liftknop 🛗' });
     // Buurman Ben hangt altijd in de lift, tegen de achterwand. Ook in de spiegel.
-    const benLook = { shirt: 0x8a8f96, pants: 0x3a3a3a, hairStyle: 'bald', hair: 0xd8d8d8, glasses: true, mood: 'smile', height: 1.72 };
+    const benLook = { shirt: 0x8a8f96, pants: 0x3a3a3a, hairStyle: 'bald', hair: 0xd8d8d8, glasses: true, mood: 'smile', height: 1.72, activity: 'eat' };
     const ben = this.addNPC('ben', 'Buurman Ben', -0.36, -0.42, 0.35, benLook, { solid: false, r: 0.55 });
     ben.person.root.rotation.z = 0.06;
     ben.person.arms[1].rotation.z = 0.35;

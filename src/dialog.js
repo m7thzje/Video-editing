@@ -99,6 +99,7 @@ export const NPC_LINES = {
     'Zie je dat bordje? "Niet voor papegaaien." Heb ik zelf geschreven. Met stift.',
     'Mijn moeder zegt dat ik te streng ben. Mijn moeder koopt bij de Lidl.',
   ],
+  zwerver: ['…', '(wiebelt heen en weer)', '…', '(kijkt naar zijn bordje)', '…', '(wiebelt de andere kant op)'],
   frank: [
     'Hallo! Ik ben Frank. Van karton.',
     '…',

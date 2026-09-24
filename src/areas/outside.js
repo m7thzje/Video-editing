@@ -8,6 +8,7 @@ import { lambert, M } from '../world/materials.js';
 import { BoxSmash, Pigeons, RingRace, Rival, Walker } from '../minigames.js';
 import { makePerson } from '../world/people.js';
 import { waterMaterial } from '../world/water.js';
+import { worldTexture } from '../world/phototex.js';
 
 // De open wereld rond Puck's flat. Hier liggen de toegangen tot de minigames:
 //   - Pistachehuis (deur)                       -> 10 pistachenootjes zoeken
@@ -501,7 +502,7 @@ export class Outside extends Area {
     const z0 = -14;
     const z1 = -10.5;
     const h = 2.2;
-    this.block(x0, 0, z0, x1, h, z1, lambert(0x7d8f6a), { climbable: true, name: 'schuur' });
+    this.block(x0, 0, z0, x1, h, z1, worldTexture(lambert(0xffffff), 'logs', 1.6), { climbable: true, name: 'schuur' });
     this.block(x0 - 0.15, h, z0 - 0.15, x1 + 0.15, h + 0.12, z1 + 0.15, M.woodDark, { climbable: true, name: 'schuurdak' });
     for (let x = x0 + 0.2; x < x1; x += 0.4) this.block(x, 0, z1, x + 0.05, h, z1 + 0.02, lambert(0x6c7d5b), { collide: false, shadow: false });
     this.block(-18.5, 0, z1, -17.5, 1.9, z1 + 0.03, M.woodDark, { collide: false });
@@ -948,7 +949,7 @@ export class Outside extends Area {
     // Podium voor Puck's fluitconcert, met de achterwand naar het noorden en het publiek richting de fontein
     const S = { x0: -7.6, x1: -3.4, z0: 6.2, z1: 8.7, h: 0.4 };
     this.stage = { x: (S.x0 + S.x1) / 2, y: S.h, z: 7.3, lanes: [-6.7, -5.5, -4.3] };
-    const plank = lambert(0x8a5a36);
+    const plank = worldTexture(lambert(0xffffff), 'greywood', 1.5, 0xc9a27c);
     const dark = lambert(0x2b2f3a);
     const speakerMat = new THREE.MeshLambertMaterial({ color: 0x3a3d42, map: speakerTexture(), flatShading: true });
     this.block(S.x0, 0, S.z0, S.x1, S.h, S.z1, plank, { name: 'podium' });
@@ -1002,14 +1003,30 @@ export class Outside extends Area {
 
   buildPeople() {
     // Groningers
-    this.addNPC('harm', 'Postbode Harm', -5.3, -12.9, Math.PI / 2, { shirt: 0x1f3a6b, pants: 0x2b2f3a, hat: 'postpet', hatColor: 0xe86a1a, prop: 'mailbag', hair: 0x3b2a1e });
+    this.addNPC('harm', 'Postbode Harm', -5.3, -12.9, Math.PI / 2, { shirt: 0x1f3a6b, pants: 0x2b2f3a, hat: 'postpet', hatColor: 0xe86a1a, prop: 'mailbag', hair: 0x3b2a1e, activity: 'coffee' });
     this.addNPC('geert', 'Visser Geert', 9, 21.75, 0, { shirt: 0x4f6b3a, pants: 0x3a3d40, hat: 'beanie', hatColor: 0x2f6e4a, beard: true, hair: 0xb9b9b9, prop: 'rod', skin: 1 });
     this.addNPC('sjoukje', 'Studente Sjoukje', -5.4, 20.6, Math.PI / 2, { height: 1.68, shirt: 0xf2c230, pants: 0x3d5a8a, hairStyle: 'ponytail', hair: 0xe8cf8a, glasses: true, prop: 'book', mood: 'smile' });
     this.addNPC('jan', 'Duivenman Jan', 3.0, 3.1, Math.PI, { shirt: 0x6b5a4a, pants: 0x4a4a4a, hairStyle: 'bald', hat: 'cap', hatColor: 0x5b5f66, prop: 'bread', skin: 0 });
-    this.addNPC('bas', 'Jumbo-Bas', 20.5, -1.9, Math.PI, { shirt: 0xffd200, pants: 0x1b1b1d, hair: 0x3b2a1e, hat: 'cap', hatColor: 0xffd200 });
-    this.addNPC('jumbo', 'Jumbo-medewerker Eline', 19.2, 3.2, -Math.PI / 2, { height: 1.66, shirt: 0xffd200, pants: 0x1b1b1d, hairStyle: 'bun', hair: 0x6b4423, mood: 'smile' });
-    this.addNPC('tineke', 'Buurvrouw Tineke', 14.8, -13.6, -Math.PI / 2, { height: 1.62, shirt: 0xd96fb4, pants: 0x4d4a5c, hairStyle: 'bob', hair: 0xb07a4a, glasses: true, mood: 'frown' });
-    this.addNPC('toren', 'Torenwachter Wiebe', this.towerStart.x + 0.9, this.towerStart.z + 1.2, -Math.PI / 2, { shirt: 0x2f6e4a, pants: 0x3a3d40, beard: true, hair: 0x8a8a8a, hat: 'cap', hatColor: 0x1f8a4c });
+    this.addNPC('bas', 'Jumbo-Bas', 20.5, -1.9, Math.PI, { shirt: 0xffd200, pants: 0x1b1b1d, hair: 0x3b2a1e, hat: 'cap', hatColor: 0xffd200, activity: 'drink' });
+    this.addNPC('jumbo', 'Jumbo-medewerker Eline', 19.2, 3.2, -Math.PI / 2, { height: 1.66, shirt: 0xffd200, pants: 0x1b1b1d, hairStyle: 'bun', hair: 0x6b4423, mood: 'smile', activity: 'smoke' });
+    this.addNPC('tineke', 'Buurvrouw Tineke', 14.8, -13.6, -Math.PI / 2, { height: 1.62, shirt: 0xd96fb4, pants: 0x4d4a5c, hairStyle: 'bob', hair: 0xb07a4a, glasses: true, mood: 'frown', activity: 'phone' });
+    this.addNPC('toren', 'Torenwachter Wiebe', this.towerStart.x + 0.9, this.towerStart.z + 1.2, -Math.PI / 2, { shirt: 0x2f6e4a, pants: 0x3a3d40, beard: true, hair: 0x8a8a8a, hat: 'cap', hatColor: 0x1f8a4c, activity: 'sport' });
+    // Zwerver bij de ingang van de Jumbo: zegt niks, wiebelt heen en weer
+    const zw = this.addNPC('zwerver', 'Man bij de Jumbo', 19.3, 6.9, -Math.PI / 2, {
+      sitting: true, shirt: 0x5a5a4a, pants: 0x3f3a33, hair: 0x6b6b66, beard: true, hat: 'beanie', hatColor: 0x6b3a2a, skin: 1, mood: 'flat', shoes: 0x3a2e24,
+    }, { solid: false, r: 0.9 });
+    zw.person.root.position.y = -0.38;
+    this.fx.push({ update: (dt, t) => (zw.person.root.rotation.z = Math.sin(t * 1.6) * 0.12) });
+    const board = makeSign(['GELD', 'AUB'], { width: 0.42, height: 0.3, bg: '#c89b62', fg: '#1b1b1d', border: '#8a6a3f' });
+    board.position.set(18.75, 0.18, 6.9);
+    board.rotation.set(-0.35, -Math.PI / 2, 0);
+    this.group.add(board);
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.1, 8), lambert(0xf4f1ea));
+    cup.position.set(18.8, 0.05, 7.35);
+    this.group.add(cup);
+    const blanket = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.03, 0.8), lambert(0x6c4f3a));
+    blanket.position.set(19.2, 0.015, 6.95);
+    this.group.add(blanket);
     // Meneer Mehmet met zijn oranje kat Pasja loopt zijn rondje
     const mehmet = makePerson({ shirt: 0x5b6a7a, pants: 0x3a3d40, hair: 0x1b1b1d, beard: true, skin: 2 });
     const cat = makeCat();

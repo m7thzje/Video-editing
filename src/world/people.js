@@ -169,6 +169,7 @@ export function makePerson({
   sitting = false,
   mood = 'flat', // smile | flat | frown
   shoes = 0x2a2522,
+  activity = null, // smoke | drink | coffee | eat | phone | sport: wat ze doen als ze niks te doen hebben
 } = {}) {
   const s = height / 1.75;
   const root = new THREE.Group();
@@ -280,6 +281,23 @@ export function makePerson({
     add(new THREE.BoxGeometry(0.02, 0.6, 0.02), lambert(0x333333), -0.12, hipY + 0.38, 0.12).rotation.z = 0.6;
   }
   if (prop === 'bread') add(new THREE.CapsuleGeometry(0.05, 0.16, 3, 8), lambert(0xc98a4b), 0, -0.58, 0.1, arms[1]).rotation.x = Math.PI / 2;
+  // Iets in de rechterhand voor de bezigheid
+  const hand = (geo, mat, rx = 0) => {
+    const m = add(geo, mat, 0, -0.58, 0.05, arms[1]);
+    m.rotation.x = rx;
+    return m;
+  };
+  if (activity === 'smoke') {
+    hand(new THREE.CylinderGeometry(0.008, 0.008, 0.08, 5), lambert(0xf4f1ea), Math.PI / 2);
+    add(new THREE.SphereGeometry(0.01, 5, 4), lambert(0xff6a2a, { emissive: 0xff3a00, emissiveIntensity: 0.8 }), 0, -0.58, 0.095, arms[1]);
+  }
+  if (activity === 'drink') hand(new THREE.CylinderGeometry(0.03, 0.03, 0.11, 8), lambert(0x2f7a3e));
+  if (activity === 'coffee') {
+    hand(new THREE.CylinderGeometry(0.035, 0.028, 0.09, 8), lambert(0xf4f1ea));
+    add(new THREE.CylinderGeometry(0.036, 0.036, 0.015, 8), lambert(0x3a2a1e), 0, -0.53, 0.05, arms[1]);
+  }
+  if (activity === 'eat') hand(new THREE.CapsuleGeometry(0.02, 0.13, 3, 6), lambert(0x8a4a22), Math.PI / 2);
+  if (activity === 'phone') hand(new THREE.BoxGeometry(0.06, 0.11, 0.012), lambert(0x1b1b1d), -0.4);
   if (prop === 'book') add(new THREE.BoxGeometry(0.16, 0.22, 0.04), lambert(0xd7263d), 0, -0.55, 0.12, arms[0]);
 
   // Onderdelen samenvoegen per beweegbaar deel: hoofd, armen, benen, dan de romp
@@ -289,7 +307,25 @@ export function makePerson({
   });
   mergeStatic(body);
 
-  const state = { talk: 0, t: Math.random() * 10, rage: 0 };
+  const state = { talk: 0, t: Math.random() * 10, rage: 0, puffs: [] };
+  // Rookwolkjes voor rokers
+  if (activity === 'smoke') {
+    const c = document.createElement('canvas');
+    c.width = c.height = 32;
+    const cx = c.getContext('2d');
+    const g = cx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    g.addColorStop(0, 'rgba(235,235,235,0.9)');
+    g.addColorStop(1, 'rgba(235,235,235,0)');
+    cx.fillStyle = g;
+    cx.fillRect(0, 0, 32, 32);
+    const tex = new THREE.CanvasTexture(c);
+    for (let i = 0; i < 5; i++) {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0 }));
+      sp.userData.phase = i / 5;
+      head.add(sp);
+      state.puffs.push(sp);
+    }
+  }
   const baseSkin = new THREE.Color(skinColor);
   const red = new THREE.Color(0xff2a1a);
   let steam = null;
@@ -340,6 +376,10 @@ export function makePerson({
       state.rage = seconds;
       if (!steam) makeSteam();
     },
+    /** Feest: op en neer springen en met de armen zwaaien. */
+    dance(seconds = 20) {
+      state.dance = seconds;
+    },
     get raging() {
       return state.rage > 0;
     },
@@ -349,6 +389,25 @@ export function makePerson({
       // Rustig ademen en af en toe om zich heen kijken
       body.position.y = Math.sin(state.t * 1.5) * 0.005;
       head.rotation.y = Math.sin(state.t * 0.4) * 0.35;
+      if (state.dance > 0) {
+        state.dance -= dt;
+        const b = state.t * 7.5 + (state.phase ??= Math.random() * 6);
+        body.position.y = Math.abs(Math.sin(b)) * 0.12;
+        body.rotation.y = Math.sin(b * 0.5) * 0.35;
+        head.rotation.x = Math.sin(b) * 0.2;
+        if (!sitting) {
+          arms[0].rotation.set(-2.6 + Math.sin(b) * 0.5, 0, -0.3);
+          arms[1].rotation.set(-2.6 + Math.sin(b + Math.PI) * 0.5, 0, 0.3);
+          legs[0].rotation.x = Math.sin(b) * 0.3;
+          legs[1].rotation.x = -Math.sin(b) * 0.3;
+        }
+        if (state.dance <= 0) {
+          body.rotation.y = 0;
+          arms.forEach((a, i) => a.rotation.set(0, 0, (i ? 1 : -1) * 0.06));
+          legs.forEach((l) => l.rotation.set(sitting ? -Math.PI / 2 : 0, 0, 0));
+        }
+        return;
+      }
       if (state.rage > 0 || (steam && steam[0].visible)) {
         state.rage = Math.max(0, state.rage - dt);
         const k = Math.min(1, state.rage * 2);
@@ -379,6 +438,38 @@ export function makePerson({
           skinMat.color.copy(baseSkin);
         }
         return;
+      }
+      // Bezigheid: om de paar seconden de hand naar de mond, bellen, of sporten
+      if (activity && !sitting && activity === 'sport' && state.talk <= 0) {
+        const j = state.t * 5;
+        body.position.y = Math.abs(Math.sin(j)) * 0.1;
+        const up = (Math.sin(j * 2 - Math.PI / 2) + 1) / 2;
+        arms[0].rotation.z = -0.06 - up * 2.6;
+        arms[1].rotation.z = 0.06 + up * 2.6;
+        legs[0].rotation.z = -up * 0.25;
+        legs[1].rotation.z = up * 0.25;
+        return;
+      }
+      if (activity === 'phone') {
+        arms[1].rotation.x = -1.35;
+        head.rotation.x = 0.35;
+        head.rotation.y *= 0.3;
+      } else if (activity && activity !== 'sport') {
+        const cyc = state.t % 5;
+        const k = cyc < 0.5 ? cyc / 0.5 : cyc < 1.6 ? 1 : cyc < 2.1 ? 1 - (cyc - 1.6) / 0.5 : 0;
+        arms[1].rotation.x = -2.35 * k;
+        arms[1].rotation.z = 0.06 - 0.35 * k;
+        if (k > 0.5) head.rotation.y *= 0.2;
+        if (activity === 'drink' || activity === 'coffee') head.rotation.x = -0.25 * k;
+        // Uitblazen na een trekje
+        state.puffs.forEach((sp) => {
+          const f = (cyc - 2.1 + sp.userData.phase * 0.6) / 1.8;
+          sp.visible = f > 0 && f < 1;
+          if (!sp.visible) return;
+          sp.position.set(0.02 + f * 0.08, -0.03 + f * 0.35, 0.16 + f * 0.12);
+          sp.scale.setScalar(0.05 + f * 0.18);
+          sp.material.opacity = (1 - f) * 0.7;
+        });
       }
       if (state.talk > 0) {
         head.rotation.x = Math.sin(state.t * 11) * 0.06;

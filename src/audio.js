@@ -12,7 +12,7 @@ export const SOUND_NAMES = [
   'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
   'puck-wauw', 'puck-hallo', 'alert', 'caught',
   'puck-geluid-10', 'puck-hallo-2', 'puck-watskecola',
-  'puck-lach', 'puck-tok', 'puck-klik',
+  'puck-lach', 'puck-tok', 'puck-klik', 'puck-hepuck',
   'puck-praat-6', 'puck-praat-7', 'puck-praat-8', 'puck-praat-9', 'puck-praat-10', 'puck-praat-11',
 ];
 
@@ -29,6 +29,8 @@ const GROUPS = {
   piep: ['puck-geluid-2', 'puck-geluid-6', 'puck-praat-4', 'puck-praat-5', 'puck-geluid-10'],
   hallo: ['puck-hallo', 'puck-hallo-2'],
   lach: ['puck-lach'],
+  // "Hé Puck!" bij de start (valt terug op hallo zolang er geen opname is)
+  hepuck: ['puck-hepuck'],
 };
 
 // Volume per opname (de hoge krijsjes zijn fel)
@@ -46,6 +48,7 @@ const VOLUMES = {
 
 // Ontbreekt een eigen bestand (bijv. box.mp3), gebruik dan eerst een geluidje van Puck zelf.
 const FALLBACKS = {
+  hepuck: 'hallo',
   box: 'fluit',
   feather: 'fluit',
   star: 'puck-wauw',
@@ -108,7 +111,8 @@ export class AudioManager {
   play(name, { volume = 1, rate = 1, freq } = {}) {
     if (!this.unlocked || this.muted || !this.ctx) return;
     if (this.ctx.state === 'suspended') this.ctx.resume();
-    if (!this.buffers.has(name) && FALLBACKS[name]) {
+    const groupLoaded = (GROUPS[name] || []).some((n) => this.buffers.has(n));
+    if (!this.buffers.has(name) && !groupLoaded && FALLBACKS[name]) {
       const fb = FALLBACKS[name];
       if (this.buffers.has(fb) || (GROUPS[fb] || []).some((n) => this.buffers.has(n))) name = fb;
     }
@@ -393,6 +397,24 @@ const PLACEHOLDERS = {
   },
   talk(ctx, out, v) {
     [700, 1100, 850, 1300].forEach((f, i) => tone(ctx, out, { type: 'sawtooth', from: f, to: f * 1.2, start: i * 0.09, dur: 0.08, vol: 0.06 * v }));
+  },
+  boom(ctx, out, v) {
+    const t = ctx.currentTime;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.8, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const f = ctx.createBiquadFilter();
+    f.type = 'lowpass';
+    f.frequency.setValueAtTime(1800, t);
+    f.frequency.exponentialRampToValueAtTime(200, t + 0.6);
+    const g = ctx.createGain();
+    g.gain.value = 0.5 * v;
+    src.connect(f).connect(g).connect(out);
+    src.start(t);
+    // Knetters
+    for (let i = 0; i < 6; i++) tone(ctx, out, { type: 'square', from: 2500 + Math.random() * 2000, start: 0.3 + Math.random() * 0.5, dur: 0.02, vol: 0.05 * v });
   },
   tick(ctx, out, v) {
     tone(ctx, out, { type: 'square', from: 660, dur: 0.12, vol: 0.12 * v });

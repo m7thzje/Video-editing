@@ -3,6 +3,7 @@ import { Area, makeSign } from '../world/area.js';
 import { Clouds, makeSkyDome } from '../world/fx.js';
 import { makeCar, makeCityView, makeDS3, makeGroningenFlag } from '../world/groningen.js';
 import { lambert, M } from '../world/materials.js';
+import { worldTexture } from '../world/phototex.js';
 
 // De galerij op de 9e verdieping: een lange buitengang met balustrade en uitzicht over
 // Groningen (met de Martinitoren). Hier zitten de voordeur van Puck, de deur van de
@@ -16,7 +17,7 @@ const H = 2.6;
 export const GALLERY_DOORS = { puck: 3.5, buurvrouw: 7.5, lift: 29.8 };
 
 const P = {
-  floor: lambert(0x9a9fa3),
+  floor: worldTexture(lambert(0xffffff), 'concrete', 2, 0xdfe2e4),
   joint: lambert(0x2a2c2e),
   beam: lambert(0xf6f5f1, { emissive: 0x77766f }),
   ceiling: lambert(0xf2f1ec, { emissive: 0x8f8d86 }),
@@ -188,7 +189,7 @@ export class Gallery extends Area {
     this.addCollider(26.85, 0, 0.15, 28.35, 0.4, 0.5, { climbable: true });
     this.block(27.3, 0.46, 0.2, 27.7, 0.47, 0.45, M.white, { collide: false });
     // Buurman Klaas zit op het bankje
-    this.addNPC('klaas', 'Buurman Klaas', 27.9, 0.2, 0, { sitting: true, shirt: 0x8c5a4a, pants: 0x3a3d40, hairStyle: 'bald', beard: true, hair: 0xd8d8d8, glasses: true }, { solid: false, r: 0.9 });
+    this.addNPC('klaas', 'Buurman Klaas', 27.9, 0.2, 0, { sitting: true, shirt: 0x8c5a4a, pants: 0x3a3d40, hairStyle: 'bald', beard: true, hair: 0xd8d8d8, glasses: true, activity: 'coffee' }, { solid: false, r: 0.9 });
     // Groningse vlag aan de pilaar
     const flag = makeGroningenFlag(2.2);
     flag.position.set(16.2, 0.2, W + 0.2);

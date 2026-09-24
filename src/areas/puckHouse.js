@@ -6,12 +6,12 @@ import {
   puckPortraitTexture,
   skyTexture,
   tileTexture,
-  woodFloorTexture,
 } from '../textures.js';
 import { Area, makeCard, makeCigarette, makeCookie } from '../world/area.js';
 import { addShaft, DustMotes, makeSkyDome } from '../world/fx.js';
 import { makeCityView } from '../world/groningen.js';
 import { lambert, M } from '../world/materials.js';
+import { worldTexture } from '../world/phototex.js';
 
 // Puck's eigen appartement (nr. 141) op de 9e verdieping van de Donderslaanflat, nagebouwd naar de foto's.
 // Eén open woonkamer: de grote zwarte kooi staat in de hoek bij het grote raam met de eettafel ervoor,
@@ -92,7 +92,7 @@ export class PuckHouse extends Area {
     const t = 0.25;
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(R.maxX - R.minX, R.maxZ - R.minZ),
-      new THREE.MeshLambertMaterial({ map: woodFloorTexture(['#c9a47a', '#d1ad84', '#c29d72', '#cfaa80'], [5, 4]) }),
+      worldTexture(new THREE.MeshLambertMaterial(), 'planks', 2.4),
     );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
@@ -592,7 +592,7 @@ export class PuckHouse extends Area {
   buildBalcony() {
     // Balkon over de hele breedte van de raampartij, met hek zoals op de galerij
     const { x0, x1 } = BALCONY;
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0 + 0.25, R.maxZ - R.minZ), lambert(0x9a9d9f));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0 + 0.25, R.maxZ - R.minZ), worldTexture(new THREE.MeshLambertMaterial(), 'concrete', 1.6, 0xd8dadb));
     floor.rotation.x = -Math.PI / 2;
     floor.position.set((x0 + x1 + 0.25) / 2 - 0.125, 0.001, 0);
     floor.receiveShadow = true;

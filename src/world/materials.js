@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { applyWind } from './fx.js';
+import { worldTexture } from './phototex.js';
 
 // Gedeelde lowpoly-materialen (Lambert + flat shading: zacht en snel op telefoons).
 
@@ -111,6 +112,17 @@ export const M = {
 // Avondstand: lampen gaan feller branden en ramen lichten warm op
 M.lampShade.userData.night = 'lamp';
 M.windowBlue.userData.night = 'window';
+
+// Foto-textures op wereldschaal (gras, dakpannen, natuursteen, hout)
+worldTexture(M.grass, 'grass', 3.2, 0xf2fff0);
+worldTexture(M.grassDark, 'grass-dry', 3.2);
+worldTexture(M.roof, 'roof-terracotta', 1.6);
+worldTexture(M.roofDark, 'roof-red', 1.6);
+worldTexture(M.stone, 'stone-blocks', 1.3);
+worldTexture(M.stoneDark, 'stone-rough', 1.3);
+worldTexture(M.wood, 'wood-light', 1.2, 0xd9a878);
+worldTexture(M.woodDark, 'plywood', 1.2);
+worldTexture(M.woodLight, 'oak', 1.2);
 
 // Bladeren wiegen zachtjes in de wind
 applyWind(M.leaf);

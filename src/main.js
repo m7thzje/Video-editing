@@ -17,6 +17,8 @@ import { CharacterBody, DEFAULT_HOP } from './physics.js';
 import { Puck } from './puck.js';
 import { Concert } from './concert.js';
 import { JumboStore } from './areas/jumbo.js';
+import { Minimap } from './minimap.js';
+import { M } from './world/materials.js';
 import { SongGame } from './songGame.js';
 import { Dialog } from './dialog.js';
 import { vuurdraakCardCanvas } from './textures.js';
@@ -124,6 +126,44 @@ const setHat = (n) => {
   puck.setHat(n);
   mirrorPuck.setHat(n);
 };
+// ---------- Cheatcode: alles meteen af (typ "watskebeurt", of tik 7x snel op de sterren) ----------
+function cheatAll() {
+  if (state.mode !== 'play' && state.mode !== 'menu') return;
+  STARS.forEach((s) => (progress.stars[s.id] = true));
+  Object.keys(SECRETS).forEach((k) => (progress.secrets[k] = true));
+  INGREDIENTS.forEach((i) => (progress.items[i.id] = true));
+  progress.partyDone = false;
+  saveProgress();
+  updateStarHud();
+  updateInventory();
+  applyHat();
+  updateItemButton();
+  audio.play('star');
+  flashScreen();
+  confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 80);
+  unlock('🦜', 'CHEAT!', 'Alle sterren, geheimpjes en items. Naar het podium voor het fluitconcert!', { sound: null, duration: 4 });
+}
+// Voorwerpen die Puck kan vasthouden (blijven bewaard; wisselen met Q of de rugzak-knop)
+const ITEM_NAMES = { sigaret: '🚬 Stoer sigaretje', kaart: '🔥 Vuurdraak-kaart' };
+function ownedItems() {
+  return Object.keys(ITEM_NAMES).filter((k) => progress.secrets?.[k]);
+}
+function cycleItem() {
+  if (state.jumboBag) return;
+  const opts = [null, ...ownedItems()];
+  if (opts.length < 2) return toast('Puck heeft nog niks om vast te houden. Zoek eens in huis…', 2.5);
+  const next = opts[(opts.indexOf(progress.held || null) + 1) % opts.length];
+  progress.held = next;
+  saveProgress();
+  setBeakItem(next);
+  audio.play('box', { volume: 0.4 });
+  toast(next ? `Puck houdt vast: ${ITEM_NAMES[next]}` : 'Snavel leeg', 1.5);
+}
+function updateItemButton() {
+  const btn = document.getElementById('item-button');
+  if (btn) btn.classList.toggle('hidden', !isTouch || ownedItems().length === 0);
+}
+
 const setBeakItem = (n) => {
   puck.setBeakItem(n);
   mirrorPuck.setBeakItem(n);
@@ -712,7 +752,7 @@ function onAreaEntered(name) {
     const stolen = state.jumboBag === 'stolen';
     state.jumboBag = null;
     setTimeout(() => {
-      setBeakItem(null);
+      setBeakItem(progress.held || null);
       eat(0x9cc75a);
       confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 25);
     }, 900);
@@ -780,8 +820,14 @@ function startGame() {
   visited.puckhuis = true;
   updateStarHud();
   applyHat();
+  setBeakItem(progress.held || null);
+  updateItemButton();
+  document.getElementById('item-button').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    cycleItem();
+  });
   music.play(musicFor(area.name));
-  setTimeout(() => say('Hallo!', { sound: 'hallo' }), 600);
+  setTimeout(() => say('Hé Puck!', { sound: 'hepuck' }), 500);
   setTimeout(() => say('Watskebeurt?'), 3600);
   toast(progress.partyDone
     ? 'Moi Puck! Het concert was prachtig. Zoek je de laatste geheimpjes nog?'
@@ -817,6 +863,18 @@ function closeMenu() {
 $('start-button').addEventListener('click', startGame);
 $('menu-button').addEventListener('click', openMenu);
 $('stars').addEventListener('click', openMenu);
+let starTaps = 0;
+let starTapTimer = 0;
+$('stars').addEventListener('click', () => {
+  clearTimeout(starTapTimer);
+  starTaps++;
+  starTapTimer = setTimeout(() => (starTaps = 0), 2500);
+  if (starTaps >= 7) {
+    starTaps = 0;
+    cheatAll();
+  }
+});
+
 $('menu-resume').addEventListener('click', closeMenu);
 $('menu-sound').addEventListener('click', () => {
   audio.toggleMute();
@@ -829,6 +887,12 @@ $('menu-reset').addEventListener('click', () => {
   location.reload();
 });
 window.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyQ' && state.mode === 'play') cycleItem();
+  // Cheatcode: typ "watskebeurt" tijdens het spelen
+  if (e.key && e.key.length === 1) {
+    state.cheatBuf = ((state.cheatBuf || '') + e.key.toLowerCase()).slice(-11);
+    if (state.cheatBuf === 'watskebeurt') cheatAll();
+  }
   if (e.code === 'KeyM') toast(audio.toggleMute() ? 'Geluid uit 🔇' : 'Geluid aan 🔊', 1.5);
   if ((e.code === 'Enter' || e.code === 'Space') && state.mode === 'start') startGame();
   if (e.code === 'Escape' && state.concert) {
@@ -972,8 +1036,11 @@ function onCollect(c) {
       break;
     case 'sigaret':
     case 'kaart':
+      progress.held = c.type;
+      saveProgress();
       setBeakItem(c.type);
-      state.beakTime = 20;
+      updateItemButton();
+      setTimeout(() => toast(isTouch ? '🎒 Tik op de rugzak-knop om te wisselen wat Puck vasthoudt.' : '🎒 Druk op Q om te wisselen wat Puck vasthoudt.', 4), 2500);
       say(c.type === 'sigaret' ? 'Watskebeurt? Stoer hè!' : 'Vuurdraak, 150 HP! 🔥');
       secret(c.type);
       break;
@@ -1290,7 +1357,9 @@ function talkTo(npc) {
     return dialog.show(npc.name, dialog.next('mehmet'), 2.5);
   }
   if (npc.id === 'ben') {
-    setTimeout(() => say('Hahaha! 141!', { sound: 'lach', seconds: 2 }), 1400);
+    // Af en toe (niet elke keer) moet Puck erom lachen
+    state.benTalks = (state.benTalks || 0) + 1;
+    if (state.benTalks % 4 === 2) setTimeout(() => say('Hahaha! 141!', { sound: 'lach', seconds: 2 }), 1400);
     secret('ben');
     return dialog.show(npc.name, dialog.next('ben'));
   }
@@ -1465,6 +1534,7 @@ function updateObjective(dt) {
       }
     }
   }
+  state.mapTarget = target;
   const show = !!target && Math.hypot(target.x - body.pos.x, target.z - body.pos.z) > 1.1;
   arrow.visible = show && state.mode === 'play';
   if (show) {
@@ -1567,31 +1637,93 @@ function endConcert(acc, best) {
   }
   progress.partyDone = true;
   saveProgress();
-  music.play('feest');
-  puck.dance(30);
-  mirrorPuck.dance(30);
-  audio.play('star');
   toast(`🎉 ${pct} procent! Langste reeks: ${best}. Heel Stad klapt!`, 4);
-  confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.5, body.pos.z), 90);
-  let t = 2200;
-  (state.audience || []).forEach((p, i) => {
-    const line = AUDIENCE[i][2];
-    setTimeout(() => {
-      dialog.show(p.name, line, 2.6);
-      p.talk(2.6);
-      confettiBurst(tmpV.set(p.root.position.x, 1.8, p.root.position.z), 16);
-    }, t);
-    t += 2700;
-  });
+  startFinale();
+}
+
+// ---------- Finale-film: feest met dansende buurt, vuurwerk en een drone die wegvliegt ----------
+function firework(x, y, z) {
+  const colors = [0xff4a5a, 0xffd84a, 0x5ad1ff, 0x8aff6a, 0xff7ae0];
+  const col = colors[Math.floor(Math.random() * colors.length)];
+  confettiBurst(tmpV.set(x, y, z), 45);
+  burst(sparkleTex, tmpV.set(x, y, z), 18, 1.4);
+  shockwave(tmpV.set(x, y, z), col, 3);
+  audio.play('boom', { volume: 0.6 });
+}
+
+function startFinale() {
+  const b = areas.buiten;
+  const st = b.stage;
+  state.frozen = true;
+  state.mode = 'finale';
+  music.play('feest');
+  audio.playLong('puck-dans');
+  puck.dance(40);
+  mirrorPuck.dance(40);
+  (state.audience || []).forEach((p) => p.dance(40));
+  (b.npcs || []).forEach((n) => n.person.dance?.(40));
+  body.teleport(V3(st.x, st.y + 0.02, st.z), Math.PI);
+  introEl.classList.remove('hidden');
+  document.body.classList.add('cinema');
+  $('intro-skip').onclick = endFinale;
+  const fin = (state.finale = { t: 0, shot: -1, fw: 0 });
+  const shots = [
+    { until: 6, caption: ['Het fluitconcert van Puck', 'Heel Stad is gekomen'],
+      cam: (k) => [[st.x - 3 + k * 6, 2.4 - k * 0.8, st.z - 5.5 + k * 2.2], [st.x, st.y + 0.4, st.z]] },
+    { until: 12, caption: ['De buurt danst mee', 'Zelfs Mw. Zuur. Een beetje.'],
+      cam: (k) => [[st.x - 5 + k * 10, 1.6, st.z - 4.5], [st.x - 3 + k * 6, 1.0, st.z - 1.5]] },
+    { until: 18, caption: ['Watskecola!', 'Puck is niet meer alleen'],
+      cam: (k) => [[st.x + 0.2, st.y + 0.45 + k * 0.1, st.z - 0.9 + k * 0.2], [st.x, st.y + 0.25, st.z]] },
+    { until: 27, caption: ['Er gaat niets boven Groningen', 'En boven Groningen: vuurwerk'],
+      cam: (k) => [[st.x + 4 + k * 20, 3 + k * 26, st.z - 6 - k * 22], [st.x, 2 + k * 6, st.z]] },
+  ];
+  fin.shots = shots;
   setTimeout(() => {
-    dialog.show('Puck', 'Watskecola! Ik ben niet meer alleen!', 3.5);
-    say('Watskecola!', { sound: 'puck-watskecola', seconds: 3 });
-    confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 80);
-  }, t);
-  setTimeout(() => {
-    state.frozen = false;
-    showCredits();
-  }, t + 4000);
+    if (state.mode !== 'finale') return;
+    say('Watskecola! Ik ben niet meer alleen!', { sound: 'puck-watskecola', seconds: 4 });
+  }, 12500);
+  setTimeout(() => state.mode === 'finale' && say('Hahaha!', { sound: 'lach', seconds: 2 }), 16000);
+}
+
+function updateFinale(dt) {
+  const fin = state.finale;
+  fin.t += dt;
+  const idx = fin.shots.findIndex((s) => fin.t < s.until);
+  if (idx < 0) return endFinale();
+  const shot = fin.shots[idx];
+  if (idx !== fin.shot) {
+    fin.shot = idx;
+    setCaption(shot.caption.slice(0, 1));
+    setTimeout(() => state.mode === 'finale' && fin.shot === idx && setCaption(shot.caption), 1500);
+  }
+  const start = idx ? fin.shots[idx - 1].until : 0;
+  const k = ease(Math.min(1, (fin.t - start) / (shot.until - start)));
+  const [p, l] = shot.cam(k);
+  camera.position.set(...p);
+  camera.lookAt(...l);
+  // Vuurwerk boven het plein, steeds vaker
+  fin.fw -= dt;
+  if (fin.fw <= 0) {
+    fin.fw = fin.t > 18 ? 0.35 : fin.t > 6 ? 1.2 : 2.2;
+    const st = areas.buiten.stage;
+    firework(st.x + (Math.random() - 0.5) * 16, 7 + Math.random() * 7, st.z - 4 + (Math.random() - 0.5) * 12);
+  }
+  puck.root.position.copy(body.pos);
+  puck.root.rotation.y = body.yaw;
+  puck.update(dt, { speed: 0, grounded: true, climbing: false, vy: 0 });
+  puck.applyDance(dt);
+}
+
+function endFinale() {
+  if (state.mode !== 'finale') return;
+  introEl.classList.add('hidden');
+  document.body.classList.remove('cinema');
+  setCaption(null);
+  audio.stopLong();
+  state.mode = 'play';
+  state.frozen = false;
+  if (state.camDist) followCam.distance = state.camDist;
+  showCredits();
 }
 
 function showCredits() {
@@ -1766,6 +1898,7 @@ function update(dt) {
   }
   if (input.consumeInteract()) interact();
   updateChallenge();
+  updateMinimap(dt);
   if (state.concert) {
     concert.update();
     const lx = areas.buiten.stage.lanes[state.concertLane ?? 1];
@@ -1846,11 +1979,6 @@ function update(dt) {
   updateObjective(dt);
   updateCounter();
 
-  // Iets in de snavel?
-  if (state.beakTime > 0) {
-    state.beakTime -= dt;
-    if (state.beakTime <= 0) setBeakItem(null);
-  }
 
   // Tikken op Puck telt alleen snel achter elkaar
   if (state.tapTimer > 0) {
@@ -1925,6 +2053,41 @@ let perfFrames = 0;
 
 enterArea('puckhuis', 'start', { instant: true });
 
+// ---------- Minikaart (buiten) ----------
+const MAP_COLORS = new Map([
+  [M.grass, '#7cb35a'], [M.grassDark, '#94a95c'], [M.roof, '#b5553f'], [M.roofDark, '#9c4a3a'],
+  [M.stone, '#b9b2a6'], [M.stoneDark, '#948d82'], [M.wood, '#b88150'], [M.woodDark, '#7a5a3e'], [M.woodLight, '#c9a06c'],
+]);
+const minimap = new Minimap($('minimap'), {
+  colorFor: (mat) => {
+    if (!mat || Array.isArray(mat)) return null;
+    if (mat.userData?.water) return '#4fb3d9';
+    if (mat.isShaderMaterial || mat.isSpriteMaterial || mat.transparent) return null;
+    if (MAP_COLORS.has(mat)) return MAP_COLORS.get(mat);
+    if (!mat.color) return null;
+    if (mat.map) return `#${mat.color.clone().multiplyScalar(0.8).getHexString()}`;
+    return `#${mat.color.getHexString()}`;
+  },
+});
+minimap.build(areas.buiten.group);
+minimap.pois = [
+  { icon: '🛗', x: 0, z: -14.3 }, { icon: '🥖', x: -11.2, z: 5.55 }, { icon: '🛒', x: 19.3, z: 5 },
+  { icon: '🔔', x: -24, z: 15 }, { icon: '🎤', x: -5.5, z: 7.3 }, { icon: '🐦', x: 17, z: -8 },
+  { icon: '🚲', x: -5.4, z: 20.6 }, { icon: '📦', x: 24, z: -5 },
+];
+function updateMinimap(dt) {
+  const on = area === areas.buiten && state.mode === 'play' && !state.concert;
+  if (on !== !!state.mapOn) {
+    state.mapOn = on;
+    minimap.setVisible(on);
+  }
+  if (!on) return;
+  const b = areas.buiten;
+  const dots = (b.npcs || []).map((n) => ({ x: n.person.root.position.x, z: n.person.root.position.z, col: '#ffd84a' }));
+  if (b.mehmet) dots.push({ x: b.mehmet.pos.x, z: b.mehmet.pos.z, col: '#ff9a3c' });
+  minimap.draw(dt, { player: { x: body.pos.x, z: body.pos.z, yaw: body.yaw }, camYaw: followCam.yaw, target: state.mapTarget, dots });
+}
+
 // ---------- Intro-film: drone over Groningen, omhoog langs de flat, dan Puck alleen in zijn kooi ----------
 const introEl = $('intro');
 const captionEl = $('intro-caption');
@@ -1997,6 +2160,8 @@ function frame(timestamp) {
     dialog.update(dt);
   } else if (state.mode === 'intro') {
     updateIntro(dt);
+  } else if (state.mode === 'finale') {
+    updateFinale(dt);
   } else if (state.mode === 'start') {
     followCam.yaw += dt * 0.05;
     puck.root.position.copy(body.pos);
