@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f3c98b" />
+    <title>Puck's Avontuur</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦜</text></svg>" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <div id="hud" class="hidden">
+      <div id="nut-counter" aria-live="polite">
+        <span class="nut-icon">🥜</span>
+        <span id="nut-count">0</span><span class="nut-total">/ 10</span>
+      </div>
+      <div id="toast" aria-live="polite"></div>
+    </div>
+
+    <div id="touch-ui" class="hidden">
+      <div id="joystick">
+        <div id="joystick-knob"></div>
+      </div>
+      <button id="hop-button" aria-label="Hop">Hop!</button>
+    </div>
+
+    <div id="start-screen" class="overlay">
+      <div class="card">
+        <div class="logo">🦜</div>
+        <h1>Puck's Avontuur</h1>
+        <p class="intro">
+          Puck is een grijze roodstaart papegaai. Vliegen vindt hij maar niks —
+          hij loopt, klimt en hopt liever! Help hem de <strong>10 verstopte nootjes</strong>
+          in de woonkamer te vinden. Dan gaat de deur naar buiten open.
+        </p>
+        <div class="controls desktop-only">
+          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> of pijltjes — lopen</div>
+          <div><kbd>Spatie</kbd> — hoppen</div>
+          <div><kbd>Muis</kbd> — camera draaien</div>
+          <div>Loop tegen de bank, kooi of plant aan om te <strong>klimmen</strong></div>
+        </div>
+        <div class="controls touch-only">
+          <div>🕹️ Joystick links — lopen</div>
+          <div>🔴 Knop rechts — hoppen</div>
+          <div>👆 Veeg rechts — camera draaien</div>
+          <div>Loop tegen de bank, kooi of plant aan om te <strong>klimmen</strong></div>
+        </div>
+        <p class="tip">Tip: kruip in een kartonnen doos voor een verrassing!</p>
+        <button id="start-button" class="big-button">Speel!</button>
+      </div>
+    </div>
+
+    <div id="end-screen" class="overlay hidden">
+      <div class="card">
+        <div class="logo">🎉</div>
+        <h1>Level voltooid!</h1>
+        <p class="intro">
+          Puck heeft alle nootjes gevonden en stapt dapper naar buiten.
+          Het volgende level komt later — tot snel!
+        </p>
+        <p id="end-stats" class="tip"></p>
+        <button id="restart-button" class="big-button">Nog een keer</button>
+      </div>
+    </div>
+
+    <div id="loading">Laden…</div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
