@@ -9,10 +9,11 @@ import {
   woodFloorTexture,
 } from '../textures.js';
 import { Area, makeCard, makeCigarette, makeCookie } from '../world/area.js';
-import { addShaft, DustMotes } from '../world/fx.js';
+import { addShaft, DustMotes, makeSkyDome } from '../world/fx.js';
+import { makeCityView } from '../world/groningen.js';
 import { lambert, M } from '../world/materials.js';
 
-// Puck's eigen appartement, nagebouwd naar de foto's:
+// Puck's eigen appartement op de 9e verdieping van een flat in Groningen, nagebouwd naar de foto's:
 // woonkamer met grijze L-bank, groene tv-wand, ronde bijzettafeltjes, grote zwarte kooi
 // met boogdak, eettafel met X-poten en mintgroene stoelen, notenhouten dressoir met
 // letterbord, donkere ladekast met monstera en een gang met donkere tegels naar de voordeur.
@@ -58,7 +59,7 @@ export class PuckHouse extends Area {
     this.addSpawn('start', 1.12, 1.25, -2.95, Math.PI / 4);
     this.spawns.start.camYaw = Math.PI / 4 + 0.3;
     this.addSpawn('voordeur', 1.0, 0, 9.9, Math.PI);
-    this.portals.push({ x0: HALL.x0, z0: HALL.z1 - 0.3, x1: HALL.x1, z1: HALL.z1 + 1, to: 'buiten', spawn: 'flat' });
+    this.portals.push({ x0: HALL.x0, z0: HALL.z1 - 0.3, x1: HALL.x1, z1: HALL.z1 + 1, to: 'galerij', spawn: 'puck' });
 
     this.buildShell();
     this.buildView();
@@ -178,24 +179,10 @@ export class PuckHouse extends Area {
   }
 
   buildView() {
-    // Uitzicht vanaf driehoog: boomtoppen en daken
-    const crown = new THREE.IcosahedronGeometry(2.2, 0);
-    const spots = [];
-    for (let i = 0; i < 26; i++) {
-      const a = (i / 26) * Math.PI * 1.1 + Math.PI * 0.45;
-      const d = 14 + ((i * 7) % 9) * 2;
-      spots.push([Math.cos(a) * d, -2 - (i % 3), -Math.abs(Math.sin(a) * d) + 3]);
-    }
-    const tree = new THREE.InstancedMesh(crown, M.treeLeaf, spots.length);
-    const m = new THREE.Matrix4();
-    spots.forEach(([x, y, z], i) => {
-      m.makeScale(1 + (i % 4) * 0.3, 0.8, 1 + (i % 3) * 0.3).setPosition(x, y, z);
-      tree.setMatrixAt(i, m);
-    });
-    this.group.add(tree);
-    const roof = lambert(0x6f8fb2);
-    this.block(-16, -4, -22, -9, -1.5, -15, roof, { collide: false, shadow: false });
-    this.block(6, -4, -24, 14, -2, -16, roof, { collide: false, shadow: false });
+    // Uitzicht vanaf de 9e verdieping over Groningen, met de Martinitoren in de verte
+    this.group.add(makeSkyDome(new THREE.Vector3(-7, 6, 2.5)));
+    const city = makeCityView(-25, { towerPos: new THREE.Vector3(-55, 0, -30), exclude: (x, z) => x > -8 && z > -6 });
+    this.group.add(city);
   }
 
   buildSofa() {

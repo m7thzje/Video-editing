@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { vuurdraakCardTexture } from '../textures.js';
 import { lambert, M } from './materials.js';
 
 // Basis voor een speelgebied (Puck's huis, buiten, het Pistachehuis).
@@ -48,6 +49,7 @@ export class Area {
       oneWay: !!opts.oneWay,
       enabled: true,
       name: opts.name || '',
+      camIgnore: !!opts.camIgnore,
     };
     this.colliders.push(c);
     return c;
@@ -220,14 +222,14 @@ export function makeCigarette() {
   return g;
 }
 
-/** Glimmend ruilkaartje. */
+/** Glimmend holo-ruilkaartje (Vuurdraak, 150 HP). */
 export function makeCard() {
   const g = new THREE.Group();
-  const card = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 0.005), [M.gold, M.gold, M.gold, M.gold, lambert(0xf08a4b), M.gold]);
-  const art = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.05, 3), M.red);
-  art.position.set(0, 0.025, 0.006);
-  art.scale.z = 0.1;
-  g.add(card, art);
+  const tex = vuurdraakCardTexture();
+  const front = new THREE.MeshBasicMaterial({ map: tex });
+  const card = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.21, 0.004), [M.gold, M.gold, M.gold, M.gold, front, front]);
+  card.position.y = 0.12;
+  g.add(card);
   return g;
 }
 

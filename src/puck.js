@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { vuurdraakCardTexture } from './textures.js';
 
 // Puck: een grijze roodstaart papegaai (Psittacus erithacus), naar de foto:
 // lichtgrijze geschubde kop, donkerder rug en vleugels, witte oogvlekken met een
@@ -50,34 +51,6 @@ const MATERIALS = {
 };
 
 const ball = (r, detail = 1) => new THREE.IcosahedronGeometry(r, detail);
-
-/** Klein ruilkaartje: "Vuurdraak 150 HP". */
-function cardTexture() {
-  const c = document.createElement('canvas');
-  c.width = 96;
-  c.height = 128;
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = '#f2c230';
-  ctx.fillRect(0, 0, 96, 128);
-  ctx.fillStyle = '#f08a4b';
-  ctx.fillRect(6, 6, 84, 116);
-  ctx.fillStyle = '#ffd36b';
-  ctx.fillRect(12, 22, 72, 46);
-  ctx.fillStyle = '#e2502c';
-  ctx.beginPath();
-  ctx.moveTo(48, 28);
-  ctx.lineTo(70, 62);
-  ctx.lineTo(26, 62);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = '#3b2a1e';
-  ctx.font = 'bold 11px sans-serif';
-  ctx.fillText('Vuurdraak', 10, 17);
-  ctx.fillText('150 HP', 22, 90);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
 
 export class Puck {
   constructor() {
@@ -194,8 +167,8 @@ export class Puck {
     cig.position.set(0.035, -0.045, 0.085);
     cig.rotation.y = 0.9;
     const card = new THREE.Group();
-    const cardTex = cardTexture();
-    add(card, new THREE.BoxGeometry(0.075, 0.1, 0.003), [MATERIALS.gold, MATERIALS.gold, MATERIALS.gold, MATERIALS.gold, mat(0xffffff, { map: cardTex }), mat(0xffffff, { map: cardTex })], [0.03, -0.075, 0.105]);
+    const cardTex = vuurdraakCardTexture();
+    add(card, new THREE.BoxGeometry(0.075, 0.105, 0.003), [MATERIALS.gold, MATERIALS.gold, MATERIALS.gold, MATERIALS.gold, mat(0xffffff, { map: cardTex }), mat(0xffffff, { map: cardTex })], [0.03, -0.075, 0.105]);
     card.rotation.y = 1.2;
     this.beakItems = { sigaret: cig, kaart: card };
     Object.values(this.beakItems).forEach((b) => {

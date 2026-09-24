@@ -6,24 +6,36 @@ kooien en kan hooguit een klein stukje hoppen. Puck's favoriete zinnen: *"Watske
 
 ## Het spel
 
-Je begint **thuis bij Puck**, op zijn roze zitstok naast de grote zwarte kooi. Het appartement is nagebouwd naar
-echte foto's: grijze L-bank, groene tv-wand, ronde bijzettafeltjes, eettafel met mintgroene stoelen, het
-notenhouten dressoir met het letterbord *"Mag ik wel een koekje? Puck 2026"* en de gang met de zwarte voordeur.
+Puck woont op de **9e verdieping van de Donderslaanflat in Groningen**. Je begint in zijn appartement, op zijn roze
+zitstok naast de grote zwarte kooi. Het appartement is nagebouwd naar echte foto's: grijze L-bank, groene tv-wand,
+ronde bijzettafeltjes, eettafel met mintgroene stoelen, het notenhouten dressoir met het letterbord
+*"Mag ik wel een koekje? Puck 2026"* en de gang met de zwarte voordeur.
 
-Via de voordeur ga je **naar buiten**: een open wereld rond de flat met vier minigames. Elke minigame levert een ⭐ op.
+1. **De galerij (9e verdieping):** via de voordeur kom je op een lange galerij met balustrade en uitzicht over Stad,
+   met de Martinitoren in de verte. Nr. 93 is de deur van de chagrijnige buurvrouw (het Pistachehuis).
+2. **De lift:** aan het eind van de galerij brengt de lift je naar beneden (en weer terug).
+3. **Groningen op straatniveau:** de ingang van de Donderslaanflat (glazen hal, grijze plint, rij fietsen, coniferen,
+   klinkerpad met paaltje, parkeerplaats), een plein met fontein en snackbar, de vijver, de merelboom, een gracht met
+   brug, bootje en grachtenpanden, stadsvlaggen en de Martinitoren.
+
+Elke minigame levert een ⭐ op (5 in totaal):
 
 | ⭐ | Minigame | Waar | Doel |
 |---|---|---|---|
-| 🥜 | **Pistachehuis** | Het bakstenen huis van de buren (links van het plein) | Pik 10 verstopte pistachenootjes zonder dat de **chagrijnige buurvrouw** je ziet. Kruip in een kartonnen doos om je te verstoppen (en voor de *pistacheradar*). |
+| 🥜 | **Pistachehuis** | Nr. 93 op de galerij (9e verdieping) | Pik 10 verstopte pistachenootjes zonder dat de **chagrijnige buurvrouw** je ziet. Kruip in een kartonnen doos om je te verstoppen (en voor de *pistacheradar*). |
+| 🍪 | **Groninger koek** | Bakkerij Moi (het bakstenen huis beneden) | Oma Moi mist 5 ingrediënten: roggemeel, honing, stroop, kaneel en steranijs. Ze liggen verspreid door Stad. |
 | 🪶 | **Verenjacht** | Overal buiten | Vind 8 rode veren (op daken, takken, stenen…). |
 | 🪨 | **Stapstenen** | De vijver | Loop door START en hop via de gele ringen naar de FINISH binnen 18 seconden. Niet in het water vallen! |
 | 🎵 | **Merel-liedjes** | De grote boom met het vogelhuisje | Druk op *E* / 💬 en zing 3 liedjes van de merel na. |
 
-**Patat 🍟** ligt op een paar plekken (o.a. bij de patatkraam) en geeft 15 seconden **patat-power**: supersnel lopen en
-superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Patat komt na een tijdje terug.
+**Patat 🍟 en de Groningse eierbal** (bij de snackbar) geven 15 seconden **superkracht**: supersnel lopen en
+superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Ze komen na een tijdje terug.
 
-Met alle 4 sterren krijgt Puck een **kroon** 👑. Je voortgang (sterren, geheimpjes, beste tijd) wordt in de browser bewaard;
-via het menu (☰) kun je opnieuw beginnen.
+Alles wat je vrijspeelt krijgt een duidelijk effect: een grote pop-up met stralen, confetti, een schokgolf en een flits
+(sterren krijgen een eigen ⭐ STER!-banner). Gevonden ingrediënten staan in de inventaris linksboven.
+
+Met alle 5 sterren krijgt Puck een **kroon** 👑. Je voortgang (sterren, geheimpjes, items, beste tijd) wordt in de
+browser bewaard; via het menu (☰) kun je opnieuw beginnen.
 
 ### De buurvrouw 👓
 
@@ -35,7 +47,7 @@ meubels, tafels en dozen blokkeren haar zicht. Na binnenkomen heb je 2,5 seconde
 
 ### Geheimpjes (easter eggs) 🥚
 
-Er zijn 12 geheimpjes. Een paar hints (spoilers!):
+Er zijn 16 geheimpjes. Een paar hints (spoilers!):
 
 <details>
 <summary>Toon hints</summary>
@@ -47,6 +59,9 @@ Er zijn 12 geheimpjes. Een paar hints (spoilers!):
 - Achter de schuur staat iemand met een rode muts. Op het fietsenhok (klim via de regenpijp) glimt iets gouds.
 - Zoek het badeendje in de vijver.
 - Blijf in de lucht op hop drukken… of tik 5 keer snel op Puck.
+- Lees de deurmat van nr. 93. Klim op het opstapje op de galerij voor een mooi uitzicht.
+- Bel eens aan bij de fietsen voor de flat. En proef een Groningse eierbal.
+- Het vuurdraak-kaartje is een zeldzame holo-kaart: bekijk hem goed als je hem vindt.
 
 </details>
 
@@ -82,7 +97,7 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | Bestand | Wanneer |
 |---|---|
 | `puck-praat-1.mp3` … `puck-praat-5.mp3` | Puck praat (spraakballonnen, tikken op Puck, in een doos). Er wordt willekeurig één gekozen. |
-| `puck-lekker.mp3` | Puck eet iets (pistache, patat, koekje) en zegt "lekker!" |
+| `puck-lekker.mp3` | Puck eet iets (pistache, patat, eierbal, koekje) en zegt "lekker!" (alleen het woord) |
 | `puck-dans.mp3` | Het dansje (tik 5x op Puck) |
 | `puck-geluid-1.mp3` … `puck-geluid-7.mp3` | Krijsjes en fluitjes: blij in een doos, bij een veer, bij tikken op Puck en af en toe uit zichzelf |
 | `puck-wauw.mp3` | "Wauw wauw wauw!" bij een ster of een geheimpje (tot er eigen `star.mp3` / `secret.mp3` zijn) |
@@ -127,12 +142,16 @@ public/
   assets/sounds/        geluiden
 src/
   main.js               spel-loop, gebieden wisselen, HUD, sterren, geheimpjes, patat-power, menu, opslag
-  areas/puckHouse.js    Puck's appartement (startgebied)
-  areas/outside.js      de open wereld: flat, plein, vijver + stapstenen, merelboom, schuur, fietsenhok, veren, patat
+  areas/puckHouse.js    Puck's appartement op de 9e verdieping (startgebied)
+  areas/gallery.js      de galerij op de 9e met balustrade, deuren en de lift
+  areas/bakery.js       Bakkerij Moi met oma Moi en de koek-quest
+  areas/outside.js      Groningen op straatniveau: Donderslaanflat, plein, vijver, gracht, merelboom, schuur, veren, patat, ingrediënten
   areas/pistachioHouse.js  het Pistachehuis (pistache-minigame met dozen en radar)
   areas/neighbor.js     de chagrijnige buurvrouw: rondje lopen, kijkkegel, zichtlijn, buiten zetten
   world/area.js         basisklasse voor gebieden + gedeelde objecten (pistache, veer, patat, koekje, borden…)
   world/materials.js    gedeelde lowpoly-materialen
+  world/fx.js           sfeer: lucht, wolken, wind, vlinders, vogels, fontein, vlaggetjes, zonnestralen, stofjes
+  world/groningen.js    Martinitoren, stadsvlag, fietsen, auto's, grachtenpanden, stadsgezicht
   songGame.js           merel-minigame (nazingen)
   puck.js               Puck-model (geschubde veren, gele iris, rode spikkels) + animaties, hoedjes, gloed
   physics.js            karakterfysica: lopen, klimmen, hoppen, botsen met blokken

@@ -3,6 +3,8 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { Bakery, INGREDIENTS } from './areas/bakery.js';
+import { Gallery } from './areas/gallery.js';
 import { Outside, STONE_TARGET_TIME } from './areas/outside.js';
 import { PistachioHouse } from './areas/pistachioHouse.js';
 import { PuckHouse } from './areas/puckHouse.js';
@@ -12,6 +14,7 @@ import { Input } from './input.js';
 import { CharacterBody, DEFAULT_HOP } from './physics.js';
 import { Puck } from './puck.js';
 import { SongGame } from './songGame.js';
+import { vuurdraakCardCanvas } from './textures.js';
 import { fxTime } from './world/fx.js';
 
 // ---------- Setup ----------
@@ -46,8 +49,10 @@ let baseFov = 60;
 const quality = isTouch ? 'medium' : 'high';
 const areas = {
   puckhuis: new PuckHouse({ quality }),
-  buiten: new Outside({ quality }),
+  galerij: new Gallery({ quality }),
   pistachehuis: new PistachioHouse({ quality }),
+  buiten: new Outside({ quality }),
+  bakkerij: new Bakery({ quality }),
 };
 Object.values(areas).forEach((a) => scene.add(a.group));
 let area = null;
@@ -77,6 +82,7 @@ const STARS = [
   { id: 'veren', icon: '🪶', name: 'Verenjacht', desc: 'Vind 8 rode veren in de buurt' },
   { id: 'stenen', icon: '🪨', name: 'Stapstenen', desc: `Steek de vijver over binnen ${STONE_TARGET_TIME} seconden` },
   { id: 'merel', icon: '🎵', name: 'Merel-liedjes', desc: 'Zing 3 liedjes van de merel na' },
+  { id: 'koek', icon: '🍪', name: 'Groninger koek', desc: 'Breng oma Moi de 5 ingrediënten voor Groninger koek' },
 ];
 const SECRETS = {
   portret: 'Het schilderij bij de buren',
@@ -91,6 +97,10 @@ const SECRETS = {
   eend: 'Het badeendje',
   vliegen: 'Vliegen? Nee hoor!',
   dans: 'Puck danst',
+  deurmat: 'De WEG-deurmat van de buurvrouw',
+  martini: 'Uitzicht op de Martinitoren',
+  fietsbel: 'Tring tring!',
+  eierbal: 'Een echte Groningse eierbal',
 };
 const SAVE_KEY = 'puck-avontuur-v2';
 
@@ -101,9 +111,17 @@ function loadProgress() {
   } catch {
     /* geen opslag beschikbaar */
   }
-  return { stars: {}, secrets: {}, best: null, hat: null };
+  return { stars: {}, secrets: {}, best: null, hat: null, items: {} };
 }
 let progress = loadProgress();
+progress.items = progress.items || {};
+// Al verzamelde ingrediënten niet opnieuw neerleggen
+areas.buiten.collectibles.forEach((c) => {
+  if (c.type === 'ingredient' && progress.items[c.id]) {
+    c.found = true;
+    c.group.visible = false;
+  }
+});
 function saveProgress() {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(progress));
@@ -186,6 +204,7 @@ function award(id) {
   shockwave(tmpV.set(body.pos.x, body.pos.y + 0.02, body.pos.z), 0xffd84a, 3);
   const n = STARS.filter((s) => progress.stars[s.id]).length;
   banner('⭐ STER! ⭐', `${star.icon} ${star.name} (${n}/${STARS.length})`);
+  flashScreen();
   if (n === STARS.length) {
     applyHat();
     toast('Alle sterren verdiend! Puck is de koning van de buurt 👑', 6);
@@ -200,13 +219,29 @@ function secret(id) {
   progress.secrets[id] = true;
   saveProgress();
   audio.play('secret');
+  flashScreen();
   const n = Object.keys(SECRETS).filter((k) => progress.secrets[k]).length;
-  confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 25);
-  setTimeout(() => toast(`🥚 Geheimpje gevonden: ${SECRETS[id]} (${n}/${Object.keys(SECRETS).length})`, 3.5), 300);
+  unlock('🥚', 'GEHEIMPJE!', `${SECRETS[id]} (${n}/${Object.keys(SECRETS).length})`, {
+    image: id === 'kaart' ? cardImage() : null,
+    sound: null,
+  });
   return true;
 }
 
 // ---------- Effecten ----------
+
+function flashScreen() {
+  const f = $('flash');
+  f.classList.remove('on');
+  void f.offsetWidth;
+  f.classList.add('on');
+}
+
+let cardDataUrl = null;
+function cardImage() {
+  if (!cardDataUrl) cardDataUrl = vuurdraakCardCanvas().toDataURL();
+  return cardDataUrl;
+}
 
 function emojiTexture(emoji) {
   const c = document.createElement('canvas');
@@ -361,6 +396,41 @@ function banner(title, sub) {
   bannerEl.classList.add('show');
 }
 
+// Grote "vrijgespeeld!"-pop-up met stralen en confetti
+const unlockEl = $('unlock');
+const unlockQueue = [];
+let unlockBusy = false;
+function unlock(icon, title, sub, { image = null, sound = 'secret' } = {}) {
+  unlockQueue.push({ icon, title, sub, image, sound });
+  if (!unlockBusy) nextUnlock();
+}
+function nextUnlock() {
+  const u = unlockQueue.shift();
+  if (!u) {
+    unlockBusy = false;
+    return;
+  }
+  unlockBusy = true;
+  const visual = u.image ? `<img class="unlock-img" src="${u.image}" alt="">` : `<div class="unlock-icon">${u.icon}</div>`;
+  unlockEl.innerHTML = `<div class="banner-rays"></div>${visual}<div class="unlock-title">${u.title}</div><div class="unlock-sub">${u.sub}</div>`;
+  unlockEl.classList.remove('show');
+  void unlockEl.offsetWidth;
+  unlockEl.classList.add('show');
+  if (u.sound) audio.play(u.sound);
+  confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 30);
+  shockwave(tmpV.set(body.pos.x, body.pos.y + 0.02, body.pos.z), 0xfff1a8, 2);
+  setTimeout(nextUnlock, u.image ? 2600 : 2000);
+}
+
+const inventoryEl = $('inventory');
+function updateInventory() {
+  const have = INGREDIENTS.filter((i) => progress.items[i.id]);
+  const done = progress.stars.koek;
+  inventoryEl.classList.toggle('hidden', !have.length || done);
+  inventoryEl.innerHTML = `<span class="inv-label">Voor oma Moi:</span>` +
+    INGREDIENTS.map((i) => `<span class="inv-item ${progress.items[i.id] ? 'have' : ''}" title="${i.name}">${i.icon}</span>`).join('');
+}
+
 // Pistacheradar (bonus uit de kartonnen dozen)
 const beacon = new THREE.Mesh(
   new THREE.CylinderGeometry(0.1, 0.1, 3, 10, 1, true),
@@ -427,23 +497,32 @@ function enterArea(name, spawnName, { instant = false } = {}) {
   };
   if (instant) return doSwitch();
   state.transitioning = true;
+  const lift = (area?.name === 'galerij' && name === 'buiten') || (area?.name === 'buiten' && name === 'galerij');
+  fadeEl.textContent = lift ? (name === 'buiten' ? '🛗 Lift gaat naar beneden… Ding! Begane grond' : '🛗 Lift gaat omhoog… Ding! 9e verdieping') : '';
   fadeEl.classList.add('on');
-  audio.play('door');
-  setTimeout(() => {
-    doSwitch();
-    setTimeout(() => {
-      fadeEl.classList.remove('on');
-      state.transitioning = false;
-    }, 80);
-  }, 260);
+  audio.play(lift ? 'checkpoint' : 'door');
+  setTimeout(
+    () => {
+      doSwitch();
+      setTimeout(() => {
+        fadeEl.classList.remove('on');
+        state.transitioning = false;
+      }, lift ? 700 : 80);
+    },
+    lift ? 900 : 260,
+  );
 }
 
 function onAreaEntered(name) {
   if (state.mode === 'start') return;
   const first = !visited[name];
   visited[name] = true;
-  if (name === 'buiten' && first) {
-    toast('Buiten! Verdien sterren bij het Pistachehuis, de vijver, de merel en met de verenjacht ⭐', 5);
+  if (name === 'galerij' && first) {
+    toast('De galerij op de 9e! Nr. 93 is de buurvrouw (Pistachehuis). Aan het eind gaat de lift naar beneden.', 5);
+  } else if (name === 'buiten' && first) {
+    toast('Moi! Welkom in Groningen ⭐ Bakkerij Moi, de vijver, de merel en rode veren wachten op je.', 5);
+  } else if (name === 'bakkerij') {
+    toast(progress.stars.koek ? 'Bakkerij Moi ruikt naar vers gebakken koek 🍪' : 'Bakkerij Moi! Praat met oma Moi achter de toonbank.', 3.5);
   } else if (name === 'pistachehuis') {
     const left = area.pistachios.filter((c) => !c.found).length;
     toast(
@@ -470,7 +549,8 @@ function startGame() {
   applyHat();
   setTimeout(() => say('Hallo!', { sound: 'puck-hallo' }), 600);
   setTimeout(() => say('Watskebeurt?'), 3600);
-  toast('Welkom thuis, Puck! Loop door de gang naar de voordeur om naar buiten te gaan.', 5);
+  toast('Welkom thuis op de 9e verdieping, Puck! Loop door de gang naar de voordeur en de galerij op.', 5);
+  updateInventory();
 }
 
 function openMenu() {
@@ -508,7 +588,7 @@ $('menu-sound').addEventListener('click', () => {
 });
 $('menu-reset').addEventListener('click', () => {
   if (!confirm('Weet je het zeker? Alle sterren en geheimpjes worden gewist.')) return;
-  progress = { stars: {}, secrets: {}, best: null, hat: null };
+  progress = { stars: {}, secrets: {}, best: null, hat: null, items: {} };
   saveProgress();
   location.reload();
 });
@@ -610,6 +690,23 @@ function onCollect(c) {
       eat();
       secret('koekje');
       break;
+    case 'eierbal':
+      audio.play('fries');
+      eat();
+      state.powerTime = 15;
+      toast('🥚 Eierbal-power! Supersnel en superhoog hoppen!', 3);
+      secret('eierbal');
+      break;
+    case 'ingredient': {
+      const ing = INGREDIENTS.find((i) => i.id === c.id);
+      progress.items[c.id] = true;
+      saveProgress();
+      updateInventory();
+      const n = INGREDIENTS.filter((i) => progress.items[i.id]).length;
+      unlock(ing.icon, 'NIEUW ITEM!', `${ing.name} (${n}/${INGREDIENTS.length}) — breng het naar oma Moi`, { sound: 'feather' });
+      if (n === INGREDIENTS.length) setTimeout(() => toast('Alles compleet! Breng de ingrediënten naar Bakkerij Moi 🍪', 4), 2200);
+      break;
+    }
     case 'goud':
       audio.play('star');
       say('Watskebeurt? Goud!');
@@ -695,7 +792,7 @@ function updateNeighbor(dt) {
       state.frozen = false;
       state.caught = false;
       state.warned = false;
-      enterArea('buiten', 'pistachehuis');
+      enterArea('galerij', 'buurvrouw');
     }, 1300);
   }
 }
@@ -744,11 +841,48 @@ function checkZones() {
 function interact() {
   const z = state.activeZone;
   if (!z || song.active) return;
+  if (z.id === 'oma') {
+    followCam.yaw = 0; // kijk naar oma achter de toonbank
+    followCam.pitch = 0.55;
+    talkToOma();
+    return;
+  }
   if (z.id === 'merel') {
     state.frozen = true;
     input.releasePointer();
     song.start();
   }
+}
+
+function talkToOma() {
+  const missing = INGREDIENTS.filter((i) => !progress.items[i.id]);
+  if (progress.stars.koek) {
+    toast('Oma Moi: "Moi Puck! Nog een koekje? Alsjeblieft!" 🍪', 3);
+    eat();
+    return;
+  }
+  if (!state.omaMet) {
+    state.omaMet = true;
+    toast('Oma Moi: "Moi! Ik wil Groninger koek bakken, maar ik mis 5 dingen. Ze liggen ergens in Stad. Help je me?"', 6);
+    setTimeout(() => say('Mag ik een koekje?'), 1500);
+    updateInventory();
+    inventoryEl.classList.remove('hidden');
+    return;
+  }
+  if (missing.length) {
+    toast(`Oma Moi: "Ik mis nog: ${missing.map((i) => `${i.icon} ${i.name}`).join(', ')}. Kijk eens ${area.name === 'bakkerij' ? 'goed rond in Stad' : ''}!"`, 5);
+    return;
+  }
+  // Alles compleet: bakken!
+  toast('Oma Moi: "Wat fijn! Even in de oven…" 🔥', 2.5);
+  state.frozen = true;
+  setTimeout(() => {
+    state.frozen = false;
+    eat();
+    say('Mag ik een koekje? Lekker!');
+    award('koek');
+    updateInventory();
+  }, 2200);
 }
 
 function updateStoneRun(dt) {

@@ -247,3 +247,286 @@ export function drawPuckHead(ctx, x, y, s) {
   ctx.fill();
   ctx.restore();
 }
+
+/** Gedetailleerd holo-ruilkaartje: "Vuurdraak, 150 HP". Geeft een canvas terug. */
+export function vuurdraakCardCanvas() {
+  const W = 250;
+  const H = 350;
+  const c = document.createElement('canvas');
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext('2d');
+  const round = (x, y, w, h, r) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  };
+  // Gele rand en oranje vuurkaart
+  ctx.fillStyle = '#f5cf3a';
+  round(0, 0, W, H, 14);
+  ctx.fill();
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#f7a35c');
+  bg.addColorStop(1, '#e8663a');
+  ctx.fillStyle = bg;
+  round(10, 10, W - 20, H - 20, 8);
+  ctx.fill();
+  // Kop: naam + HP + vuursymbool
+  ctx.fillStyle = '#3b1d10';
+  ctx.font = 'bold 20px Georgia, serif';
+  ctx.fillText('Vuurdraak', 20, 36);
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText('150 HP', 150, 35);
+  const flameIcon = (x, y, r) => {
+    ctx.fillStyle = '#d7263d';
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffd36b';
+    ctx.beginPath();
+    ctx.moveTo(x, y - r * 0.7);
+    ctx.quadraticCurveTo(x + r * 0.6, y, x, y + r * 0.6);
+    ctx.quadraticCurveTo(x - r * 0.6, y, x, y - r * 0.7);
+    ctx.fill();
+  };
+  flameIcon(222, 30, 10);
+  // Plaatje: holografische achtergrond met een draak
+  const artX = 20;
+  const artY = 48;
+  const artW = W - 40;
+  const artH = 130;
+  const holo = ctx.createLinearGradient(artX, artY, artX + artW, artY + artH);
+  holo.addColorStop(0, '#fff3a0');
+  holo.addColorStop(0.3, '#ffb35c');
+  holo.addColorStop(0.55, '#ff7a59');
+  holo.addColorStop(0.8, '#ffd36b');
+  holo.addColorStop(1, '#fff7c9');
+  ctx.fillStyle = holo;
+  ctx.fillRect(artX, artY, artW, artH);
+  ctx.strokeStyle = '#c9a15a';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(artX, artY, artW, artH);
+  // Holo-sterretjes
+  ctx.fillStyle = 'rgba(255,255,255,0.8)';
+  for (let i = 0; i < 18; i++) {
+    const x = artX + ((i * 53) % artW);
+    const y = artY + ((i * 37) % artH);
+    ctx.beginPath();
+    ctx.arc(x, y, 1.5 + (i % 3), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // De draak: vleugels, lijf, kop, staart met vlam
+  ctx.save();
+  ctx.translate(artX + artW / 2, artY + artH / 2 + 10);
+  ctx.fillStyle = '#2f7e8a';
+  ctx.beginPath();
+  ctx.moveTo(-5, -10);
+  ctx.lineTo(-70, -55);
+  ctx.lineTo(-55, -15);
+  ctx.lineTo(-75, -10);
+  ctx.lineTo(-20, 10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(10, -10);
+  ctx.lineTo(70, -58);
+  ctx.lineTo(58, -18);
+  ctx.lineTo(78, -12);
+  ctx.lineTo(25, 10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#f08a2c';
+  ctx.beginPath();
+  ctx.ellipse(0, 12, 26, 34, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#ffd99a';
+  ctx.beginPath();
+  ctx.ellipse(4, 20, 14, 22, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#f08a2c';
+  ctx.beginPath();
+  ctx.ellipse(18, -30, 16, 12, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(22, -34, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#111';
+  ctx.beginPath();
+  ctx.arc(23, -34, 1.8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#f08a2c';
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(-20, 35);
+  ctx.quadraticCurveTo(-55, 50, -60, 20);
+  ctx.stroke();
+  ctx.fillStyle = '#ff4b1f';
+  ctx.beginPath();
+  ctx.moveTo(-60, 22);
+  ctx.quadraticCurveTo(-72, 5, -62, -8);
+  ctx.quadraticCurveTo(-54, 6, -60, 22);
+  ctx.fill();
+  // Vuurspuwen
+  const fire = ctx.createLinearGradient(30, -30, 90, -40);
+  fire.addColorStop(0, '#ffe066');
+  fire.addColorStop(1, 'rgba(255,80,30,0)');
+  ctx.fillStyle = fire;
+  ctx.beginPath();
+  ctx.moveTo(30, -28);
+  ctx.lineTo(95, -50);
+  ctx.lineTo(95, -15);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+  // Info-balkje
+  ctx.fillStyle = '#f5cf3a';
+  ctx.fillRect(28, 182, W - 56, 14);
+  ctx.fillStyle = '#3b1d10';
+  ctx.font = 'italic 9px sans-serif';
+  ctx.fillText('Vuur-papegaaimonster. Lengte: 1,7 m. Gewicht: 90 kg', 34, 192);
+  // Aanvallen
+  ctx.font = 'bold 15px sans-serif';
+  flameIcon(30, 222, 7);
+  flameIcon(46, 222, 7);
+  ctx.fillStyle = '#3b1d10';
+  ctx.fillText('Vuurspin', 60, 227);
+  ctx.fillText('120', 196, 227);
+  ctx.font = '10px sans-serif';
+  ctx.fillText('Gooi 2 energie af van deze kaart.', 26, 244);
+  ctx.font = 'bold 15px sans-serif';
+  flameIcon(30, 270, 7);
+  ctx.fillStyle = '#3b1d10';
+  ctx.fillText('Koekjeskracht', 45, 275);
+  ctx.fillText('40', 204, 275);
+  ctx.font = '10px sans-serif';
+  ctx.fillText('"Mag ik een koekje?" Genees 20 HP.', 26, 292);
+  // Voet: zwakte/weerstand
+  ctx.strokeStyle = '#3b1d10';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(22, 305);
+  ctx.lineTo(W - 22, 305);
+  ctx.stroke();
+  ctx.font = '10px sans-serif';
+  ctx.fillText('zwakte: 💧 ×2    weerstand: 🌰 -20    terugtrek: ★★★', 22, 322);
+  ctx.font = 'bold 9px sans-serif';
+  ctx.fillText('4/102 ★  ZELDZAAM  •  Puck-editie 2026', 60, 338);
+  // Hologlans
+  const shine = ctx.createLinearGradient(0, 0, W, H);
+  shine.addColorStop(0.35, 'rgba(255,255,255,0)');
+  shine.addColorStop(0.5, 'rgba(255,255,255,0.35)');
+  shine.addColorStop(0.65, 'rgba(255,255,255,0)');
+  ctx.fillStyle = shine;
+  round(0, 0, W, H, 14);
+  ctx.fill();
+  return c;
+}
+
+export function vuurdraakCardTexture() {
+  const t = new THREE.CanvasTexture(vuurdraakCardCanvas());
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
+/** Lichtgrijze baksteen (plint van de flat). */
+export function greyBrickTexture(repeat = [8, 3]) {
+  return canvasTexture(
+    128,
+    (ctx, s) => {
+      ctx.fillStyle = '#b9b7b1';
+      ctx.fillRect(0, 0, s, s);
+      const bh = 16;
+      for (let r = 0; r < s / bh; r++) {
+        const off = r % 2 ? 16 : 0;
+        for (let x = -32; x < s; x += 32) {
+          const shade = 190 + ((r * 7 + x) % 5) * 6;
+          ctx.fillStyle = `rgb(${shade},${shade - 2},${shade - 8})`;
+          ctx.fillRect(x + off + 1, r * bh + 1, 30, bh - 2);
+        }
+      }
+    },
+    repeat,
+  );
+}
+
+/** Grijze betonnen stoeptegels. */
+export function pavingTexture(repeat = [12, 3]) {
+  return canvasTexture(
+    128,
+    (ctx, s) => {
+      ctx.fillStyle = '#8f9091';
+      ctx.fillRect(0, 0, s, s);
+      for (let y = 0; y < s; y += 32) {
+        for (let x = 0; x < s; x += 32) {
+          const v = 150 + ((x * 3 + y * 5) % 7) * 5;
+          ctx.fillStyle = `rgb(${v},${v},${v + 3})`;
+          ctx.fillRect(x + 1, y + 1, 30, 30);
+        }
+      }
+    },
+    repeat,
+  );
+}
+
+/** Rode klinkers. */
+export function redBrickPavingTexture(repeat = [2, 6]) {
+  return canvasTexture(
+    64,
+    (ctx, s) => {
+      ctx.fillStyle = '#6e3a2e';
+      ctx.fillRect(0, 0, s, s);
+      for (let y = 0; y < s; y += 8) {
+        for (let x = (y / 8) % 2 ? -8 : 0; x < s; x += 16) {
+          ctx.fillStyle = (x + y) % 3 ? '#9b4e3c' : '#8a4535';
+          ctx.fillRect(x + 1, y + 1, 14, 6);
+        }
+      }
+    },
+    repeat,
+  );
+}
+
+/** Grindtegels (terrazzo). */
+export function terrazzoTexture(repeat = [1, 6]) {
+  return canvasTexture(
+    64,
+    (ctx, s) => {
+      ctx.fillStyle = '#cfc9bd';
+      ctx.fillRect(0, 0, s, s);
+      for (let i = 0; i < 260; i++) {
+        const v = 150 + ((i * 37) % 90);
+        ctx.fillStyle = `rgb(${v},${v - 6},${v - 14})`;
+        ctx.fillRect((i * 29) % s, (i * 53) % s, 2, 2);
+      }
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.fillRect(0, 0, s, 1);
+    },
+    repeat,
+  );
+}
+
+/** Rijen brievenbussen in de hal. */
+export function mailboxTexture() {
+  return canvasTexture(
+    128,
+    (ctx, s) => {
+      ctx.fillStyle = '#e7e1d6';
+      ctx.fillRect(0, 0, s, s);
+      for (let y = 8; y < s - 8; y += 12) {
+        for (let x = 6; x < s - 6; x += 20) {
+          ctx.fillStyle = '#3a2e27';
+          ctx.fillRect(x, y, 17, 10);
+          ctx.fillStyle = '#c9a15a';
+          ctx.fillRect(x + 6, y + 4, 5, 1);
+        }
+      }
+    },
+    [1, 1],
+  );
+}

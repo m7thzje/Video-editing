@@ -53,7 +53,7 @@ export class FollowCamera {
     let dist = this.distance;
     this.ray.set(this.smoothTarget, offset);
     for (const c of this.colliders) {
-      if (!c.enabled || c.oneWay) continue;
+      if (!c.enabled || c.oneWay || c.camIgnore) continue;
       this.box.min.copy(c.min);
       this.box.max.copy(c.max);
       if (this.box.containsPoint(this.smoothTarget)) continue;

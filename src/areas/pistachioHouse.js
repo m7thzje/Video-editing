@@ -3,10 +3,12 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { puckPortraitTexture, rugTexture, skyTexture, wallpaperTexture, woodFloorTexture } from '../textures.js';
 import { Area, makePistachio } from '../world/area.js';
 import { Neighbor } from './neighbor.js';
-import { addShaft, DustMotes } from '../world/fx.js';
+import { addShaft, DustMotes, makeSkyDome } from '../world/fx.js';
+import { makeCityView } from '../world/groningen.js';
 import { lambert, M } from '../world/materials.js';
 
-// Het Pistachehuis van de buren: hier verstopt de buurvrouw 10 pistachenootjes.
+// Het Pistachehuis: het appartement van de chagrijnige buurvrouw, ook op de 9e verdieping.
+// Ze verstopt er 10 pistachenootjes.
 // Eenheden zijn ongeveer meters. De kamer loopt van x -4..4, z -3.5..3.5, hoogte 2.7.
 
 export const ROOM = { minX: -4, maxX: 4, minZ: -3.5, maxZ: 3.5, height: 2.7 };
@@ -18,7 +20,7 @@ export class PistachioHouse extends Area {
     super('pistachehuis', opts);
     this.boxes = [];
     this.addSpawn('deur', 3.45, 0, 2.05, -Math.PI / 2);
-    this.portals.push({ x0: ROOM.maxX + 0.1, z0: DOOR.z0, x1: ROOM.maxX + 1, z1: DOOR.z1, to: 'buiten', spawn: 'pistachehuis' });
+    this.portals.push({ x0: ROOM.maxX + 0.1, z0: DOOR.z0, x1: ROOM.maxX + 1, z1: DOOR.z1, to: 'galerij', spawn: 'buurvrouw' });
     this.cameraBounds = {
       minX: ROOM.minX + 0.15,
       maxX: ROOM.maxX - 0.15,
@@ -134,33 +136,10 @@ export class PistachioHouse extends Area {
   }
 
   buildOutside() {
+    // Ook de buurvrouw woont op de 9e verdieping: uitzicht over de daken van Groningen
     this.background = skyTexture();
-
-    const grass = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), M.grass);
-    grass.rotation.x = -Math.PI / 2;
-    grass.position.y = -0.01;
-    this.group.add(grass);
-
-    // Pad naar buiten bij de deur
-    const path = new THREE.Mesh(new THREE.PlaneGeometry(4, 0.9), lambert(0xe6d2a8));
-    path.rotation.x = -Math.PI / 2;
-    path.position.set(ROOM.maxX + 2.3, 0.002, (DOOR.z0 + DOOR.z1) / 2);
-    this.group.add(path);
-
-    const trunkGeo = new THREE.CylinderGeometry(0.12, 0.16, 1.2, 6);
-    const crownGeo = new THREE.IcosahedronGeometry(0.9, 0);
-    const trees = [
-      [-3, -8], [1.5, -9], [4, -7], [-6, -6], [8, 0], [9, 4], [7, -4], [10, -1], [-1, -12],
-    ];
-    trees.forEach(([x, z], i) => {
-      const trunk = new THREE.Mesh(trunkGeo, M.trunk);
-      trunk.position.set(x, 0.6, z);
-      const crown = new THREE.Mesh(crownGeo, i % 2 ? M.treeLeaf : M.leaf);
-      const s = 1 + ((i * 37) % 10) / 20;
-      crown.scale.setScalar(s);
-      crown.position.set(x, 1.4 + s * 0.5, z);
-      this.group.add(trunk, crown);
-    });
+    this.group.add(makeSkyDome(new THREE.Vector3(2.5, 6, -7)));
+    this.group.add(makeCityView(-25, { towerPos: new THREE.Vector3(20, 0, -60), exclude: (x, z) => z > -6 }));
   }
 
   buildWindow() {
