@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { vuurdraakCardTexture } from './textures.js';
+import { mergeStatic } from './world/optimize.js';
 
 // Puck: een grijze roodstaart papegaai (Psittacus erithacus), naar de foto:
 // lichtgrijze geschubde kop, donkerder rug en vleugels, witte oogvlekken met een
@@ -205,6 +206,14 @@ export class Puck {
       this.head.add(b);
     });
     this.dancing = 0;
+
+    // Prestaties: onderdelen per bewegend deel samenvoegen (hoedjes, snavel-items en het hapje blijven los)
+    [...Object.values(this.hats), ...Object.values(this.beakItems), this.snack].forEach((o) => (o.userData.dynamic = true));
+    [this.head, this.tail, ...this.wings, ...this.legs].forEach((part) => {
+      mergeStatic(part);
+      part.userData.dynamic = true;
+    });
+    mergeStatic(this.body);
 
     // Gloed voor patat-power
     const c = document.createElement('canvas');
