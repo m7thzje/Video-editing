@@ -341,7 +341,8 @@ function startGame() {
   visited.puckhuis = true;
   updateStarHud();
   applyHat();
-  setTimeout(() => say('Watskebeurt?'), 600);
+  setTimeout(() => say('Hallo!', { sound: 'puck-hallo' }), 600);
+  setTimeout(() => say('Watskebeurt?'), 3600);
   toast('Welkom thuis, Puck! Loop door de gang naar de voordeur om naar buiten te gaan.', 5);
 }
 
@@ -408,7 +409,9 @@ input.onTap = (x, y) => {
     say('We gaan doen wat we doen! 🎶', { seconds: 4, sound: null });
     secret('dans');
   } else {
-    say(Math.random() < 0.5 ? 'Watskebeurt?' : 'Mag ik een koekje?');
+    // Afwisselend een zinnetje of een krijsje
+    if (state.tapCount % 2) say(Math.random() < 0.5 ? 'Watskebeurt?' : 'Mag ik een koekje?');
+    else say(['Kraa!', 'Fiieuw!', 'Hihi!'][Math.floor(Math.random() * 3)], { sound: 'chirp', seconds: 1.4 });
     puck.cheer(0.6);
   }
 };
@@ -518,7 +521,7 @@ function checkBoxes() {
   const box = area.boxAt(body.pos);
   if (box && box !== state.insideBox) {
     audio.play('box');
-    say('Watskebeurt?');
+    say('Watskebeurt?', { sound: null });
     puck.cheer(1.6);
     burst(heartTex, tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 5, 0.12);
     if (!box.visited) {
@@ -732,8 +735,13 @@ function update(dt) {
   if (state.idleTalk <= 0) {
     state.idleTalk = 18 + Math.random() * 20;
     if (!song.active && speechTimer <= 0) {
-      const lines = ['Watskebeurt?', 'Mag ik een koekje?', 'Watskebeurt?', 'Mag ik een koekje?', 'Hallo!'];
-      say(lines[Math.floor(Math.random() * lines.length)]);
+      if (Math.random() < 0.35) {
+        say(['Kraa!', 'Fiieuw!', 'Wauw!'][Math.floor(Math.random() * 3)], { sound: 'chirp', seconds: 1.4 });
+      } else {
+        const lines = ['Watskebeurt?', 'Mag ik een koekje?', 'Watskebeurt?', 'Mag ik een koekje?', 'Hallo!'];
+        const line = lines[Math.floor(Math.random() * lines.length)];
+        say(line, { sound: line === 'Hallo!' ? 'puck-hallo' : 'talk' });
+      }
     }
   }
 
@@ -831,4 +839,4 @@ window.addEventListener('resize', onResize);
 onResize();
 
 // Debug-hulpje in de console
-window.__puck = { body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };
+window.__puck = { audio, body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };

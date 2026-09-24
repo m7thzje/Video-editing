@@ -69,26 +69,29 @@ Geluiden staan in `public/assets/sounds/`. De audio start pas na de eerste inter
 Ontbreekt een bestand, dan speelt het spel automatisch een gesynthetiseerd placeholder-geluid af.
 Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 
-**Al aanwezig**, uit de video's van Puck zelf:
+**Al aanwezig**, uit de video's en opnames van Puck zelf:
 
 | Bestand | Wanneer |
 |---|---|
 | `puck-praat-1.mp3` … `puck-praat-5.mp3` | Puck praat (spraakballonnen, tikken op Puck, in een doos). Er wordt willekeurig één gekozen. |
 | `puck-lekker.mp3` | Puck eet iets (pistache, patat, koekje) en zegt "lekker!" |
 | `puck-dans.mp3` | Het dansje (tik 5x op Puck) |
+| `puck-geluid-1.mp3` … `puck-geluid-7.mp3` | Krijsjes en fluitjes: blij in een doos, bij een veer, bij tikken op Puck en af en toe uit zichzelf |
+| `puck-wauw.mp3` | "Wauw wauw wauw!" bij een ster of een geheimpje (tot er eigen `star.mp3` / `secret.mp3` zijn) |
+| `puck-hallo.mp3` | "Hallo!" bij de start van het spel |
 
 **Nog te leveren** (nu placeholders):
 
 | Bestand | Wanneer |
 |---|---|
 | `nut.mp3` | pistachenootje gevonden |
-| `box.mp3` | Puck kruipt in een kartonnen doos |
+| `box.mp3` | Puck kruipt in een kartonnen doos (nu: een krijsje van Puck) |
 | `hop.mp3` | Puck hopt |
-| `feather.mp3` | rode veer gevonden |
+| `feather.mp3` | rode veer gevonden (nu: een krijsje van Puck) |
 | `fries.mp3` | patat-power start |
-| `star.mp3` | ster verdiend |
+| `star.mp3` | ster verdiend (nu: Puck's "wauw") |
 | `level-complete.mp3` | minigame voltooid (fanfare) |
-| `secret.mp3` | geheimpje gevonden |
+| `secret.mp3` | geheimpje gevonden (nu: Puck's "wauw") |
 | `splash.mp3` | plons in de vijver |
 | `squeak.mp3` | badeendje |
 | `door.mp3` | door een deur gaan |

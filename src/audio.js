@@ -8,11 +8,22 @@ const EXTENSIONS = ['mp3', 'ogg', 'wav'];
 export const SOUND_NAMES = [
   'nut', 'box', 'hop', 'level-complete', 'feather', 'fries', 'secret', 'splash', 'squeak', 'star', 'door', 'checkpoint',
   'puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5', 'puck-dans', 'puck-lekker',
+  'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
+  'puck-wauw', 'puck-hallo',
 ];
 
 // Groepen: er wordt willekeurig een geladen variant gekozen.
 const GROUPS = {
   talk: ['puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5'],
+  chirp: ['puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7'],
+};
+
+// Ontbreekt een eigen bestand (bijv. box.mp3), gebruik dan eerst een geluidje van Puck zelf.
+const FALLBACKS = {
+  box: 'chirp',
+  feather: 'chirp',
+  star: 'puck-wauw',
+  secret: 'puck-wauw',
 };
 
 export class AudioManager {
@@ -60,6 +71,10 @@ export class AudioManager {
   play(name, { volume = 1, rate = 1, freq } = {}) {
     if (!this.unlocked || this.muted || !this.ctx) return;
     if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (!this.buffers.has(name) && FALLBACKS[name]) {
+      const fb = FALLBACKS[name];
+      if (this.buffers.has(fb) || (GROUPS[fb] || []).some((n) => this.buffers.has(n))) name = fb;
+    }
     if (GROUPS[name]) {
       const loaded = GROUPS[name].filter((n) => this.buffers.has(n));
       if (loaded.length) name = loaded[Math.floor(Math.random() * loaded.length)];
@@ -75,7 +90,7 @@ export class AudioManager {
       src.start();
       return;
     }
-    const synth = PLACEHOLDERS[name] || (name.startsWith('puck-') ? PLACEHOLDERS.talk : null);
+    const synth = PLACEHOLDERS[name] || (name.startsWith('puck-') || name === 'chirp' ? PLACEHOLDERS.talk : null);
     if (synth) synth(this.ctx, this.master, volume, freq);
   }
 
