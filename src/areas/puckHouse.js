@@ -13,17 +13,21 @@ import { addShaft, DustMotes, makeSkyDome } from '../world/fx.js';
 import { makeCityView } from '../world/groningen.js';
 import { lambert, M } from '../world/materials.js';
 
-// Puck's eigen appartement op de 9e verdieping van een flat in Groningen, nagebouwd naar de foto's:
-// woonkamer met grijze L-bank, groene tv-wand, ronde bijzettafeltjes, grote zwarte kooi
-// met boogdak, eettafel met X-poten en mintgroene stoelen, notenhouten dressoir met
-// letterbord, donkere ladekast met monstera en een gang met donkere tegels naar de voordeur.
+// Puck's eigen appartement (nr. 141) op de 9e verdieping van de Donderslaanflat, nagebouwd naar de foto's.
+// Eén open woonkamer: de grote zwarte kooi staat in de hoek bij het grote raam met de eettafel ervoor,
+// aan de overkant (tegenover de kooi) zit de balkondeur met daarnaast de grijze L-bank langs de ramen.
+// Tegenover de bank een losse groene tv-wand; aan de andere kant daarvan de donkere ladekasten.
+// Notenhouten dressoir met letterbord, gang met donkere tegels naar de voordeur, en een balkon.
 //
-// Woonkamer: x -5..5, z -3.5..3.5. Gang: x 0.4..1.6, z 3.5..10.5. Hoogte 2.6.
+// Woonkamer: x -5..5, z -3.5..3.5. Balkon: x -6.5..-5.25. Gang: x 0.4..1.6, z 3.5..10.5. Hoogte 2.6.
 
 const H = 2.6;
 const R = { minX: -5, maxX: 5, minZ: -3.5, maxZ: 3.5 };
 const HALL = { x0: 0.4, x1: 1.6, z1: 10.5 };
 const HALL_DOOR = { x0: 0.5, x1: 1.4 };
+const BALCONY = { x0: -6.5, x1: -5.25, door0: -2.6, door1: -1.7 };
+// Kooi in de noordoosthoek, bij het grote raam
+const CAGE = { x0: 3.55, x1: 4.8, z0: -3.4, z1: -2.6 };
 
 const P = {
   wall: lambert(0xf4f1ea),
@@ -52,12 +56,12 @@ export class PuckHouse extends Area {
   constructor(opts) {
     super('puckhuis', opts);
     this.background = skyTexture();
-    this.cameraBounds = { minX: R.minX + 0.15, maxX: R.maxX - 0.15, minZ: R.minZ + 0.15, maxZ: HALL.z1 - 0.15, minY: 0.12, maxY: H - 0.15 };
+    this.cameraBounds = { minX: BALCONY.x0 + 0.15, maxX: R.maxX - 0.15, minZ: R.minZ + 0.15, maxZ: HALL.z1 - 0.15, minY: 0.12, maxY: H - 0.15 };
     this.cameraDistance = 1.6;
 
     // Start: op de roze zitstok naast de kooi, net als op de foto
-    this.addSpawn('start', 1.12, 1.25, -2.95, Math.PI / 4);
-    this.spawns.start.camYaw = Math.PI / 4 + 0.3;
+    this.addSpawn('start', CAGE.x0 - 0.2, 1.25, CAGE.z0 + 0.45, -Math.PI / 4);
+    this.spawns.start.camYaw = -(Math.PI / 4 + 0.3);
     this.addSpawn('voordeur', 1.0, 0, 9.9, Math.PI);
     this.portals.push({ x0: HALL.x0, z0: HALL.z1 - 0.3, x1: HALL.x1, z1: HALL.z1 + 1, to: 'galerij', spawn: 'puck' });
 
@@ -71,10 +75,11 @@ export class PuckHouse extends Area {
     this.buildSideboard();
     this.buildDresser();
     this.buildHallway();
+    this.buildBalcony();
     this.addLights({ sunPos: new THREE.Vector3(-7, 6, 2.5), center: new THREE.Vector3(0, 0, 3.2), size: 7.8, hemi: 1.7 });
     // Zonnestralen door de grote ramen, met zwevende stofjes
     [-2.4, -0.3, 1.8].forEach((z) => addShaft(this.group, new THREE.Vector3(-5, 2.1, z), new THREE.Vector3(-2.6, 0, z - 0.85), 1.1));
-    [2.0, 3.6].forEach((x) => addShaft(this.group, new THREE.Vector3(x, 2.1, -3.5), new THREE.Vector3(x + 0.4, 0, -1.6), 0.9, 0.08));
+    [-2.0, 0.2].forEach((x) => addShaft(this.group, new THREE.Vector3(x, 2.1, -3.5), new THREE.Vector3(x + 0.4, 0, -1.6), 0.9, 0.08));
     this.fx.push(new DustMotes(this.group, new THREE.Box3(new THREE.Vector3(-4.6, 0.3, -3.2), new THREE.Vector3(-1.8, 2.3, 2.3))));
     const hallLamp = new THREE.PointLight(0xffd6a0, 1.4, 5, 1.5);
     hallLamp.position.set(1, 2.3, 7);
@@ -99,27 +104,50 @@ export class PuckHouse extends Area {
     ceiling.position.set(0, H, 3.5);
     this.group.add(ceiling);
 
-    // West: grote raampartij achter de bank + balkondeur
-    this.wall(R.minX - t, 0, R.minZ, R.minX, 0.5, R.maxZ);
+    // West: raampartij achter de bank met de balkondeur (open) aan de kant van de eettafel
+    const { door0, door1 } = BALCONY;
+    this.wall(R.minX - t, 0, R.minZ, R.minX, 0.5, door0);
+    this.wall(R.minX - t, 0, door1, R.minX, 0.5, R.maxZ);
     this.wall(R.minX - t, 2.35, R.minZ, R.minX, H, R.maxZ);
-    this.addCollider(R.minX - t, 0, R.minZ, R.minX - 0.05, H, R.maxZ, { name: 'raam' });
-    const glassW = new THREE.Mesh(new THREE.PlaneGeometry(R.maxZ - R.minZ, 1.85), M.glass);
-    glassW.rotation.y = Math.PI / 2;
-    glassW.position.set(R.minX - 0.08, 1.425, 0);
-    this.group.add(glassW);
-    for (const z of [-3.45, -1.6, 0.4, 2.45, 3.45]) this.block(R.minX - 0.12, 0.5, z - 0.04, R.minX, 2.35, z + 0.04, M.white, { collide: false });
-    this.block(R.minX - 0.12, 0.47, R.minZ, R.minX + 0.02, 0.53, 2.45, M.white, { collide: false });
-    // Vitrage
-    for (let i = 0; i < 5; i++) {
-      const c = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.2), P.curtain);
+    this.wall(R.minX - t, 2.15, door0, R.minX, 2.35, door1);
+    this.addCollider(R.minX - t, 0, R.minZ, R.minX - 0.05, H, door0, { name: 'raam' });
+    this.addCollider(R.minX - t, 0, door1, R.minX - 0.05, H, R.maxZ, { name: 'raam' });
+    this.block(R.minX - t, 0, door0, R.minX, 0.04, door1, M.white, { collide: false, shadow: false });
+    const paneN = new THREE.Mesh(new THREE.PlaneGeometry(door0 - R.minZ, 1.85), M.glass);
+    paneN.rotation.y = Math.PI / 2;
+    paneN.position.set(R.minX - 0.08, 1.425, (R.minZ + door0) / 2);
+    const paneS = new THREE.Mesh(new THREE.PlaneGeometry(R.maxZ - door1, 1.85), M.glass);
+    paneS.rotation.y = Math.PI / 2;
+    paneS.position.set(R.minX - 0.08, 1.425, (door1 + R.maxZ) / 2);
+    this.group.add(paneN, paneS);
+    for (const z of [-3.45, door0 - 0.04, door1 + 0.04, 0.4, 2.0, 3.45]) this.block(R.minX - 0.12, 0.5, z - 0.04, R.minX, 2.35, z + 0.04, M.white, { collide: false });
+    this.block(R.minX - 0.12, 0.47, door1, R.minX + 0.02, 0.53, R.maxZ, M.white, { collide: false });
+    this.block(R.minX - 0.12, 0, door0 - 0.06, R.minX, 2.2, door0, M.white, { collide: false });
+    this.block(R.minX - 0.12, 0, door1, R.minX, 2.2, door1 + 0.06, M.white, { collide: false });
+    this.block(R.minX - 0.12, 2.15, door0, R.minX, 2.2, door1, M.white, { collide: false });
+    // Glazen balkondeur staat open naar buiten
+    const bdHinge = new THREE.Group();
+    bdHinge.position.set(R.minX - t, 0, door1);
+    bdHinge.rotation.y = -1.25;
+    this.group.add(bdHinge);
+    const dw = door1 - door0;
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(dw, 2.1, 0.05), M.white);
+    frame.position.set(-dw / 2, 1.05, 0);
+    const dGlass = new THREE.Mesh(new THREE.PlaneGeometry(dw - 0.14, 1.9), M.glass);
+    dGlass.position.set(-dw / 2, 1.1, 0.03);
+    frame.scale.set(1, 1, 1);
+    bdHinge.add(frame, dGlass);
+    // Vitrage (niet voor de deur)
+    [-3.1, -0.9, 0.4, 1.6, 2.8].forEach((z, i) => {
+      const c = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 2.2), P.curtain);
       c.rotation.y = Math.PI / 2 + (i % 2 ? 0.08 : -0.08);
-      c.position.set(R.minX + 0.12, 1.3, -2.9 + i * 1.25);
+      c.position.set(R.minX + 0.12, 1.3, z);
       this.group.add(c);
-    }
+    });
 
-    // Noord: lounge dicht, eetkamer met raam (x 1.4..4.4)
-    const wx0 = 1.4;
-    const wx1 = 4.4;
+    // Noord: groot raam boven de radiator, met de eettafel ervoor en de kooi in de hoek
+    const wx0 = -3.4;
+    const wx1 = 3.2;
     this.wall(R.minX, 0, R.minZ - t, wx0, H, R.minZ);
     this.wall(wx1, 0, R.minZ - t, R.maxX + t, H, R.minZ);
     this.wall(wx0, 0, R.minZ - t, wx1, 0.95, R.minZ);
@@ -128,7 +156,7 @@ export class PuckHouse extends Area {
     const glassN = new THREE.Mesh(new THREE.PlaneGeometry(wx1 - wx0, 1.35), M.glass);
     glassN.position.set((wx0 + wx1) / 2, 1.625, R.minZ - 0.12);
     this.group.add(glassN);
-    for (const x of [wx0, 2.4, wx1]) this.block(x - 0.04, 0.95, R.minZ - 0.16, x + 0.04, 2.3, R.minZ - 0.08, M.white, { collide: false });
+    for (const x of [wx0, -1.2, 1.0, wx1]) this.block(x - 0.04, 0.95, R.minZ - 0.16, x + 0.04, 2.3, R.minZ - 0.08, M.white, { collide: false });
     this.block(wx0 - 0.05, 0.9, R.minZ, wx1 + 0.05, 0.95, R.minZ + 0.22, M.white, { oneWay: true, name: 'vensterbank' });
     // Rolgordijn half omlaag
     this.block(wx0, 2.3, R.minZ, wx1, 2.42, R.minZ + 0.12, P.blind, { collide: false });
@@ -141,19 +169,11 @@ export class PuckHouse extends Area {
     this.group.add(rad);
     this.addCollider(wx0 + 0.08, 0, R.minZ, wx1 - 0.08, 0.7, R.minZ + 0.16, { climbable: true, name: 'radiator' });
 
-    // Oost: balkondeur (dicht)
+    // Oost: dichte witte muur
     this.wall(R.maxX, 0, R.minZ, R.maxX + t, H, R.maxZ);
-    const bd = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 2.1), M.glass);
-    bd.rotation.y = -Math.PI / 2;
-    bd.position.set(R.maxX - 0.02, 1.05, -2.1);
-    this.group.add(bd);
-    this.block(R.maxX - 0.08, 0, -2.6, R.maxX, 2.15, -2.55, M.white, { collide: false });
-    this.block(R.maxX - 0.08, 0, -1.65, R.maxX, 2.15, -1.6, M.white, { collide: false });
-    this.block(R.maxX - 0.08, 2.1, -2.6, R.maxX, 2.15, -1.6, M.white, { collide: false });
 
     // Zuid: groene muur links, deur naar de gang, witte muur rechts
     this.wall(R.minX, 0, R.maxZ, HALL_DOOR.x0, H, R.maxZ + t, P.wall);
-    this.block(-2.2, 0, R.maxZ - 0.01, HALL_DOOR.x0 - 0.1, H, R.maxZ, P.green, { collide: false, shadow: false });
     this.wall(HALL_DOOR.x1, 0, R.maxZ, R.maxX, H, R.maxZ + t);
     this.wall(HALL_DOOR.x0, 2.1, R.maxZ, HALL_DOOR.x1, H, R.maxZ + t);
     // Openstaande deur met matglas
@@ -176,6 +196,7 @@ export class PuckHouse extends Area {
     // Plinten
     this.block(R.minX, 0, R.minZ, R.maxX, 0.07, R.minZ + 0.015, M.white, { collide: false, shadow: false });
     this.block(R.maxX - 0.015, 0, R.minZ, R.maxX, 0.07, R.maxZ, M.white, { collide: false, shadow: false });
+    this.block(R.minX, 0, R.maxZ - 0.015, HALL_DOOR.x0, 0.07, R.maxZ, M.white, { collide: false, shadow: false });
   }
 
   buildView() {
@@ -186,21 +207,22 @@ export class PuckHouse extends Area {
   }
 
   buildSofa() {
+    // Grijze L-bank: lang deel langs de ramen (naast de balkondeur), korte poot langs de witte zuidmuur
     const o = { climbable: true, name: 'bank' };
     const x0 = R.minX + 0.08;
-    // Deel langs de noordmuur
-    this.block(x0, 0.08, -3.42, -2.3, 0.45, -2.55, P.sofa, o);
-    this.block(x0, 0.08, -3.45, -2.3, 0.85, -3.18, P.sofa, o);
-    this.block(-2.52, 0.08, -3.42, -2.3, 0.62, -2.55, P.sofa, o);
+    // Chaise longue aan de kant van de balkondeur
+    this.block(x0, 0.08, -1.45, -3.25, 0.45, -0.3, P.sofaDark, o);
+    this.block(x0, 0.08, -1.45, -4.7, 0.62, -0.3, P.sofa, o);
     // Deel langs het raam
-    this.block(x0, 0.08, -2.55, -4.05, 0.45, 1.3, P.sofa, o);
-    this.block(x0, 0.08, -3.18, -4.7, 0.85, 1.3, P.sofa, o);
-    // Chaise longue
-    this.block(x0, 0.08, 1.3, -3.25, 0.45, 2.45, P.sofaDark, o);
-    this.block(x0, 0.08, 1.3, -4.7, 0.62, 2.45, P.sofa, o);
+    this.block(x0, 0.08, -0.3, -4.05, 0.45, 2.55, P.sofa, o);
+    this.block(x0, 0.08, -0.3, -4.7, 0.85, 3.42, P.sofa, o);
+    // Deel langs de zuidmuur
+    this.block(x0, 0.08, 2.55, -2.3, 0.45, 3.42, P.sofa, o);
+    this.block(-4.7, 0.08, 3.18, -2.3, 0.85, 3.45, P.sofa, o);
+    this.block(-2.52, 0.08, 2.55, -2.3, 0.62, 3.42, P.sofa, o);
     // Kussennaden
-    this.block(-3.62, 0.45, -3.2, -3.58, 0.47, -2.55, P.sofaDark, { collide: false, shadow: false });
-    this.block(-4.7, 0.45, -1.0, -4.05, 0.47, -0.96, P.sofaDark, { collide: false, shadow: false });
+    this.block(-3.62, 0.45, 2.55, -3.58, 0.47, 3.2, P.sofaDark, { collide: false, shadow: false });
+    this.block(-4.7, 0.45, 1.0, -4.05, 0.47, 1.04, P.sofaDark, { collide: false, shadow: false });
     // Kussens, plaid en speeltje
     const pillow = (x, y, z, ry, mat) => {
       const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 0), mat);
@@ -210,14 +232,14 @@ export class PuckHouse extends Area {
       m.castShadow = true;
       this.group.add(m);
     };
-    pillow(-4.45, 0.62, -2.4, 0.7, P.navy);
-    pillow(-2.9, 0.62, -2.95, Math.PI / 2, lambert(0xa9c3ad));
-    pillow(-4.4, 0.55, 0.9, 0.2, lambert(0xc9cfc4));
-    this.block(-4.0, 0.45, 0.2, -3.45, 0.5, 0.95, P.blanket, { collide: false });
+    pillow(-4.45, 0.62, 2.95, -0.7, P.navy);
+    pillow(-2.9, 0.62, 3.0, Math.PI / 2, lambert(0xa9c3ad));
+    pillow(-4.4, 0.55, -0.1, -0.2, lambert(0xc9cfc4));
+    this.block(-4.0, 0.45, 0.4, -3.45, 0.5, 1.15, P.blanket, { collide: false });
     const toyColors = [0xe23b3b, 0xf2c230, 0x3d9be0, 0x6ac46b, 0xe86fb4];
     toyColors.forEach((c, i) => {
       const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.035, 0), lambert(c));
-      b.position.set(-3.9 + i * 0.08, 0.49, 1.9 + Math.sin(i) * 0.08);
+      b.position.set(-3.9 + i * 0.08, 0.49, -0.9 + Math.sin(i) * 0.08);
       this.group.add(b);
     });
   }
@@ -242,12 +264,12 @@ export class PuckHouse extends Area {
   }
 
   buildCoffeeTables() {
-    this.roundTable(-2.2, -1.35, 0.5, 0.46);
-    this.roundTable(-3.05, -1.75, 0.34, 0.5);
-    this.roundTable(-2.95, -0.75, 0.3, 0.38);
+    this.roundTable(-2.4, 1.3, 0.5, 0.46);
+    this.roundTable(-3.2, 0.8, 0.34, 0.5);
+    this.roundTable(-3.0, 2.1, 0.3, 0.38);
     // Schaaltje en een controller (easter egg: tv aan!)
     const dish = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.07, 0.03, 8), lambert(0xc9e46a));
-    dish.position.set(-2.0, 0.48, -1.55);
+    dish.position.set(-2.2, 0.48, 1.1);
     this.group.add(dish);
     const pad = new THREE.Group();
     const padBody = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.035, 0.09), M.white);
@@ -256,39 +278,40 @@ export class PuckHouse extends Area {
     const gripR = gripL.clone();
     gripR.position.x = 0.06;
     pad.add(padBody, gripL, gripR);
-    pad.position.set(-2.95, 0.4, -0.75);
+    pad.position.set(-3.0, 0.4, 2.1);
     pad.rotation.y = 0.5;
     this.group.add(pad);
-    this.zones.push({ x: -2.95, y: 0.38, z: -0.75, r: 0.28, h: 0.3, secret: 'tv', say: 'Watskebeurt? Ik ben op tv!', onEnter: () => this.tvOn() });
+    this.zones.push({ x: -3.0, y: 0.38, z: 2.1, r: 0.28, h: 0.3, secret: 'tv', say: 'Watskebeurt? Ik ben op tv!', onEnter: () => this.tvOn() });
   }
 
   buildTvWall() {
-    // Groene wand met witte pilaar
-    this.block(-0.75, 0, R.minZ, -0.5, H, -0.6, P.green, { shadow: false, name: 'tv-wand' });
+    // Losse groene wand tegenover de bank, met witte pilaar aan de kant van de eettafel
+    this.block(-0.75, 0, -0.2, -0.5, H, R.maxZ, P.green, { shadow: false, name: 'tv-wand' });
     this.block(-0.78, 0, -0.62, -0.35, H, -0.2, P.wall, { shadow: false });
     // Notenhouten tv-meubel met ribbels
-    this.block(-1.3, 0.12, -3.3, -0.76, 0.58, -0.9, P.walnut, { climbable: true, name: 'tv-meubel' });
-    for (let z = -3.25; z < -0.95; z += 0.06) {
+    this.block(-1.3, 0.12, 0.3, -0.76, 0.58, 2.7, P.walnut, { climbable: true, name: 'tv-meubel' });
+    for (let z = 0.35; z < 2.65; z += 0.06) {
       this.block(-1.315, 0.16, z, -1.3, 0.54, z + 0.03, P.walnutDark, { collide: false, shadow: false });
     }
-    [[-1.25, -3.25], [-1.25, -0.95]].forEach(([x, z]) => this.block(x, 0, z - 0.02, x + 0.03, 0.12, z + 0.02, P.black, { collide: false }));
+    [[-1.25, 0.35], [-1.25, 2.65]].forEach(([x, z]) => this.block(x, 0, z - 0.02, x + 0.03, 0.12, z + 0.02, P.black, { collide: false }));
     // Tv
-    this.block(-0.95, 0.58, -2.3, -0.85, 0.66, -1.9, P.black, { collide: false });
-    this.block(-0.92, 0.66, -3.05, -0.84, 1.36, -1.15, P.black, { collide: false });
+    this.block(-0.95, 0.58, 1.3, -0.85, 0.66, 1.7, P.black, { collide: false });
+    this.block(-0.92, 0.66, 0.55, -0.84, 1.36, 2.45, P.black, { collide: false });
     this.tvScreen = new THREE.Mesh(new THREE.PlaneGeometry(1.84, 0.64), P.tv);
     this.tvScreen.rotation.y = -Math.PI / 2;
-    this.tvScreen.position.set(-0.925, 1.01, -2.1);
+    this.tvScreen.position.set(-0.925, 1.01, 1.5);
+    this.tvScreen.userData.noMerge = true;
     this.group.add(this.tvScreen);
-    this.addCollider(-0.95, 0.58, -3.05, -0.84, 1.36, -1.15, { name: 'tv' });
+    this.addCollider(-0.95, 0.58, 0.55, -0.84, 1.36, 2.45, { name: 'tv' });
 
     // Hoge plant (dieffenbachia) in witte pot naast de tv
-    this.plant(-1.6, -3.15, 0.2, 0.36, 1.85, P.whitePot, P.spotLeaf);
+    this.plant(-1.1, 3.05, 0.2, 0.36, 1.85, P.whitePot, P.spotLeaf);
     // Kartonnen koker bij de pilaar: prima klimpaal
     const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.1, 10), M.cardboard);
-    tube.position.set(-0.2, 0.55, 0.15);
+    tube.position.set(-0.1, 0.55, -0.9);
     tube.castShadow = true;
     this.group.add(tube);
-    this.addCollider(-0.3, 0, 0.05, -0.1, 1.1, 0.25, { climbable: true, name: 'koker' });
+    this.addCollider(-0.2, 0, -1.0, 0, 1.1, -0.8, { climbable: true, name: 'koker' });
   }
 
   plant(x, z, r, potH, height, potMat, leafMat) {
@@ -317,10 +340,7 @@ export class PuckHouse extends Area {
 
   buildCage() {
     // Grote zwarte kooi met boogdak, zoals op de foto
-    const x0 = -0.3;
-    const x1 = 0.95;
-    const z0 = -3.4;
-    const z1 = -2.6;
+    const { x0, x1, z0, z1 } = CAGE;
     const cx = (x0 + x1) / 2;
     const cz = (z0 + z1) / 2;
     const base = 0.5;
@@ -386,16 +406,16 @@ export class PuckHouse extends Area {
     // Roze betonnen zitstok aan de zijkant: Puck's favoriete plekje
     const perch = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 0.4, 7), P.pinkPerch);
     perch.rotation.z = Math.PI / 2;
-    perch.position.set(x1 + 0.2, 1.2, z0 + 0.45);
+    perch.position.set(x0 - 0.2, 1.2, z0 + 0.45);
     perch.castShadow = true;
     this.group.add(perch);
-    this.addCollider(x1, 1.17, z0 + 0.36, x1 + 0.4, 1.23, z0 + 0.54, { oneWay: true, name: 'zitstok' });
+    this.addCollider(x0 - 0.4, 1.17, z0 + 0.36, x0, 1.23, z0 + 0.54, { oneWay: true, name: 'zitstok' });
   }
 
   buildDining() {
     // Tafel met eiken blad en zwarte X-poten
-    const tx0 = 1.9;
-    const tx1 = 3.7;
+    const tx0 = -1.6;
+    const tx1 = 0.2;
     const tz0 = -2.3;
     const tz1 = -1.3;
     const top = 0.76;
@@ -411,13 +431,13 @@ export class PuckHouse extends Area {
       this.addCollider(x - 0.04, 0, (tz0 + tz1) / 2 - 0.04, x + 0.04, top, (tz0 + tz1) / 2 + 0.04, { climbable: true, name: 'tafelpoot' });
     });
     // Spulletjes op tafel
-    this.block(2.9, top, -2.1, 3.15, top + 0.12, -1.95, lambert(0xf3c6cf), { collide: false });
-    this.block(2.2, top, -1.9, 2.6, top + 0.01, -1.55, M.white, { collide: false, shadow: false });
+    this.block(-0.6, top, -2.1, -0.35, top + 0.12, -1.95, lambert(0xf3c6cf), { collide: false });
+    this.block(-1.3, top, -1.9, -0.9, top + 0.01, -1.55, M.white, { collide: false, shadow: false });
     // Een sigaretje tussen de spullen (grapje: Puck doet 'm stoer in zijn snavel)
-    this.addCollectible('sigaret', makeCigarette(), 3.35, top, -1.55, { secret: 'sigaret', glowSize: 0.2 });
+    this.addCollectible('sigaret', makeCigarette(), -0.15, top, -1.55, { secret: 'sigaret', glowSize: 0.2 });
     const tape = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.015, 5, 10), M.metalDark);
     tape.rotation.x = Math.PI / 2;
-    tape.position.set(2.75, top + 0.015, -1.6);
+    tape.position.set(-0.75, top + 0.015, -1.6);
     this.group.add(tape);
 
     // Mintgroene kuipstoelen met houten pootjes
@@ -441,16 +461,16 @@ export class PuckHouse extends Area {
       });
       this.addCollider(x - 0.2, 0, z - 0.2, x + 0.2, 0.48, z + 0.2, { climbable: true, name: 'stoel' });
     };
-    chair(2.5, -2.75, 0);
-    chair(4.15, -1.8, -Math.PI / 2);
+    chair(-1.0, -2.75, 0);
+    chair(0.65, -1.8, -Math.PI / 2);
 
-    // Yucca in zwarte pot in de hoek + mandje
-    this.plant(4.55, -3.05, 0.25, 0.5, 1.6, P.black, M.leaf);
+    // Yucca in zwarte pot in de hoek bij de balkondeur + mandje
+    this.plant(-4.6, -3.1, 0.25, 0.5, 1.6, P.black, M.leaf);
     const basket = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.14, 0.25, 10), P.basket);
-    basket.position.set(4.2, 0.125, -2.4);
+    basket.position.set(-3.95, 0.125, -3.15);
     this.group.add(basket);
-    this.addCollider(4.02, 0, -2.58, 4.38, 0.25, -2.22, { climbable: true });
-    this.leafCluster(4.2, 0.4, -2.4, 0.16);
+    this.addCollider(-4.13, 0, -3.33, -3.77, 0.25, -2.97, { climbable: true });
+    this.leafCluster(-3.95, 0.4, -3.15, 0.16);
   }
 
   buildSideboard() {
@@ -489,15 +509,31 @@ export class PuckHouse extends Area {
     // ...en daar ligt er eentje, verstopt achter het letterbord
     this.addCollectible('koekje', makeCookie(), 4.2, h, 3.32, { secret: 'koekje', glowSize: 0.2 });
     // Kaarsen, droogbloemen en een zwart aapje
-    [[2.9, 0.28], [3.15, 0.22]].forEach(([x, hh]) => {
+    [[3.05, 0.28], [3.3, 0.22]].forEach(([x, hh]) => {
       this.block(x - 0.012, h, 3.23, x + 0.012, h + hh, 3.26, M.white, { collide: false });
     });
+    // Het zwarte tasje met rits en wit logootje: Puck gaat ervan dansen
+    const bag = new THREE.Group();
+    const shell = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.1, 0.22), lambert(0x1c1c1e));
+    shell.scale.set(1, 1, 1);
+    const zip = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.012, 0.225), lambert(0x3a3a3c));
+    const logo = new THREE.Mesh(new THREE.CircleGeometry(0.025, 12), M.white);
+    logo.rotation.x = -Math.PI / 2;
+    logo.position.set(0.1, 0.051, 0.05);
+    const pull = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.01, 0.02), M.metal);
+    pull.position.set(-0.17, 0.0, 0.1);
+    bag.add(shell, zip, logo, pull);
+    bag.position.set(2.35, h + 0.05, 3.25);
+    bag.rotation.y = 0.15;
+    bag.traverse((m) => (m.castShadow = true));
+    this.group.add(bag);
+    this.zones.push({ x: 2.35, y: 0, z: 3.0, r: 0.75, h: 2, secret: 'tasje', dance: true });
     const vase = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 0.2, 8), lambert(0xe7e3da));
-    vase.position.set(2.6, h + 0.1, 3.25);
+    vase.position.set(2.75, h + 0.1, 3.25);
     this.group.add(vase);
     for (let i = 0; i < 6; i++) {
       const s = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.25, 4), lambert(i % 2 ? 0xd8b98a : 0xc9906a));
-      s.position.set(2.6 + Math.sin(i) * 0.06, h + 0.35, 3.25 + Math.cos(i) * 0.05);
+      s.position.set(2.75 + Math.sin(i) * 0.06, h + 0.35, 3.25 + Math.cos(i) * 0.05);
       s.rotation.z = Math.sin(i) * 0.4;
       this.group.add(s);
     }
@@ -510,33 +546,77 @@ export class PuckHouse extends Area {
   }
 
   buildDresser() {
-    // Twee donkere ladekasten tegen de groene muur, met een monstera
-    const z0 = 3.02;
-    const z1 = 3.48;
-    [[-2.0, -0.95], [-0.93, 0.2]].forEach(([x0, x1]) => {
+    // Twee donkere ladekasten tegen de achterkant van de groene wand, met een monstera
+    const x0 = -0.5;
+    const x1 = -0.04;
+    [[0.3, 1.35], [1.37, 2.42]].forEach(([z0, z1]) => {
       this.block(x0, 0.03, z0, x1, 0.85, z1, P.charcoal, { climbable: true, name: 'ladekast' });
-      for (let i = 1; i < 4; i++) this.block(x0 + 0.02, i * 0.21, z0 - 0.01, x1 - 0.02, i * 0.21 + 0.012, z0, P.black, { collide: false, shadow: false });
+      for (let i = 1; i < 4; i++) this.block(x1, i * 0.21, z0 + 0.02, x1 + 0.01, i * 0.21 + 0.012, z1 - 0.02, P.black, { collide: false, shadow: false });
     });
     const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.16, 0.3, 10), P.whitePot);
-    pot.position.set(-1.7, 1.0, 3.25);
+    pot.position.set(-0.27, 1.0, 0.65);
     this.group.add(pot);
     const leaf = new THREE.CircleGeometry(0.22, 7);
     for (let i = 0; i < 7; i++) {
       const m = new THREE.Mesh(leaf, lambert(0x2f6b3a, { side: THREE.DoubleSide }));
       const a = i * 0.9;
-      m.position.set(-1.7 + Math.cos(a) * 0.3, 1.3 + (i % 3) * 0.12, 3.15 + Math.sin(a) * 0.15);
+      m.position.set(-0.2 + Math.sin(a) * 0.15, 1.3 + (i % 3) * 0.12, 0.65 + Math.cos(a) * 0.3);
       m.rotation.set(-1.0 + (i % 3) * 0.3, a, 0.3);
       m.castShadow = true;
       this.group.add(m);
     }
-    // Poolkaart op de groene muur
+    // Poolkaart op de groene wand
     const map = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 1.0), new THREE.MeshLambertMaterial({ map: mapTexture() }));
-    map.rotation.y = Math.PI;
-    map.position.set(-0.9, 1.65, R.maxZ - 0.02);
+    map.rotation.y = Math.PI / 2;
+    map.position.set(-0.49, 1.65, 1.4);
     this.group.add(map);
     // Kandelaar
-    this.block(0.3, 0, 3.3, 0.33, 1.2, 3.33, P.black, { collide: false });
-    [0.9, 1.05, 1.2].forEach((y, i) => this.block(0.28 + i * 0.03, y, 3.3, 0.3 + i * 0.03, y + 0.15, 3.32, M.white, { collide: false }));
+    this.block(-0.3, 0, 2.7, -0.27, 1.2, 2.73, P.black, { collide: false });
+    [0.9, 1.05, 1.2].forEach((y, i) => this.block(-0.32 + i * 0.03, y, 2.7, -0.3 + i * 0.03, y + 0.15, 2.72, M.white, { collide: false }));
+  }
+
+  buildBalcony() {
+    // Balkon over de hele breedte van de raampartij, met hek zoals op de galerij
+    const { x0, x1 } = BALCONY;
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0 + 0.25, R.maxZ - R.minZ), lambert(0x9a9d9f));
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.set((x0 + x1 + 0.25) / 2 - 0.125, 0.001, 0);
+    floor.receiveShadow = true;
+    this.group.add(floor);
+    this.block(x0 - 0.3, -0.25, R.minZ - 0.2, x1, 0, R.maxZ + 0.2, lambert(0xd9d6cf), { collide: false });
+    // Zijschotten en het balkon van de 10e als plafond
+    this.wall(x0 - 0.3, 0, R.minZ - 0.2, x1, H, R.minZ);
+    this.wall(x0 - 0.3, 0, R.maxZ, x1, H, R.maxZ + 0.2);
+    this.block(x0 - 0.3, H, R.minZ - 0.2, x1, H + 0.25, R.maxZ + 0.2, lambert(0xd9d6cf), { collide: false });
+    // Betonnen opstand en gegalvaniseerd spijlenhek
+    const galv = lambert(0xaeb4b6);
+    this.block(x0 - 0.12, 0, R.minZ, x0 + 0.05, 0.15, R.maxZ, lambert(0xb9bcbc), { collide: false });
+    this.block(x0 - 0.1, 1.0, R.minZ, x0 + 0.02, 1.06, R.maxZ, galv, { collide: false });
+    const bars = [];
+    for (let z = R.minZ + 0.06; z < R.maxZ; z += 0.12) bars.push(new THREE.CylinderGeometry(0.012, 0.012, 0.85, 4).translate(x0 - 0.04, 0.575, z));
+    const barMesh = new THREE.Mesh(mergeGeometries(bars), galv);
+    barMesh.castShadow = true;
+    this.group.add(barMesh);
+    this.addCollider(x0 - 0.3, 0, R.minZ, x0 + 0.05, H, R.maxZ, { name: 'balkonhek', camIgnore: true });
+    // Rode regenpijp in de hoek (zoals op de foto)
+    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, H, 8), lambert(0xa3342c));
+    pipe.position.set(x1 - 0.08, H / 2, R.maxZ - 0.12);
+    this.group.add(pipe);
+    // Lichtsnoer onder het plafond
+    const bulbMat = lambert(0xfff1c2, { emissive: 0xffd27a, emissiveIntensity: 0.9 });
+    for (let z = R.minZ + 0.3; z < R.maxZ; z += 0.45) {
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), bulbMat);
+      b.position.set(x1 - 0.12, H - 0.12 - Math.abs(Math.sin(z * 2.2)) * 0.12, z);
+      this.group.add(b);
+    }
+    // Plantjes, een klapstoeltje en de buitenmat
+    this.plant(x0 + 0.35, R.minZ + 0.35, 0.18, 0.3, 1.1, lambert(0xb8653d), M.leaf);
+    this.plant(x0 + 0.35, R.maxZ - 0.5, 0.18, 0.3, 0.8, lambert(0xb8653d), P.spotLeaf);
+    this.block(x0 + 0.3, 0.42, 0.4, x0 + 0.72, 0.46, 0.82, lambert(0x2f6b3a), { climbable: true, name: 'stoeltje' });
+    this.block(x0 + 0.3, 0.46, 0.4, x0 + 0.34, 0.85, 0.82, lambert(0x2f6b3a), { collide: false });
+    this.addCollider(x0 + 0.3, 0, 0.4, x0 + 0.72, 0.42, 0.82, { climbable: true, name: 'stoeltje' });
+    this.block(x1 - 0.7, 0.003, -2.5, x1 - 0.1, 0.01, -1.8, lambert(0x3c4a44), { collide: false, shadow: false });
+    this.zones.push({ x: (x0 + x1) / 2, y: 0, z: 1.8, r: 0.8, h: 1.5, secret: 'balkon', say: 'Watskebeurt? Heel Stad ligt aan mijn pootjes!' });
   }
 
   buildHallway() {

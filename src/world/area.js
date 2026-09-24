@@ -1,5 +1,7 @@
 import * as THREE from 'three';
+import { noDetail } from './detail.js';
 import { vuurdraakCardTexture } from '../textures.js';
+import { makePerson } from './people.js';
 import { lambert, M } from './materials.js';
 
 // Basis voor een speelgebied (Puck's huis, buiten, het Pistachehuis).
@@ -72,6 +74,7 @@ export class Area {
   addLights({ sunPos, center = new THREE.Vector3(), size = 6, hemi = 1.6, sun = 2.2, sunColor = 0xffd9a0 }) {
     const h = new THREE.HemisphereLight(0xfff1dc, 0x9a6f4a, hemi);
     this.group.add(h);
+    this.hemi = h;
     const s = new THREE.DirectionalLight(sunColor, sun);
     s.position.copy(center).add(sunPos);
     s.target.position.copy(center);
@@ -98,6 +101,7 @@ export class Area {
   addCollectible(type, object, x, y, z, extra = {}) {
     const g = new THREE.Group();
     g.position.set(x, y + 0.07, z);
+    g.userData.dynamic = true;
     g.add(glowSprite(extra.glow ?? 0xffe28a, (extra.glowSize ?? 0.3) * 1.4), object);
     this.group.add(g);
     const item = { type, group: g, base: g.position.clone(), found: false, timer: 0, phase: Math.random() * 6.28, ...extra };
@@ -126,6 +130,21 @@ export class Area {
       glow.material.opacity = 0.55 + Math.sin(time * 4 + c.phase) * 0.25;
       glow.scale.setScalar(glow.userData.size * (1 + Math.sin(time * 4 + c.phase) * 0.15));
     }
+  }
+
+  /** Een Groninger die je kunt aanspreken. `id` verwijst naar de dialogen in dialog.js. */
+  addNPC(id, name, x, z, yaw, look = {}, { y = 0, r = 1.1, solid = true } = {}) {
+    this.npcs = this.npcs || [];
+    const person = makePerson(look);
+    person.root.position.set(x, y, z);
+    person.root.rotation.y = yaw;
+    this.group.add(person.root);
+    this.fx.push(person);
+    if (solid) this.addCollider(x - 0.3, y, z - 0.3, x + 0.3, y + (look.sitting ? 1.2 : look.height || 1.75), z + 0.3, { name: id });
+    const npc = { id, name, person, x, y, z };
+    this.npcs.push(npc);
+    this.zones.push({ x, y, z, r, h: 1.2, id: 'npc', npc, prompt: `Praat met ${name} 💬` });
+    return npc;
   }
 
   /** Is punt p binnen een van de portalen? */
@@ -233,6 +252,27 @@ export function makeCard() {
   return g;
 }
 
+let haafsTexture = null;
+/** Bord met het logo van Bakkerij Haafs (wit op zwart). Voorkant richting +z. */
+export function makeHaafsBoard(width = 2.4) {
+  if (!haafsTexture) {
+    haafsTexture = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}assets/images/haafs-logo.png`);
+    haafsTexture.colorSpace = THREE.SRGBColorSpace;
+    haafsTexture.anisotropy = 4;
+  }
+  const height = width * 0.6;
+  const g = new THREE.Group();
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(width, height, 0.06), lambert(0x0d0d0e));
+  panel.castShadow = true;
+  const logo = new THREE.Mesh(
+    new THREE.PlaneGeometry(width * 0.88, width * 0.88 * (173 / 300)),
+    new THREE.MeshBasicMaterial({ map: haafsTexture, transparent: true, toneMapped: false }),
+  );
+  logo.position.z = 0.032;
+  g.add(panel, logo);
+  return g;
+}
+
 /** Rode veer. */
 export function makeFeather() {
   const g = new THREE.Group();
@@ -291,6 +331,6 @@ export function makeSign(lines, { width = 1.2, height = 0.5, bg = '#fff6e6', fg 
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshLambertMaterial({ map: tex }));
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), noDetail(new THREE.MeshLambertMaterial({ map: tex })));
   return mesh;
 }

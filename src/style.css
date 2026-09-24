@@ -726,3 +726,300 @@ h1 {
   .inv-label { display: none; }
   #power { top: calc(110px + env(safe-area-inset-top)); }
 }
+
+/* ---------- Dialogen met Groningers ---------- */
+#dialog {
+  position: fixed;
+  left: 50%;
+  bottom: calc(150px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(92vw, 560px);
+  background: #fffaf0;
+  border: 4px solid var(--ink);
+  border-radius: 16px;
+  padding: 10px 16px 12px;
+  box-shadow: 0 6px 0 rgba(59, 42, 30, 0.35);
+  pointer-events: none;
+  z-index: 4;
+}
+
+#dialog.pop {
+  animation: dialog-pop 0.25s ease-out;
+}
+
+.dialog-name {
+  display: inline-block;
+  margin-top: -24px;
+  margin-bottom: 4px;
+  background: var(--ink);
+  color: #f3c98b;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  transform: translateY(-4px);
+}
+
+.dialog-text {
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+@keyframes dialog-pop {
+  from { transform: translateX(-50%) translateY(10px) scale(0.96); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+}
+
+body:not(.is-touch) #dialog {
+  bottom: calc(70px + env(safe-area-inset-bottom));
+}
+
+#objective {
+  position: absolute;
+  top: calc(64px + env(safe-area-inset-top));
+  right: calc(12px + env(safe-area-inset-right));
+  max-width: min(46vw, 340px);
+  background: rgba(59, 42, 30, 0.82);
+  color: #fff6e6;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: right;
+}
+
+#credits {
+  background: rgba(20, 16, 12, 0.85);
+  color: #fff6e6;
+  overflow: hidden;
+}
+
+.credits-roll {
+  text-align: center;
+  max-width: 460px;
+  animation: credits-in 1.2s ease-out;
+}
+
+.credits-roll p {
+  font-size: 17px;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+
+@keyframes credits-in {
+  from { transform: translateY(60px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 520px) {
+  #objective { top: calc(110px + env(safe-area-inset-top)); font-size: 12px; max-width: 60vw; }
+}
+
+#settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 14px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: bold;
+  background: #fdebd0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+#settings label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#settings label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+#settings input[type='range'] {
+  width: 100%;
+  accent-color: var(--red);
+}
+
+#menu .card {
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+#fps {
+  position: fixed;
+  left: 8px;
+  bottom: 6px;
+  font: bold 12px monospace;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 2px 6px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/* Fluitconcert (ritmespel) */
+#concert {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(300px, 44vw);
+  height: min(460px, 70vh);
+  display: flex;
+  flex-direction: column;
+  background: rgba(40, 28, 20, 0.88);
+  border: 4px solid var(--brown);
+  border-radius: 20px;
+  padding: 10px;
+  color: #fff;
+  box-shadow: var(--shadow);
+  z-index: 15;
+  touch-action: none;
+}
+
+#concert-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: bold;
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+
+#concert-score {
+  font-size: 20px;
+  color: #ffe08a;
+}
+
+#concert-combo {
+  color: #9be59c;
+  font-size: 15px;
+  min-width: 70px;
+  text-align: right;
+}
+
+#concert-lanes {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.concert-lane {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+}
+
+.concert-lane.lit {
+  background: color-mix(in srgb, var(--c) 45%, transparent);
+}
+
+.concert-key {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  width: 34px;
+  height: 34px;
+  line-height: 30px;
+  text-align: center;
+  border-radius: 50%;
+  border: 3px solid var(--c);
+  font-weight: bold;
+  font-size: 16px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.concert-note {
+  position: absolute;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin-left: -22px;
+  border-radius: 50%;
+  background: var(--c);
+  border: 3px solid #fff;
+  color: #2b1d14;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 38px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.concert-note.hit {
+  transform: scale(1.6);
+  opacity: 0;
+}
+
+.concert-note.miss {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+#concert-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 82%;
+  height: 4px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 0 10px #ffe08a;
+  pointer-events: none;
+}
+
+#concert-judge {
+  height: 30px;
+  margin-top: 6px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 22px;
+}
+
+#concert-judge.great { color: #ffe08a; }
+#concert-judge.good { color: #9be59c; }
+#concert-judge.miss { color: #ffb3a6; }
+#concert-judge.pop { animation: pop 0.25s ease-out; }
+
+#concert-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 96px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+@media (max-width: 700px) {
+  #concert {
+    width: min(260px, 60vw);
+    height: min(380px, 58vh);
+    top: auto;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}

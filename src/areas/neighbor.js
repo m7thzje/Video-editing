@@ -73,6 +73,7 @@ export class Neighbor {
 
     this.root = new THREE.Group();
     this.root.position.copy(this.waypoints[0].pos);
+    this.root.userData.dynamic = true;
     parent.add(this.root);
     this.build();
     this.buildCone(parent);
@@ -164,6 +165,7 @@ export class Neighbor {
     this.coneMat = new THREE.MeshBasicMaterial({ color: 0xffe066, transparent: true, opacity: 0.18, depthWrite: false });
     this.cone = new THREE.Mesh(geo, this.coneMat);
     this.cone.position.y = 0.015;
+    this.cone.userData.noMerge = true;
     this.cone.renderOrder = 1;
     parent.add(this.cone);
   }

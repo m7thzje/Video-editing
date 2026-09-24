@@ -34,7 +34,7 @@ export function makeSkyDome(sunDir = new THREE.Vector3(-0.5, 0.55, 0.4)) {
     side: THREE.BackSide,
     depthWrite: false,
     fog: false,
-    uniforms: { uSun: { value: sunDir.clone().normalize() } },
+    uniforms: { uSun: { value: sunDir.clone().normalize() }, uEvening: { value: 0 } },
     vertexShader: `varying vec3 vDir;
       void main() {
         vDir = normalize(position);
@@ -42,6 +42,7 @@ export function makeSkyDome(sunDir = new THREE.Vector3(-0.5, 0.55, 0.4)) {
       }`,
     fragmentShader: `varying vec3 vDir;
       uniform vec3 uSun;
+      uniform float uEvening;
       void main() {
         float h = clamp(vDir.y, -0.2, 1.0);
         vec3 top = vec3(0.30, 0.62, 0.95);
@@ -52,6 +53,11 @@ export function makeSkyDome(sunDir = new THREE.Vector3(-0.5, 0.55, 0.4)) {
         float s = max(dot(normalize(vDir), uSun), 0.0);
         col += vec3(1.0, 0.85, 0.55) * pow(s, 64.0) * 1.6;   // zonneschijf
         col += vec3(1.0, 0.75, 0.45) * pow(s, 6.0) * 0.25;   // gloed
+        // Avond: diepblauw boven, oranjeroze bij de horizon
+        vec3 eve = mix(vec3(1.0, 0.55, 0.35), vec3(0.28, 0.32, 0.6), smoothstep(-0.05, 0.5, h));
+        eve = mix(eve, vec3(0.12, 0.14, 0.32), smoothstep(0.5, 1.0, h));
+        eve += vec3(1.0, 0.6, 0.3) * pow(s, 24.0) * 0.8;
+        col = mix(col, eve, uEvening);
         gl_FragColor = vec4(col, 1.0);
       }`,
   });
@@ -105,6 +111,7 @@ export class Butterflies {
       wl.add(l);
       wr.add(r);
       g.add(wl, wr);
+      g.userData.dynamic = true;
       parent.add(g);
       return { g, wl, wr, cx: x, cz: z, phase: i * 1.7, speed: 0.4 + (i % 3) * 0.15 };
     });
@@ -135,6 +142,7 @@ export class Birds {
     const mat = new THREE.MeshBasicMaterial({ color: 0x3b3f46, side: THREE.DoubleSide, fog: false });
     this.list = Array.from({ length: count }, (_, i) => {
       const m = new THREE.Mesh(geo, mat);
+      m.userData.dynamic = true;
       parent.add(m);
       return { m, r: 18 + (i % 3) * 6, h: 14 + (i % 2) * 4, phase: (i / count) * Math.PI * 2, speed: 0.12 + (i % 2) * 0.05 };
     });

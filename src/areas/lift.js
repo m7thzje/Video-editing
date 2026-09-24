@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Area, makeSign } from '../world/area.js';
 import { lambert, M } from '../world/materials.js';
+import { makePerson } from '../world/people.js';
 
 // De lift van de Donderslaanflat, naar de foto: witte wanden met aluminium strips,
 // leuningen, lichtpaneel, donkere vloer en een grote spiegel op de achterwand.
@@ -79,6 +80,7 @@ export class Lift extends Area {
     this.doors = [-1, 1].map((side) => {
       const d = new THREE.Mesh(new THREE.BoxGeometry(0.42, 2.05, 0.03), P.alu);
       d.position.set(side * 0.21, 1.025, Z + 0.1);
+      d.userData.noMerge = true;
       this.group.add(d);
       return d;
     });
@@ -130,6 +132,22 @@ export class Lift extends Area {
     this.drawDisplay(this.floor);
 
     this.zones.push({ x: 0.2, y: 0, z: 0.3, r: 0.6, h: 1.4, id: 'liftknop', prompt: 'Druk op de liftknop 🛗' });
+    // Buurman Ben hangt altijd in de lift, tegen de achterwand. Ook in de spiegel.
+    const benLook = { shirt: 0x8a8f96, pants: 0x3a3a3a, hairStyle: 'bald', hair: 0xd8d8d8, glasses: true, mood: 'smile', height: 1.72 };
+    const ben = this.addNPC('ben', 'Buurman Ben', -0.36, -0.42, 0.35, benLook, { solid: false, r: 0.55 });
+    ben.person.root.rotation.z = 0.06;
+    ben.person.arms[1].rotation.z = 0.35;
+    const benMirror = makePerson(benLook);
+    benMirror.root.position.copy(ben.person.root.position);
+    benMirror.root.rotation.copy(ben.person.root.rotation);
+    benMirror.arms[1].rotation.z = 0.35;
+    inner.add(benMirror.root);
+    this.fx.push({
+      update: () => {
+        benMirror.head.rotation.copy(ben.person.head.rotation);
+        benMirror.arms[0].rotation.copy(ben.person.arms[0].rotation);
+      },
+    });
     // Op de leuning zie je jezelf in de spiegel
     this.zones.push({ x: 0, y: 0.86, z: -0.35, r: 0.75, h: 0.5, secret: 'liftspiegel', say: 'Watskebeurt? Wat een knappe vogel in de spiegel!' });
     // Deuropening: uitgang (bestemming hangt af van de verdieping)

@@ -15,7 +15,7 @@
     <div id="app"></div>
 
     <div id="hud" class="hidden">
-      <button id="stars" class="pill" aria-label="Voortgang">⭐ <span id="star-count">0</span>/<span id="star-total">4</span></button>
+      <button id="stars" class="pill" aria-label="Voortgang">⭐ <span id="star-count">0</span>/<span id="star-total">9</span></button>
       <div id="counter" class="pill hidden" aria-live="polite"></div>
       <div id="power" class="hidden"><span>🍟 Patat-power!</span><div id="power-bar"><div id="power-fill"></div></div></div>
       <button id="menu-button" class="pill" aria-label="Menu">☰</button>
@@ -23,6 +23,7 @@
       <div id="prompt" class="hidden"></div>
       <div id="speech" class="hidden"></div>
       <div id="inventory" class="hidden"></div>
+      <div id="objective" class="hidden"></div>
     </div>
 
     <div id="touch-ui" class="hidden">
@@ -44,6 +45,23 @@
       <button id="song-stop" class="small-button">Stoppen</button>
     </div>
 
+    <div id="concert" class="hidden">
+      <div id="concert-head">
+        <span>🎵 Fluitconcert</span>
+        <span id="concert-score">0%</span>
+        <span id="concert-combo"></span>
+      </div>
+      <div id="concert-lanes">
+        <div class="concert-lane" style="--c: #e9806e"><span class="concert-key">A</span></div>
+        <div class="concert-lane" style="--c: #f2c230"><span class="concert-key">S</span></div>
+        <div class="concert-lane" style="--c: #5aa9e6"><span class="concert-key">D</span></div>
+        <div id="concert-line"></div>
+      </div>
+      <div id="concert-judge"></div>
+      <div id="concert-count" class="hidden"></div>
+    </div>
+
+    <div id="dialog" class="hidden"><div class="dialog-name"></div><div class="dialog-text"></div></div>
     <div id="banner"></div>
     <div id="unlock"></div>
     <div id="flash"></div>
@@ -55,24 +73,42 @@
         <img class="logo-img" src="./logo.svg" alt="Puck's Adventure logo" />
         <h1>Puck's Adventure</h1>
         <p class="intro">
-          Puck is een grijze roodstaart papegaai. Vliegen? Nee hoor — hij loopt, klimt en hopt
-          liever! Stap uit de kooi, ga naar buiten en verdien <strong>5 sterren</strong> met de
-          minigames. Puck woont op de 9e verdieping van een flat in Groningen: neem de lift
-          naar beneden en ontdek Stad! En let op: overal zitten geheimpjes verstopt…
+          Puck is alleen thuis op nummer 141, op de 9e verdieping van de Donderslaanflat in
+          Groningen. Stil hoor. Veel te stil. Dus bedenkt Puck een plan: hij geeft een groot
+          <strong>fluitconcert</strong> op het plein, net zo lang tot hij niet meer alleen is.
+          Daarvoor moet hij heel Stad warm krijgen. Verdien <strong>9 sterren</strong> met de
+          minigames, dan komt iedereen luisteren. Vliegen doet Puck niet: hij loopt, klimt en hopt.
         </p>
         <div class="controls desktop-only">
-          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> of pijltjes — lopen</div>
-          <div><kbd>Spatie</kbd> — hoppen · <kbd>E</kbd> — praten/doen</div>
-          <div><kbd>Muis</kbd> — camera · <kbd>Esc</kbd> — menu · <kbd>M</kbd> — geluid</div>
+          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> of pijltjes: lopen</div>
+          <div><kbd>Spatie</kbd> hoppen · <kbd>E</kbd> praten/doen</div>
+          <div><kbd>Muis</kbd> camera · <kbd>Esc</kbd> menu · <kbd>M</kbd> geluid</div>
           <div>Loop tegen meubels, bomen of kooien aan om te <strong>klimmen</strong></div>
         </div>
         <div class="controls touch-only">
-          <div>🕹️ Joystick links — lopen · 🔴 Hop! — hoppen</div>
-          <div>💬 Knop — praten/doen · 👆 Vegen — camera</div>
+          <div>🕹️ Joystick links: lopen · 🔴 Hop!: hoppen</div>
+          <div>💬 Knop: praten/doen · 👆 Vegen: camera</div>
           <div>Loop tegen meubels, bomen of kooien aan om te <strong>klimmen</strong></div>
         </div>
         <p class="tip">Tip: patat geeft Puck superkracht! 🍟</p>
         <button id="start-button" class="big-button">Speel!</button>
+      </div>
+    </div>
+
+    <div id="credits" class="overlay hidden">
+      <div class="credits-roll">
+        <img class="logo-img" src="./logo.svg" alt="" />
+        <h1>Puck's Adventure</h1>
+        <p>Met <strong>Puck</strong> als Puck</p>
+        <p>Stem, gekrijs en "Watskecola": <strong>Puck</strong></p>
+        <p>Postbode Harm · Visser Geert · Studente Sjoukje<br />Duivenman Jan · Buurman Klaas · Oma Moi<br />Jumbo-Bas · Eline van de Jumbo · Buurvrouw Tineke<br />Torenwachter Wiebe · Buurman Ben · Meneer Mehmet en Pasja de kat<br />en Mw. Zuur van nummer 143</p>
+        <p>Puck is niet meer alleen thuis. Heel Stad kwam luisteren.</p>
+        <p>Koek: Bakkerij Haafs</p>
+        <p>Gemaakt op de 9e verdieping van de Donderslaanflat</p>
+        <p><em>Er gaat niets boven Groningen.</em></p>
+        <p>Henk de duif deugt nait.</p>
+        <p class="tip">Bedankt veur het spelen! Je kunt gewoon verder spelen en de laatste geheimpjes zoeken.</p>
+        <button id="credits-close" class="big-button">Verder spelen</button>
       </div>
     </div>
 
@@ -81,6 +117,7 @@
         <h2>Puck's avonturenboekje</h2>
         <ul id="quest-list"></ul>
         <p id="secret-line"></p>
+        <div id="settings"></div>
         <div class="menu-buttons">
           <button id="menu-resume" class="big-button">Verder spelen</button>
           <button id="menu-sound" class="small-button">Geluid: aan</button>
@@ -89,6 +126,7 @@
       </div>
     </div>
 
+    <div id="fps" class="hidden"></div>
     <div id="loading">Laden…</div>
 
     <script type="module" src="./src/main.js"></script>

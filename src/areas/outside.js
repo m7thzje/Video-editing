@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import { applyWind, Birds, bunting, Butterflies, Clouds, Fountain, makeSkyDome, waterTexture } from '../world/fx.js';
-import { Area, glowSprite, makeFeather, makeFries, makePistachio, makeSign } from '../world/area.js';
+import { Area, glowSprite, makeFeather, makeFries, makeHaafsBoard, makePistachio, makeSign } from '../world/area.js';
 import { makeBike, makeCanalHouse, makeCar, makeCityView, makeDS3, makeGroningenFlag, makeMartinitoren } from '../world/groningen.js';
 import { greyBrickTexture, mailboxTexture, pavingTexture, redBrickPavingTexture, terrazzoTexture } from '../textures.js';
 import { lambert, M } from '../world/materials.js';
+import { BoxSmash, Pigeons, RingRace, Rival, Walker } from '../minigames.js';
+import { makePerson } from '../world/people.js';
 
 // De open wereld rond Puck's flat. Hier liggen de toegangen tot de minigames:
 //   - Pistachehuis (deur)                       -> 10 pistachenootjes zoeken
@@ -53,6 +55,10 @@ export class Outside extends Area {
     this.buildAtmosphere();
     this.buildGroningen();
     this.buildIngredients();
+    this.buildJumbo();
+    this.buildTower();
+    this.buildPeople();
+    this.buildStage();
     this.addLights({ sunPos: new THREE.Vector3(-18, 30, 14), center: new THREE.Vector3(0, 0, 0), size: 31, sun: 2.4, hemi: 1.5 });
   }
 
@@ -298,12 +304,12 @@ export class Outside extends Area {
     [[9.8, 0x3a3d40], [11.8, 'ds3'], [13.8, 0xb3261e]].forEach(([cx, col]) => {
       const car = col === 'ds3' ? makeDS3() : makeCar(col);
       car.position.set(cx, 0, z1 + 4.5);
-      if (col === 'ds3') car.rotation.y = 0.08;
+      if (col === 'ds3') car.rotation.y = 0.2; // scheef geparkeerd, net als op de foto
       this.group.add(car);
       this.addCollider(cx - 0.85, 0, z1 + 2.55, cx + 0.85, 0.85, z1 + 6.45, { climbable: true, name: 'auto' });
       this.addCollider(cx - 0.75, 0.85, z1 + 3.25, cx + 0.75, 1.4, z1 + 5.35, { climbable: true, name: 'auto' });
     });
-    this.zones.push({ x: 11.8, y: 0, z: z1 + 2.2, r: 0.8, h: 1.6, secret: 'ds3', say: 'Watskebeurt? Mijn DS3! P-UCK-91' });
+    this.zones.push({ x: 11.8, y: 0, z: z1 + 2.2, r: 0.8, h: 1.6, secret: 'ds3', say: 'Watskebeurt? Mijn DS3! P-UCK-141' });
     this.sign(['🦜 Puck', 'parkeerplaats'], 11.8, 0.9, z1 + 6.9, Math.PI, { width: 0.8, height: 0.35 });
     this.block(11.75, 0, z1 + 6.95, 11.85, 0.7, z1 + 7.05, M.metalDark, { collide: false });
     // Brievenbus op de hoek
@@ -334,16 +340,13 @@ export class Outside extends Area {
       this.block(x1, 1.0, z - 0.7, x1 + 0.2, 1.1, z + 0.7, M.white, { collide: false });
     });
     this.portals.push({ x0: x1 - 0.5, z0: 5.1, x1: x1 + 0.3, z1: 6.0, to: 'bakkerij', spawn: 'deur' });
-    // Uithangbord met logo
-    const board = this.sign(['Bakkerij Moi', 'Groninger koek'], x1 + 0.05, 2.65, 5.55, Math.PI / 2, { width: 1.5, height: 0.55, bg: '#fff3d6' });
-    board.material.side = THREE.DoubleSide;
-    // Grote koek als uithangteken
-    const koek = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.5, 1.2), lambert(0x8a4b22));
-    koek.position.set(x1 + 0.3, 3.35, 5.55);
-    koek.castShadow = true;
-    this.group.add(koek);
-    this.pistachioMarker = glowSprite(0xffc34a, 1.3, 0.5);
-    this.pistachioMarker.position.set(x1 + 0.35, 3.4, 5.55);
+    // Gevelbord van Bakkerij Haafs: logo op zwarte achtergrond, steekt boven de dakrand uit
+    const board = makeHaafsBoard(2.6);
+    board.rotation.y = Math.PI / 2;
+    board.position.set(x1 + 0.1, 3.05, 5.55);
+    this.group.add(board);
+    this.pistachioMarker = glowSprite(0xffc34a, 1.1, 0.4);
+    this.pistachioMarker.position.set(x1 + 0.5, 2.35, 5.55);
     this.group.add(this.pistachioMarker);
     // Bloembak
     this.block(x1, 0, 6.3, x1 + 0.4, 0.35, 8.5, M.woodDark, { climbable: true });
@@ -391,6 +394,7 @@ export class Outside extends Area {
       ring.rotation.y = Math.PI / 2;
       ring.position.set(cx, finish ? 0.6 : 0.75, cz);
       ring.visible = false;
+      ring.userData.noMerge = true;
       this.group.add(ring);
       this.checkpoints.push({ ring, x: cx, z: cz });
     });
@@ -409,6 +413,7 @@ export class Outside extends Area {
     beak.position.set(0.19, 0.12, 0);
     duck.add(body, head, beak);
     duck.position.set(10, 0.1, 12.4);
+    duck.userData.dynamic = true;
     this.group.add(duck);
     this.duck = duck;
     this.zones.push({ x: 10, y: 0, z: 12.4, r: 1.6, h: 1, secret: 'eend', sound: 'squeak', say: 'Kwak? Watskebeurt?' });
@@ -451,6 +456,7 @@ export class Outside extends Area {
     merel.add(body, head, beak, tail);
     merel.position.set(x + 1.0, 1.45, z);
     merel.rotation.y = -Math.PI / 2;
+    merel.userData.dynamic = true;
     this.group.add(merel);
     this.merel = merel;
     this.merelMarker = glowSprite(0x9ad3ff, 0.9, 0.5);
@@ -595,8 +601,9 @@ export class Outside extends Area {
       const d = 27 + (i % 3);
       spots.push([Math.cos(a) * d * 1.1, Math.sin(a) * d * 1.1]);
     }
-    spots.push([-24, -4], [24, 2], [-9, 18], [18, 18], [-24, 16], [24, -14], [-11, -22]);
-    for (let k = spots.length - 1; k >= 0; k--) if (spots[k][1] > 19) spots.splice(k, 1);
+    spots.push([-24, -4], [-9, 18], [18, 18], [24, -14], [-11, -22]);
+    const blocked = ([x, z]) => z > 19 || (x > 18.5 && x < 30.5 && z > -9 && z < 12.5) || Math.hypot(x + 24, z - 15) < 5 || (x > -9 && x < -2 && z > 4.5 && z < 10.5);
+    for (let k = spots.length - 1; k >= 0; k--) if (blocked(spots[k])) spots.splice(k, 1);
     const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.2, 0.3, 2, 6), M.trunk, spots.length);
     const crown = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.5, 0), M.treeLeaf, spots.length);
     trunk.castShadow = crown.castShadow = true;
@@ -633,7 +640,7 @@ export class Outside extends Area {
       do {
         x = (rnd() - 0.5) * 54;
         z = (rnd() - 0.5) * 54;
-      } while (z > 20.5 || Math.abs(x) < 2 || (x > -21 && x < -11 && z > 1 && z < 10) || Math.hypot(x - POND.x, z - POND.z) < POND.r + 1 || (Math.abs(x) < 9 && z < -15));
+      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 2 || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || Math.hypot(x - POND.x, z - POND.z) < POND.r + 1 || (Math.abs(x) < 9 && z < -15));
       flowers.setMatrixAt(i, m.makeTranslation(x, 0.12, z));
       flowers.setColorAt(i, c.setHex(colors[i % colors.length]));
     }
@@ -720,7 +727,7 @@ export class Outside extends Area {
       do {
         x = (rnd() - 0.5) * 56;
         z = (rnd() - 0.5) * 56;
-      } while (z > 20.5 || Math.abs(x) < 1.2 || Math.hypot(x, z) < 3.4 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.5 || (Math.abs(x) < 9 && z < -15) || (x > -21 && x < -11 && z > 1 && z < 10));
+      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 1.2 || Math.hypot(x, z) < 3.4 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.5 || (Math.abs(x) < 9 && z < -15) || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5));
       const sc = 0.7 + rnd() * 0.8;
       m.compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6), new THREE.Vector3(sc, sc, sc));
       tufts.setMatrixAt(i, m);
@@ -752,6 +759,7 @@ export class Outside extends Area {
     cabin.position.set(-0.3, 0.45, 0);
     boat.add(hull, cabin);
     boat.position.set(-12, -0.15, 24.6);
+    boat.userData.dynamic = true;
     this.group.add(boat);
     this.boat = boat;
     // Grachtenpanden aan de overkant
@@ -776,9 +784,6 @@ export class Outside extends Area {
       this.addCollider(bx - 0.6, 0, bz - 0.15, bx + 0.6, 0.8, bz + 0.15, { climbable: true, name: 'fiets' });
     });
     // De Martinitoren en de rest van de stad in de verte
-    const tower = makeMartinitoren(1.7);
-    tower.position.set(-14, 0, 78);
-    this.group.add(tower);
     this.group.add(makeCityView(-0.05, { towerPos: new THREE.Vector3(-400, 0, 0), radius: 110, exclude: (hx, hz) => Math.abs(hx) < 36 && hz < 36 && hz > -36 }));
     // "Er gaat niets boven Groningen" op de kade
     this.sign(['Er gaat niets boven', 'GRONINGEN'], -3.5, 1.4, CANAL.z0 - 0.55, 0, { width: 2, height: 0.6, bg: '#e8f3d6', fg: '#1f6e3c', border: '#1f8a4c' });
@@ -788,6 +793,189 @@ export class Outside extends Area {
     this.group.add(plazaFlag);
     this.fx.push(plazaFlag);
     this.addCollider(-2.66, 0, -1.66, -2.54, 4, -1.54, { climbable: true, name: 'vlaggenmast' });
+  }
+
+  buildJumbo() {
+    // De Jumbo: gele gevel, glazen schuifdeuren, winkelwagentjes
+    const x0 = 20;
+    const x1 = 29;
+    const z0 = -1;
+    const z1 = 11;
+    const h = 4.2;
+    const yellow = lambert(0xffd200);
+    this.block(x0, 0, z0, x1, h, z1, lambert(0xe9e5dc), { name: 'jumbo' });
+    this.block(x0 - 0.05, h - 1.1, z0, x0, h, z1, yellow, { collide: false, shadow: false });
+    this.block(x0 - 0.4, h, z0 - 0.2, x1 + 0.2, h + 0.3, z1 + 0.2, lambert(0x3a3d40), { collide: false });
+    const logo = makeSign('JUMBO', { width: 4.2, height: 0.9, bg: '#ffd200', fg: '#1b1b1d', border: '#ffd200' });
+    logo.position.set(x0 - 0.07, h - 0.55, (z0 + z1) / 2);
+    logo.rotation.y = -Math.PI / 2;
+    this.group.add(logo);
+    // Glazen pui + schuifdeuren (dicht: papegaaien mogen nait naar binnen)
+    this.block(x0 - 0.04, 0, 1.5, x0, 2.9, 8.5, M.windowBlue, { collide: false, shadow: false });
+    this.block(x0 - 0.06, 0, 4.2, x0 - 0.02, 2.4, 5.8, lambert(0xcfe6f2, { emissive: 0x7fa0b8, emissiveIntensity: 0.4 }), { collide: false, shadow: false });
+    this.block(x0 - 0.08, 2.4, 4.1, x0 - 0.02, 2.55, 5.9, yellow, { collide: false, shadow: false });
+    // Winkelwagentjes
+    const cartMat = lambert(0x9aa3aa);
+    for (let k = 0; k < 4; k++) {
+      const c = new THREE.Group();
+      const basket = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.8), cartMat);
+      basket.position.y = 0.75;
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.05, 0.05), yellow);
+      handle.position.set(0, 1.0, -0.42);
+      const base = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.05, 0.75), cartMat);
+      base.position.y = 0.2;
+      c.add(basket, handle, base);
+      c.position.set(x0 - 1.1, 0, 9.4 - k * 0.3);
+      c.traverse((o) => (o.castShadow = true));
+      this.group.add(c);
+    }
+    this.addCollider(x0 - 1.4, 0, 8.1, x0 - 0.8, 1.0, 9.9, { climbable: true, name: 'karretjes' });
+    // Laadperron achter: plek voor de dozen-speedrun
+    const dock = new THREE.Mesh(new THREE.PlaneGeometry(8, 6), lambert(0x6f7174));
+    dock.rotation.x = -Math.PI / 2;
+    dock.position.set(24, 0.006, -5.2);
+    this.group.add(dock);
+    this.boxSmash = new BoxSmash(this, [
+      [21, -2.6], [22.1, -2.9, 0.6], [23.3, -2.5], [24.6, -3.0, 0.45], [26, -2.6, 0.6], [27.2, -3.1],
+      [21.4, -4.6, 0.6], [22.8, -5.0], [24.2, -4.4, 0.55], [25.6, -4.9], [27, -4.5, 0.6],
+      [21.8, -6.9], [23.4, -7.2, 0.6], [25, -6.8], [26.6, -7.3, 0.5],
+    ], M.cardboard, M.tape);
+  }
+
+  buildTower() {
+    // De Martinitoren in het klein (1:1 zou nait passen). Klimmen tot het balkon!
+    const tx = -24;
+    const tz = 15;
+    const tower = makeMartinitoren(0.9);
+    tower.position.set(tx, 0, tz);
+    this.group.add(tower);
+    const r = 2.5 * 0.9;
+    this.addCollider(tx - r, 0, tz - r, tx + r, 9, tz + r, { climbable: true, name: 'martinitoren' });
+    // Balkon op 9 m
+    this.block(tx - r - 0.5, 8.9, tz - r - 0.5, tx + r + 0.5, 9.05, tz + r + 0.5, M.stone, { oneWay: true, name: 'balkon' });
+    for (const [x0, z0, x1, z1] of [[-1, -1, 1, -1], [-1, 1, 1, 1], [-1, -1, -1, 1], [1, -1, 1, 1]]) {
+      const w = r + 0.5;
+      this.block(tx + Math.min(x0, x1) * w - 0.04, 9.05, tz + Math.min(z0, z1) * w - 0.04, tx + Math.max(x0, x1) * w + 0.04, 9.6, tz + Math.max(z0, z1) * w + 0.04, M.white, { collide: false });
+    }
+    this.addCollider(tx - r, 9, tz - r, tx + r, 22, tz + r, { name: 'toren-boven' });
+    // Klok om te luiden
+    const bell = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 10, 1, true), M.gold);
+    bell.material = M.gold;
+    bell.position.set(tx + r + 0.2, 9.75, tz);
+    this.group.add(bell);
+    this.towerTop = { x: tx + r + 0.25, y: 9.05, z: tz };
+    this.towerStart = { x: tx + r + 0.8, z: tz };
+    this.sign(['Martinitoren-klim', 'Luid de klok binnen 30 s!'], tx + r + 1.5, 1.1, tz - 1.6, Math.PI / 2, { width: 1.4, height: 0.45 });
+    this.block(tx + r + 1.47, 0, tz - 1.62, tx + r + 1.53, 0.9, tz - 1.58, M.woodDark, { collide: false });
+  }
+
+  buildStage() {
+    // Podium voor Puck's fluitconcert, met de achterwand naar het noorden en het publiek richting de fontein
+    const S = { x0: -7.6, x1: -3.4, z0: 6.2, z1: 8.7, h: 0.4 };
+    this.stage = { x: (S.x0 + S.x1) / 2, y: S.h, z: 7.3, lanes: [-6.7, -5.5, -4.3] };
+    const plank = lambert(0x8a5a36);
+    const dark = lambert(0x2b2f3a);
+    const speakerMat = new THREE.MeshLambertMaterial({ color: 0x3a3d42, map: speakerTexture(), flatShading: true });
+    this.block(S.x0, 0, S.z0, S.x1, S.h, S.z1, plank, { name: 'podium' });
+    for (let x = S.x0 + 0.3; x < S.x1; x += 0.3) this.block(x, S.h, S.z0, x + 0.02, S.h + 0.005, S.z1, lambert(0x6e4526), { collide: false, shadow: false });
+    // Treetjes aan de voorkant
+    this.block(-6.2, 0, S.z0 - 0.45, -4.8, 0.2, S.z0, plank, { name: 'trapje' });
+    // Rood-groene rok (Groningse kleuren)
+    for (let x = S.x0; x < S.x1 - 0.01; x += 0.35) {
+      const red = Math.round((x - S.x0) / 0.35) % 2 === 0;
+      this.block(x, 0.02, S.z0 - 0.02, x + 0.35, S.h - 0.02, S.z0, lambert(red ? 0xc8203a : 0x2f7a3e), { collide: false, shadow: false });
+    }
+    // Achterwand met doek
+    this.block(S.x0, S.h, S.z1 - 0.12, S.x1, 3.2, S.z1, dark, { name: 'achterwand' });
+    const banner = makeSign(["PUCK'S", 'FLUITCONCERT'], { width: 3.2, height: 1.1, bg: '#fff6e6', fg: '#2b1d14', border: '#c8203a' });
+    banner.position.set(this.stage.x, 2.55, S.z1 - 0.14);
+    banner.rotation.y = Math.PI;
+    this.group.add(banner);
+    // Palen met lampen en speakers
+    [S.x0 + 0.1, S.x1 - 0.1].forEach((x) => {
+      this.block(x - 0.06, S.h, S.z1 - 0.3, x + 0.06, 3.4, S.z1 - 0.18, M.metalDark, { collide: false });
+      this.block(x - 0.35, 0, S.z0 + 0.1, x + 0.35, 1.1, S.z0 + 0.6, speakerMat, { climbable: true, name: 'speaker' });
+      [0.72, 0.3].forEach((y, i) => {
+        const r = i ? 0.13 : 0.2;
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(r, 0.025, 5, 16), lambert(0x6c7178));
+        rim.position.set(x, y, S.z0 + 0.085);
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(r, 0.08, 16, 1, true), lambert(0x2a2c30, { side: THREE.DoubleSide }));
+        cone.rotation.x = -Math.PI / 2;
+        cone.position.set(x, y, S.z0 + 0.1);
+        const cap = new THREE.Mesh(new THREE.SphereGeometry(r * 0.25, 8, 6), lambert(0x6c7178));
+        cap.position.set(x, y, S.z0 + 0.08);
+        this.group.add(rim, cone, cap);
+      });
+    });
+    this.block(S.x0, 3.3, S.z1 - 0.3, S.x1, 3.4, S.z1 - 0.18, M.metalDark, { collide: false });
+    const spotMat = lambert(0xfff1c2, { emissive: 0xffd27a, emissiveIntensity: 0.8 });
+    [-6.9, -5.5, -4.1].forEach((x) => {
+      const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 0.22, 8), spotMat);
+      lamp.position.set(x, 3.2, S.z1 - 0.4);
+      lamp.rotation.x = -0.6;
+      this.group.add(lamp);
+    });
+    // Bordje ervoor
+    const sign = makeSign(['Fluitconcert van Puck', 'Binnenkort! Toegang gratis'], { width: 1.5, height: 0.55, bg: '#fff6e6', fg: '#2b1d14' });
+    sign.position.set(-8.3, 1.1, 5.7);
+    sign.rotation.y = Math.PI + 0.5;
+    this.group.add(sign);
+    this.block(-8.33, 0, 5.67, -8.27, 0.85, 5.73, M.trunk, { collide: false });
+    this.zones.push({ id: 'podium', x: this.stage.x, y: S.h, z: 7.2, r: 1.4, h: 1.5, prompt: 'Geef het fluitconcert 🎵' });
+  }
+
+  buildPeople() {
+    // Groningers
+    this.addNPC('harm', 'Postbode Harm', -5.3, -12.9, Math.PI / 2, { shirt: 0x1f3a6b, pants: 0x2b2f3a, hat: 'postpet', hatColor: 0xe86a1a, prop: 'mailbag', hair: 0x3b2a1e });
+    this.addNPC('geert', 'Visser Geert', 9, 21.75, 0, { shirt: 0x4f6b3a, pants: 0x3a3d40, hat: 'beanie', hatColor: 0x2f6e4a, beard: true, hair: 0xb9b9b9, prop: 'rod', skin: 1 });
+    this.addNPC('sjoukje', 'Studente Sjoukje', -5.4, 20.6, Math.PI / 2, { height: 1.68, shirt: 0xf2c230, pants: 0x3d5a8a, hairStyle: 'ponytail', hair: 0xe8cf8a, glasses: true, prop: 'book', mood: 'smile' });
+    this.addNPC('jan', 'Duivenman Jan', 3.0, 3.1, Math.PI, { shirt: 0x6b5a4a, pants: 0x4a4a4a, hairStyle: 'bald', hat: 'cap', hatColor: 0x5b5f66, prop: 'bread', skin: 0 });
+    this.addNPC('bas', 'Jumbo-Bas', 20.5, -1.9, Math.PI, { shirt: 0xffd200, pants: 0x1b1b1d, hair: 0x3b2a1e, hat: 'cap', hatColor: 0xffd200 });
+    this.addNPC('jumbo', 'Jumbo-medewerker Eline', 19.2, 3.2, -Math.PI / 2, { height: 1.66, shirt: 0xffd200, pants: 0x1b1b1d, hairStyle: 'bun', hair: 0x6b4423, mood: 'smile' });
+    this.addNPC('tineke', 'Buurvrouw Tineke', 14.8, -13.6, -Math.PI / 2, { height: 1.62, shirt: 0xd96fb4, pants: 0x4d4a5c, hairStyle: 'bob', hair: 0xb07a4a, glasses: true, mood: 'frown' });
+    this.addNPC('toren', 'Torenwachter Wiebe', this.towerStart.x + 0.9, this.towerStart.z + 1.2, -Math.PI / 2, { shirt: 0x2f6e4a, pants: 0x3a3d40, beard: true, hair: 0x8a8a8a, hat: 'cap', hatColor: 0x1f8a4c });
+    // Meneer Mehmet met zijn oranje kat Pasja loopt zijn rondje
+    const mehmet = makePerson({ shirt: 0x5b6a7a, pants: 0x3a3d40, hair: 0x1b1b1d, beard: true, skin: 2 });
+    const cat = new THREE.Group();
+    const catMat = lambert(0xf08a2c);
+    const cb = new THREE.Mesh(new THREE.IcosahedronGeometry(0.15, 1), catMat);
+    cb.scale.set(1, 0.8, 1.5);
+    const ch = new THREE.Mesh(new THREE.IcosahedronGeometry(0.09, 1), catMat);
+    ch.position.set(0, 0.08, 0.2);
+    [-1, 1].forEach((sd) => {
+      const ear = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.07, 4), catMat);
+      ear.position.set(sd * 0.05, 0.17, 0.2);
+      cat.add(ear);
+    });
+    const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.3, 5), catMat);
+    tail.rotation.x = 1.2;
+    tail.position.set(0.12, -0.05, -0.22);
+    cat.add(cb, ch, tail);
+    cat.rotation.y = Math.PI / 2;
+    cat.position.set(0, 1.05, 0.28);
+    mehmet.root.add(cat);
+    mehmet.arms.forEach((a) => (a.rotation.x = -1.1));
+    this.mehmet = new Walker(this.group, mehmet, [[-2, -6], [6, -5], [4.2, 4.5], [4, 12], [-4, 12], [-3, 4], [-3, -4]], { speed: 0.6, stink: true });
+    this.fx.push({ update: (dt, t) => this.mehmet.update(dt, t, this.mehmetPaused) });
+    // Praat-zone volgt hem
+    this.mehmetZone = { x: 0, y: 0, z: 0, r: 1.2, h: 1.4, id: 'npc', npc: { id: 'mehmet', name: 'Meneer Mehmet', person: mehmet }, prompt: 'Zeg hoi tegen Meneer Mehmet 👋' };
+    this.zones.push(this.mehmetZone);
+    this.stinkZone = { x: 0, y: 0, z: 0, r: 1.6, h: 2, secret: 'stink', say: 'Watskebeurt?! Pff… is dat de kat?' };
+    this.zones.push(this.stinkZone);
+    // Sjoukje op de fiets (tegenstander in de fietsrace)
+    const rider = new THREE.Group();
+    rider.add(makeBike(3));
+    const sj = makePerson({ height: 1.68, shirt: 0xf2c230, pants: 0x3d5a8a, hairStyle: 'ponytail', hair: 0xe8cf8a, glasses: true, sitting: true });
+    sj.root.rotation.y = Math.PI / 2;
+    sj.root.position.set(-0.15, 0.35, 0);
+    rider.add(sj.root);
+    rider.userData.dynamic = true;
+    // Duiven op het plein (voor Jan)
+    this.pigeons = new Pigeons(this.group, new THREE.Vector3(0, 0, 0.6), 3.6, 12, (x, z) => (x > 1.9 && x < 4 && z > 1.5 && z < 3.6) || Math.hypot(x, z - 0.6) < 1.6);
+    // Rondje Stad (voor Sjoukje)
+    const route = [[-4.5, 18.8], [4, 17], [14, 15], [18.5, 6], [18.5, -4], [12, -6], [4, -6.5], [-6, -4], [-9.5, 3], [-8, 11], [-4.5, 18.8]];
+    this.race = new RingRace(this.group, route);
+    this.rival = new Rival(this.group, rider, route, 40);
   }
 
   buildIngredients() {
@@ -911,6 +1099,11 @@ export class Outside extends Area {
       this.zones.find((z) => z.secret === 'eend').x = this.duck.position.x;
     }
     if (this.merel) this.merel.rotation.z = Math.sin(time * 3) * 0.05;
+    if (this.mehmet) {
+      const mp = this.mehmet.pos;
+      this.mehmetZone.x = this.stinkZone.x = mp.x;
+      this.mehmetZone.z = this.stinkZone.z = mp.z;
+    }
     if (this.boat) {
       this.boat.position.x = ((time * 0.8 + 30) % 70) - 35;
       this.boat.position.y = -0.15 + Math.sin(time * 1.5) * 0.03;
@@ -927,4 +1120,21 @@ export class Outside extends Area {
     }
     return false;
   }
+}
+
+/** Speakerkast: donker vilt met een fijn raster. */
+function speakerTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#9a9a9a';
+  ctx.fillRect(0, 0, 64, 64);
+  ctx.fillStyle = '#6a6a6a';
+  for (let y = 2; y < 64; y += 4) for (let x = (y / 4) % 2 ? 2 : 0; x < 64; x += 4) ctx.fillRect(x, y, 2, 2);
+  ctx.strokeStyle = '#d0d0d0';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1, 1, 62, 62);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }

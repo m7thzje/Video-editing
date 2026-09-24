@@ -126,9 +126,9 @@ export class Gallery extends Area {
       s.position.set(x + 1.25, 1.55, 0.02);
       this.group.add(s);
     };
-    door(GALLERY_DOORS.puck, P.door, 'nr. 91', 'Puck 🦜');
+    door(GALLERY_DOORS.puck, P.door, 'nr. 141', 'Puck 🦜');
     door(7.5, P.doorGreen, 'nr. 92');
-    door(GALLERY_DOORS.buurvrouw, P.doorRed, 'nr. 93', 'Mw. Zuur');
+    door(GALLERY_DOORS.buurvrouw, P.doorRed, 'nr. 143', 'Mw. Zuur');
     door(17, P.door, 'nr. 94');
     door(21.5, P.doorGreen, 'nr. 95');
     // Deurmatten
@@ -182,6 +182,8 @@ export class Gallery extends Area {
     this.block(26.8, 0.4, 0.1, 28.4, 0.46, 0.55, M.wood, { climbable: true, name: 'bankje' });
     this.addCollider(26.85, 0, 0.15, 28.35, 0.4, 0.5, { climbable: true });
     this.block(27.3, 0.46, 0.2, 27.7, 0.47, 0.45, M.white, { collide: false });
+    // Buurman Klaas zit op het bankje
+    this.addNPC('klaas', 'Buurman Klaas', 27.9, 0.2, 0, { sitting: true, shirt: 0x8c5a4a, pants: 0x3a3d40, hairStyle: 'bald', beard: true, hair: 0xd8d8d8, glasses: true }, { solid: false, r: 0.9 });
     // Groningse vlag aan de pilaar
     const flag = makeGroningenFlag(2.2);
     flag.position.set(16.2, 0.2, W + 0.2);

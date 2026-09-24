@@ -26,7 +26,7 @@ Elke minigame levert een ⭐ op (5 in totaal):
 | ⭐ | Minigame | Waar | Doel |
 |---|---|---|---|
 | 🥜 | **Pistachehuis** | Nr. 93 op de galerij (9e verdieping) | Pik 10 verstopte pistachenootjes zonder dat de **chagrijnige buurvrouw** je ziet. Kruip in een kartonnen doos om je te verstoppen (en voor de *pistacheradar*). |
-| 🍪 | **Groninger koek** | Bakkerij Moi (het bakstenen huis beneden) | Oma Moi mist 5 ingrediënten: roggemeel, honing, stroop, kaneel en steranijs. Ze liggen verspreid door Stad. |
+| 🍪 | **Groninger koek** | Bakkerij Haafs (het bakstenen huis beneden) | Oma Moi mist 5 ingrediënten: roggemeel, honing, stroop, kaneel en steranijs. Ze liggen verspreid door Stad. |
 | 🪶 | **Verenjacht** | Overal buiten | Vind 8 rode veren (op daken, takken, stenen…). |
 | 🪨 | **Stapstenen** | De vijver | Loop door START en hop via de gele ringen naar de FINISH binnen 18 seconden. Niet in het water vallen! |
 | 🎵 | **Merel-liedjes** | De grote boom met het vogelhuisje | Druk op *E* / 💬 en zing 3 liedjes van de merel na. |
@@ -148,7 +148,7 @@ src/
   main.js               spel-loop, gebieden wisselen, HUD, sterren, geheimpjes, patat-power, menu, opslag
   areas/puckHouse.js    Puck's appartement op de 9e verdieping (startgebied)
   areas/gallery.js      de galerij op de 9e met balustrade, deuren en de lift
-  areas/bakery.js       Bakkerij Moi met oma Moi en de koek-quest
+  areas/bakery.js       Bakkerij Haafs met oma Moi en de koek-quest
   areas/lift.js         de lift met knop, schuifdeuren, verdiepingsteller en een echte spiegel
   areas/outside.js      Groningen op straatniveau: Donderslaanflat, plein, vijver, gracht, merelboom, schuur, veren, patat, ingrediënten
   areas/pistachioHouse.js  het Pistachehuis (pistache-minigame met dozen en radar)

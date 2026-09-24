@@ -10,16 +10,23 @@ export const SOUND_NAMES = [
   'puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5', 'puck-dans', 'puck-lekker',
   'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
   'puck-wauw', 'puck-hallo', 'alert', 'caught',
-  'puck-geluid-8', 'puck-geluid-9', 'puck-geluid-10', 'puck-geluid-11', 'puck-hallo-2',
+  'puck-geluid-10', 'puck-hallo-2', 'puck-watskecola',
 ];
 
 // Groepen: er wordt willekeurig een geladen variant gekozen.
 const GROUPS = {
-  talk: ['puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5'],
+  // Praatjes: de middelhoge vaker, de schelle zelden
+  talk: ['puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4'],
+  // Leuke fluitjes (zuivere toon, 1-1,7 kHz)
+  fluit: ['puck-geluid-1', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-7'],
+  // Mix: vooral fluitjes, af en toe een hoog piepje
   chirp: [
-    'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
-    'puck-geluid-8', 'puck-geluid-9', 'puck-geluid-10', 'puck-geluid-11',
+    'puck-geluid-1', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-7',
+    'puck-geluid-1', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-7',
+    'puck-geluid-2', 'puck-geluid-6',
   ],
+  // Hoge piepjes, alleen voor schrikmomenten
+  piep: ['puck-geluid-2', 'puck-geluid-6', 'puck-praat-5', 'puck-geluid-10'],
   hallo: ['puck-hallo', 'puck-hallo-2'],
 };
 
@@ -33,16 +40,13 @@ const VOLUMES = {
   'puck-geluid-6': 0.55,
   'puck-geluid-7': 0.55,
   'puck-wauw': 0.8,
-  'puck-geluid-8': 0.75,
-  'puck-geluid-9': 0.75,
   'puck-geluid-10': 0.75,
-  'puck-geluid-11': 0.75,
 };
 
 // Ontbreekt een eigen bestand (bijv. box.mp3), gebruik dan eerst een geluidje van Puck zelf.
 const FALLBACKS = {
-  box: 'chirp',
-  feather: 'chirp',
+  box: 'fluit',
+  feather: 'fluit',
   star: 'puck-wauw',
   secret: 'puck-wauw',
 };
@@ -65,10 +69,17 @@ export class AudioManager {
     this.master = this.ctx.createGain();
     this.master.gain.value = 0.8;
     this.master.connect(this.ctx.destination);
+    // Aparte volumes: effecten, Puck's stem en muziek
+    this.sfxOut = this.ctx.createGain();
+    this.voiceOut = this.ctx.createGain();
+    this.musicOut = this.ctx.createGain();
+    [this.sfxOut, this.voiceOut, this.musicOut].forEach((g) => g.connect(this.master));
     // Gesynthetiseerde piepjes (placeholders) een stuk zachter dan echte opnames
     this.synthOut = this.ctx.createGain();
     this.synthOut.gain.value = 0.35;
-    this.synthOut.connect(this.master);
+    this.synthOut.connect(this.sfxOut);
+    this.setVolumes(this.volumes || {});
+    if (this.onUnlock) this.onUnlock();
     if (this.ctx.state === 'suspended') this.ctx.resume();
     this.unlocked = true;
     SOUND_NAMES.forEach((name) => this.load(name));
@@ -111,11 +122,11 @@ export class AudioManager {
       src.playbackRate.value = rate;
       const gain = this.ctx.createGain();
       gain.gain.value = volume * (VOLUMES[name] ?? 1);
-      src.connect(gain).connect(this.master);
+      src.connect(gain).connect(name.startsWith('puck-') ? this.voiceOut : this.sfxOut);
       src.start();
       return;
     }
-    const synth = PLACEHOLDERS[name] || (name.startsWith('puck-') || name === 'chirp' ? PLACEHOLDERS.talk : null);
+    const synth = PLACEHOLDERS[name] || (name.startsWith('puck-') || GROUPS[name] ? PLACEHOLDERS.talk : null);
     if (synth) synth(this.ctx, this.synthOut, volume, freq);
   }
 
@@ -127,7 +138,7 @@ export class AudioManager {
     if (!buffer) return this.play('talk');
     const src = this.ctx.createBufferSource();
     src.buffer = buffer;
-    src.connect(this.master);
+    src.connect(this.voiceOut);
     src.start();
     this.long = src;
   }
@@ -141,6 +152,14 @@ export class AudioManager {
       }
       this.long = null;
     }
+  }
+
+  setVolumes({ music = 0.5, sfx = 0.8, voice = 1 } = {}) {
+    this.volumes = { music, sfx, voice };
+    if (!this.ctx) return;
+    this.sfxOut.gain.value = sfx;
+    this.voiceOut.gain.value = voice;
+    this.musicOut.gain.value = music * 0.6;
   }
 
   toggleMute() {
@@ -222,12 +241,56 @@ const PLACEHOLDERS = {
   checkpoint(ctx, out, v) {
     tone(ctx, out, { type: 'triangle', from: 988, to: 1319, dur: 0.12, vol: 0.25 * v });
   },
+  whistle(ctx, out, v, freq = 1400) {
+    // Fluittoon met een klein glijdje en vibrato, zoals Puck fluit
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator();
+    const lfo = ctx.createOscillator();
+    const lg = ctx.createGain();
+    const g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(freq * 0.9, t);
+    o.frequency.exponentialRampToValueAtTime(freq, t + 0.05);
+    lfo.frequency.value = 7;
+    lg.gain.value = freq * 0.012;
+    lfo.connect(lg).connect(o.frequency);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.3 * v, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+    o.connect(g).connect(out);
+    o.start(t);
+    lfo.start(t);
+    o.stop(t + 0.36);
+    lfo.stop(t + 0.36);
+  },
   note(ctx, out, v, freq = 660) {
     tone(ctx, out, { type: 'sine', from: freq, to: freq * 1.03, dur: 0.32, vol: 0.3 * v });
     tone(ctx, out, { type: 'triangle', from: freq * 2, dur: 0.12, vol: 0.06 * v });
   },
   talk(ctx, out, v) {
     [700, 1100, 850, 1300].forEach((f, i) => tone(ctx, out, { type: 'sawtooth', from: f, to: f * 1.2, start: i * 0.09, dur: 0.08, vol: 0.06 * v }));
+  },
+  meow(ctx, out, v) {
+    tone(ctx, out, { type: 'sawtooth', from: 520, to: 880, dur: 0.18, vol: 0.08 * v });
+    tone(ctx, out, { type: 'sawtooth', from: 880, to: 420, start: 0.18, dur: 0.3, vol: 0.08 * v });
+  },
+  bell(ctx, out, v) {
+    [1568, 2093].forEach((f, i) => tone(ctx, out, { type: 'sine', from: f, start: i * 0.12, dur: 0.5, vol: 0.2 * v }));
+  },
+  crunch(ctx, out, v) {
+    const t = ctx.currentTime;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.18, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2) * (Math.random() < 0.3 ? 1 : 0.3);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const f = ctx.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.setValueAtTime(900, t);
+    const g = ctx.createGain();
+    g.gain.value = 0.7 * v;
+    src.connect(f).connect(g).connect(out);
+    src.start();
   },
   // Buurvrouw vermoedt iets
   alert(ctx, out, v) {
@@ -247,3 +310,139 @@ const PLACEHOLDERS = {
     );
   },
 };
+
+// ---------- Achtergrondmuziek (procedureel, per plek een eigen sfeer) ----------
+
+const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
+
+const TRACKS = {
+  // grondtoon, bpm, akkoorden (intervallen), golfvorm, toonladder
+  thuis: { root: 57, bpm: 80, prog: [[0, 4, 7, 11], [5, 9, 12, 16], [2, 5, 9, 12], [7, 11, 14, 17]], pad: 'sine', lead: 'triangle', scale: [0, 2, 4, 7, 9], swing: 0 },
+  galerij: { root: 55, bpm: 96, prog: [[0, 4, 7], [9, 12, 16], [5, 9, 12], [7, 11, 14]], pad: 'triangle', lead: 'sine', scale: [0, 2, 4, 7, 9], swing: 0.1 },
+  buiten: { root: 60, bpm: 112, prog: [[0, 4, 7], [5, 9, 12], [9, 12, 16], [7, 11, 14]], pad: 'triangle', lead: 'square', scale: [0, 2, 4, 7, 9], swing: 0.15 },
+  bakkerij: { root: 53, bpm: 88, prog: [[0, 4, 7, 10], [5, 9, 12], [7, 10, 14], [0, 4, 7]], pad: 'sine', lead: 'triangle', scale: [0, 2, 4, 5, 7, 9], swing: 0.2 },
+  pistachehuis: { root: 50, bpm: 104, prog: [[0, 3, 7], [0, 3, 7], [5, 8, 12], [7, 10, 14]], pad: 'triangle', lead: 'triangle', scale: [0, 3, 5, 7, 10], swing: 0, staccato: true },
+  // Liftmuzak: zoete bossa met maj7-akkoorden
+  lift: { root: 58, bpm: 92, prog: [[0, 4, 7, 11], [2, 5, 9, 12], [7, 11, 14, 17], [0, 4, 7, 11]], pad: 'sine', lead: 'sine', scale: [0, 2, 4, 7, 9, 11], swing: 0.25, bossa: true },
+  feest: { root: 62, bpm: 128, prog: [[0, 4, 7], [7, 11, 14], [9, 12, 16], [5, 9, 12]], pad: 'square', lead: 'square', scale: [0, 2, 4, 7, 9], swing: 0 },
+};
+
+export class MusicPlayer {
+  constructor(audio) {
+    this.audio = audio;
+    this.track = null;
+    this.pending = null;
+    this.step = 0;
+    this.nextTime = 0;
+    this.timer = null;
+  }
+
+  play(name) {
+    if (!TRACKS[name] || name === this.track) return;
+    if (!this.audio.ctx) {
+      this.pending = name;
+      return;
+    }
+    const ctx = this.audio.ctx;
+    const out = this.audio.musicOut;
+    const start = () => {
+      this.track = name;
+      this.t = TRACKS[name];
+      this.step = 0;
+      this.nextTime = ctx.currentTime + 0.1;
+      this.makeMelody();
+      out.gain.cancelScheduledValues(ctx.currentTime);
+      out.gain.setTargetAtTime((this.audio.volumes?.music ?? 0.5) * 0.6, ctx.currentTime, 0.3);
+      if (!this.timer) this.timer = setInterval(() => this.tick(), 30);
+    };
+    if (this.track) {
+      out.gain.setTargetAtTime(0, ctx.currentTime, 0.12);
+      this.track = null;
+      setTimeout(start, 400);
+    } else start();
+  }
+
+  stop() {
+    this.track = null;
+    this.pending = null;
+  }
+
+  resume() {
+    if (this.pending) {
+      const p = this.pending;
+      this.pending = null;
+      this.play(p);
+    }
+  }
+
+  makeMelody() {
+    // 4 maten melodie die zich herhaalt (herkenbaar deuntje per plek)
+    let seed = this.track.length * 7919;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    this.melody = [];
+    let idx = 2;
+    for (let i = 0; i < 32; i++) {
+      if (rnd() < 0.55) {
+        idx = Math.max(0, Math.min(this.t.scale.length * 2 - 1, idx + Math.floor(rnd() * 5) - 2));
+        this.melody.push(idx);
+      } else this.melody.push(null);
+    }
+  }
+
+  note(freq, time, dur, type, vol) {
+    const ctx = this.audio.ctx;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, time);
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(vol, time + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    o.connect(g).connect(this.audio.musicOut);
+    o.start(time);
+    o.stop(time + dur + 0.05);
+  }
+
+  tick() {
+    const ctx = this.audio.ctx;
+    if (!this.track || !ctx || this.audio.muted) return;
+    const t = this.t;
+    const eighth = 60 / t.bpm / 2;
+    while (this.nextTime < ctx.currentTime + 0.15) {
+      const s = this.step;
+      const bar = Math.floor(s / 8) % t.prog.length;
+      const chord = t.prog[bar];
+      const time = this.nextTime + (s % 2 ? t.swing * eighth : 0);
+      // Bas
+      if (s % 8 === 0 || (s % 8 === 4 && !t.bossa) || (t.bossa && s % 8 === 3)) this.note(midi(t.root - 12 + chord[0]), time, eighth * 1.8, 'triangle', 0.09);
+      // Zachte akkoordklank aan het begin van de maat
+      if (s % 8 === 0) chord.forEach((iv) => this.note(midi(t.root + iv), time, eighth * 7, t.pad, 0.018));
+      // Arpeggio
+      if (!t.staccato || s % 2 === 0) this.note(midi(t.root + 12 + chord[s % chord.length]), time, t.staccato ? eighth * 0.4 : eighth * 0.9, 'sine', 0.025);
+      // Melodie
+      const m = this.melody[s % 32];
+      if (m !== null && m !== undefined) {
+        const oct = Math.floor(m / t.scale.length);
+        const deg = t.scale[m % t.scale.length];
+        this.note(midi(t.root + 12 + oct * 12 + deg), time, eighth * (t.staccato ? 0.5 : 1.4), t.lead, t.lead === 'square' ? 0.018 : 0.035);
+      }
+      // Feest: klap op 2 en 4
+      if (this.track === 'feest' && s % 4 === 2) this.clap(time);
+      this.nextTime += eighth;
+      this.step++;
+    }
+  }
+
+  clap(time) {
+    const ctx = this.audio.ctx;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.08, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const g = ctx.createGain();
+    g.gain.value = 0.05;
+    src.connect(g).connect(this.audio.musicOut);
+    src.start(time);
+  }
+}

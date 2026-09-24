@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { woodFloorTexture } from '../textures.js';
-import { Area, makeSign } from '../world/area.js';
+import { Area, makeHaafsBoard } from '../world/area.js';
 import { addShaft, DustMotes } from '../world/fx.js';
 import { lambert, M } from '../world/materials.js';
 
-// Bakkerij Moi: het bakstenen huis beneden in Groningen. Oma Moi wil Groninger koek
+// Bakkerij Haafs: het bakstenen huis beneden in Groningen. Oma Moi wil Groninger koek
 // bakken, maar ze mist 5 ingrediënten die ergens in de stad liggen.
 //
 // Kamer: x -3..3, z -2.5..2.5, hoogte 2.6. Deur op de oostwand (x = 3).
@@ -95,6 +95,7 @@ export class Bakery extends Area {
     this.block(-2.9, 0, -2.4, -1.6, 1.4, -1.6, P.oven, { climbable: true, name: 'oven' });
     const fire = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.35), P.fire);
     fire.position.set(-2.25, 0.5, -1.59);
+    fire.userData.noMerge = true;
     this.group.add(fire);
     this.fire = fire;
     // Planken met broden en koekjestrommels
@@ -111,8 +112,8 @@ export class Bakery extends Area {
     this.block(2.3, 0, -1.2, 2.8, 0.55, -0.7, lambert(0xe7dcc7), { climbable: true, name: 'meelzak' });
     this.block(1.9, 0, -2.2, 2.3, 0.75, -1.8, M.woodLight, { climbable: true, name: 'krukje' });
     // Uithangbord binnen
-    const s = makeSign(['Bakkerij Moi', 'Groninger koek sinds 1753'], { width: 1.6, height: 0.5, bg: '#fff6e6' });
-    s.position.set(0, 2.15, R.minZ + 0.02);
+    const s = makeHaafsBoard(1.3);
+    s.position.set(-0.9, 2.05, R.minZ + 0.05);
     this.group.add(s);
     this.fx.push(new DustMotes(this.group, new THREE.Box3(new THREE.Vector3(0.5, 0.3, -1), new THREE.Vector3(2.9, 2.2, 1.5)), 40));
   }
@@ -121,6 +122,7 @@ export class Bakery extends Area {
     // Oma Moi: vriendelijk, grijs knotje, blauwe jurk met schort
     const g = new THREE.Group();
     g.position.set(0, 0, -1.2);
+    g.userData.dynamic = true;
     this.group.add(g);
     const add = (geo, mat, x, y, z) => {
       const m = new THREE.Mesh(geo, mat);

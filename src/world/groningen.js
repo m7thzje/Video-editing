@@ -77,6 +77,7 @@ export function makeGroningenFlag(height = 4) {
   });
   g.add(flag);
   g.userData.flag = flag;
+  g.userData.dynamic = true;
   g.update = (dt, t) => {
     flag.rotation.y = Math.sin(t * 2 + g.position.x) * 0.25;
     flag.rotation.x = Math.sin(t * 3.3 + g.position.z) * 0.05;
@@ -300,7 +301,7 @@ export function makeDS3() {
   ctx.fillStyle = '#111';
   ctx.font = 'bold 20px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('P-UCK-91', 71, 21);
+  ctx.fillText('P-UCK-141', 71, 21);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   const plateMat = new THREE.MeshBasicMaterial({ map: tex });
