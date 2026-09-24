@@ -103,9 +103,9 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | `puck-praat-1.mp3` … `puck-praat-5.mp3` | Puck praat (spraakballonnen, tikken op Puck, in een doos). Er wordt willekeurig één gekozen. |
 | `puck-lekker.mp3` | Puck eet iets (pistache, patat, eierbal, koekje) en zegt "lekker!" (alleen het woord) |
 | `puck-dans.mp3` | Het dansje (tik 5x op Puck) |
-| `puck-geluid-1.mp3` … `puck-geluid-7.mp3` | Krijsjes en fluitjes: blij in een doos, bij een veer, bij tikken op Puck en af en toe uit zichzelf |
+| `puck-geluid-1.mp3` … `puck-geluid-11.mp3` | Krijsjes en fluitjes: blij in een doos, bij een veer, bij tikken op Puck en af en toe uit zichzelf |
 | `puck-wauw.mp3` | "Wauw wauw wauw!" bij een ster of een geheimpje (tot er eigen `star.mp3` / `secret.mp3` zijn) |
-| `puck-hallo.mp3` | "Hallo!" bij de start van het spel |
+| `puck-hallo.mp3`, `puck-hallo-2.mp3` | "Hallo!" bij de start en als Puck spontaan hallo zegt |
 
 **Nog te leveren** (nu placeholders):
 

@@ -10,12 +10,17 @@ export const SOUND_NAMES = [
   'puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5', 'puck-dans', 'puck-lekker',
   'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
   'puck-wauw', 'puck-hallo', 'alert', 'caught',
+  'puck-geluid-8', 'puck-geluid-9', 'puck-geluid-10', 'puck-geluid-11', 'puck-hallo-2',
 ];
 
 // Groepen: er wordt willekeurig een geladen variant gekozen.
 const GROUPS = {
   talk: ['puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5'],
-  chirp: ['puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7'],
+  chirp: [
+    'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
+    'puck-geluid-8', 'puck-geluid-9', 'puck-geluid-10', 'puck-geluid-11',
+  ],
+  hallo: ['puck-hallo', 'puck-hallo-2'],
 };
 
 // Volume per opname (de hoge krijsjes zijn fel)
@@ -28,6 +33,10 @@ const VOLUMES = {
   'puck-geluid-6': 0.55,
   'puck-geluid-7': 0.55,
   'puck-wauw': 0.8,
+  'puck-geluid-8': 0.75,
+  'puck-geluid-9': 0.75,
+  'puck-geluid-10': 0.75,
+  'puck-geluid-11': 0.75,
 };
 
 // Ontbreekt een eigen bestand (bijv. box.mp3), gebruik dan eerst een geluidje van Puck zelf.

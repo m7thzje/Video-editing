@@ -565,7 +565,7 @@ function startGame() {
   visited.puckhuis = true;
   updateStarHud();
   applyHat();
-  setTimeout(() => say('Hallo!', { sound: 'puck-hallo' }), 600);
+  setTimeout(() => say('Hallo!', { sound: 'hallo' }), 600);
   setTimeout(() => say('Watskebeurt?'), 3600);
   toast('Welkom thuis op de 9e verdieping, Puck! Loop door de gang naar de voordeur en de galerij op.', 5);
   updateInventory();
@@ -1078,7 +1078,7 @@ function update(dt) {
       } else {
         const lines = ['Watskebeurt?', 'Mag ik een koekje?', 'Watskebeurt?', 'Mag ik een koekje?', 'Hallo!'];
         const line = lines[Math.floor(Math.random() * lines.length)];
-        say(line, { sound: line === 'Hallo!' ? 'puck-hallo' : 'talk' });
+        say(line, { sound: line === 'Hallo!' ? 'hallo' : 'talk' });
       }
     }
   }
