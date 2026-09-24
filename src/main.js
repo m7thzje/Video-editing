@@ -17,6 +17,7 @@ import { CharacterBody, DEFAULT_HOP } from './physics.js';
 import { Puck } from './puck.js';
 import { Concert } from './concert.js';
 import { JumboStore } from './areas/jumbo.js';
+import { HATS, Kringloop, SNACKS, Snackbar } from './areas/shops.js';
 import { Minimap } from './minimap.js';
 import { M } from './world/materials.js';
 import { SongGame } from './songGame.js';
@@ -86,6 +87,8 @@ const areas = {
   bakkerij: new Bakery({ quality }),
   lift: new Lift({ quality }),
   jumbo: new JumboStore({ quality }),
+  snackbar: new Snackbar({ quality }),
+  kringloop: new Kringloop({ quality }),
 };
 Object.values(areas).forEach((a) => scene.add(a.group));
 let area = null;
@@ -201,7 +204,7 @@ function saveSettings() {
     /* geen opslag */
   }
 }
-const MUSIC_FOR = { puckhuis: 'thuis', galerij: 'galerij', pistachehuis: 'pistachehuis', buiten: 'buiten', bakkerij: 'bakkerij', lift: 'lift', jumbo: 'lift' };
+const MUSIC_FOR = { puckhuis: 'thuis', galerij: 'galerij', pistachehuis: 'pistachehuis', buiten: 'buiten', bakkerij: 'bakkerij', lift: 'lift', jumbo: 'lift', snackbar: 'bakkerij', kringloop: 'thuis' };
 const musicFor = (name) => MUSIC_FOR[name] || 'buiten';
 input.onFirstInteraction = () => audio.unlock();
 
@@ -246,6 +249,8 @@ const SECRETS = {
   ben: 'OP WELK NUMMER WOON JIJ?',
   betaald: 'Netjes betaald (met een knoop)',
   winkeldief: 'Winkeldief!',
+  gokkast: 'Jackpot! (niet echt)',
+  hoedje: 'Nieuw hoedje gepast',
   frank: 'Frank van karton',
   wcpapier: 'Koning van het wc-papier',
   'natte-vloer': 'Uitglijden op de natte vloer',
@@ -284,6 +289,8 @@ const SECRET_JOKES = {
   wcpapier: 'Een piramide van wc-rollen met een bordje "max. 40 pakken per klant". Puck klimt erop en is nu officieel de koning van het wc-papier.',
   'natte-vloer': 'Er staat een geel bordje "Pas op, natte vloer". Puck loopt er natuurlijk gewoon doorheen en glijdt uit. Bordjes lezen kan hij niet.',
   statiegeld: 'De statiegeldautomaat is buiten gebruik. Dat is hij altijd. In elke supermarkt. Overal. Al jaren.',
+  gokkast: 'Puck speelt op de gokkast in de snackbar. Alle lampjes gaan af, er komt muziek uit… en dan valt er één muntje uit. Van vijf cent.',
+  hoedje: 'In de kringloop past Puck hoedjes. Hij ziet er in alles goed uit. Vindt hij zelf.',
   winkeldief: 'Puck loopt zonder betalen door de poortjes. Alarm! Bedrijfsleider Gerrit ontploft bijna. Stelen is niet netjes. Maar zijn hoofd…',
 };
 const SAVE_KEY = 'puck-avontuur-v2';
@@ -379,7 +386,8 @@ function updateStarHud() {
 }
 
 function applyHat() {
-  setHat(!settings.hat ? null : allStars() ? 'kroon' : progress.hat);
+  const pick = progress.hatPick !== undefined ? progress.hatPick : allStars() ? 'kroon' : progress.hat;
+  setHat(!settings.hat ? null : pick);
 }
 
 function award(id) {
@@ -694,6 +702,7 @@ function enterArea(name, spawnName, { instant = false } = {}) {
     }
     area = areas[name];
     area.enter();
+    dialog.hide();
     body.colliders = area.colliders;
     followCam.colliders = area.colliders;
     followCam.bounds = area.cameraBounds;
@@ -746,8 +755,16 @@ function jumboGate() {
   secret('winkeldief');
 }
 
+function hatUnlocked(h) {
+  if (h.secret) return !!progress.secrets[h.secret];
+  return STARS.filter((s) => progress.stars[s.id]).length >= (h.need || 0);
+}
+
 function onAreaEntered(name) {
+  if (name === 'kringloop') areas.kringloop.refresh(STARS.filter((s) => progress.stars[s.id]).length, hatUnlocked);
   if (state.mode === 'start' || state.mode === 'intro') return;
+  if (name === 'snackbar' && !visited.snackbar) toast('🍟 De Vette Hap! Bestel aan de toonbank een snack: superkracht wanneer je maar wilt.', 5);
+  if (name === 'kringloop' && !visited.kringloop) toast('♻️ De kringloop! Pas hoedjes: elke paar sterren komt er een nieuw hoedje bij. En kijk in de prijzenkast.', 5);
   if (name === 'buiten' && state.jumboBag && state.lastArea === 'jumbo') {
     const stolen = state.jumboBag === 'stolen';
     state.jumboBag = null;
@@ -1196,6 +1213,43 @@ function interact() {
     talkToOma();
     return;
   }
+  if (z.id === 'snack') {
+    const s = SNACKS[(state.snackIdx = ((state.snackIdx ?? -1) + 1) % SNACKS.length)];
+    const sietske = areas.snackbar.npcs[0];
+    sietske.person.talk(3);
+    audio.playSlice('npc-praat', 0.7, { volume: 0.3, rate: 1.1 });
+    dialog.show(sietske.name, s.line, 4);
+    audio.play('fries');
+    eat(s.color);
+    state.powerTime = 20;
+    toast(`🍟 ${s.name}! 20 seconden superkracht. (Nog eens drukken = iets anders bestellen)`, 3.5);
+    return;
+  }
+  if (z.id === 'gokkast') {
+    audio.play('secret-jingle');
+    setTimeout(() => audio.play('checkpoint'), 700);
+    say('Watskebeurt? JACKPOT!', { sound: 'chirp' });
+    setTimeout(() => dialog.show('Gokkast', '*tling* Uitbetaling: € 0,05. Gefeliciteerd. Speel met mate.', 3.5), 1200);
+    secret('gokkast');
+    return;
+  }
+  if (z.id === 'hoed') {
+    const h = z.hat;
+    if (!hatUnlocked(h)) {
+      const n = STARS.filter((s) => progress.stars[s.id]).length;
+      const karin = areas.kringloop.npcs[0];
+      karin.person.talk(3);
+      return dialog.show(karin.name, h.secret ? 'Die is nog nait te koop. Die moet je ergens buiten vinden. Achter een schuur of zo.' : `Die kost ${h.need} sterren. Jij hebt er ${n}. Rekenen is nait mijn vak, maar dat is te weinig.`, 4);
+    }
+    progress.hatPick = h.id;
+    saveProgress();
+    applyHat();
+    audio.play('box', { volume: 0.5 });
+    confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 20);
+    say(h.id ? `Watskebeurt? ${h.name}!` : 'Kaal is ook mooi.', { sound: 'chirp' });
+    if (h.id) secret('hoedje');
+    return;
+  }
   if (z.id === 'automaat') {
     audio.play('alarm', { volume: 0.3 });
     say('Watskebeurt? Buiten gebruik!', { sound: 'piep' });
@@ -1421,9 +1475,11 @@ const GRAPH = {
   galerij: ['puckhuis', 'pistachehuis', 'lift'],
   pistachehuis: ['galerij'],
   lift: ['galerij', 'buiten'],
-  buiten: ['lift', 'bakkerij', 'jumbo'],
+  buiten: ['lift', 'bakkerij', 'jumbo', 'snackbar', 'kringloop'],
   bakkerij: ['buiten'],
   jumbo: ['buiten'],
+  snackbar: ['buiten'],
+  kringloop: ['buiten'],
 };
 
 function nextHop(from, to) {
@@ -2074,6 +2130,7 @@ minimap.pois = [
   { icon: '🛗', x: 0, z: -14.3 }, { icon: '🥖', x: -11.2, z: 5.55 }, { icon: '🛒', x: 19.3, z: 5 },
   { icon: '🔔', x: -24, z: 15 }, { icon: '🎤', x: -5.5, z: 7.3 }, { icon: '🐦', x: 17, z: -8 },
   { icon: '🚲', x: -5.4, z: 20.6 }, { icon: '📦', x: 24, z: -5 },
+  { icon: '🍟', x: -14.4, z: -7 }, { icon: '🧢', x: 14.25, z: 12.4 },
 ];
 function updateMinimap(dt) {
   const on = area === areas.buiten && state.mode === 'play' && !state.concert;
@@ -2194,7 +2251,7 @@ function frame(timestamp) {
     toast(`📢 ${lines[Math.floor(Math.random() * lines.length)]}`, 5.5);
   }
   // Omgevingsgeluid per plek
-  const ambKind = state.mode !== 'play' || state.concert ? null : { buiten: 'buiten', galerij: 'galerij', lift: 'lift', puckhuis: 'binnen', bakkerij: 'binnen', jumbo: 'binnen' }[area.name] || null;
+  const ambKind = state.mode !== 'play' || state.concert ? null : { buiten: 'buiten', galerij: 'galerij', lift: 'lift', puckhuis: 'binnen', bakkerij: 'binnen', jumbo: 'binnen', snackbar: 'binnen', kringloop: 'binnen' }[area.name] || null;
   if (ambKind !== state.ambKind) {
     state.ambKind = ambKind;
     audio.setAmbience(ambKind);

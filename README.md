@@ -42,6 +42,18 @@ wc-rollen (max. 40 pakken per klant), een kaastoren met Groninger nagelkaas, een
 die natuurlijk buiten gebruik is, Meneer Kuipers die al een half uur twijfelt over hagelslag, en af en toe een
 omroepbericht.
 
+**Snackbar De Vette Hap** (west van het plein): bestel aan de toonbank een snack voor 20 seconden superkracht, zo vaak
+als je wilt. Er staat ook een gokkast. **Kringloop Van Alles Wat** (bij de vijver): pas hoedjes (pet, zonnebril,
+koksmuts, feesthoedje, kaboutermuts, kroon) die je met sterren vrijspeelt, en bekijk je bekers in de prijzenkast.
+
+**Minikaart** (buiten, linksonder): draait mee met de camera, met iconen, mensen en een rode stip voor het doel.
+
+**Cheatcode:** typ `watskebeurt` tijdens het spelen, of tik 7x snel op de sterren linksboven: alle sterren,
+geheimpjes en items. Daarna kun je meteen het fluitconcert geven.
+
+**Finale:** na het fluitconcert volgt een feestfilm: de hele buurt danst, Puck danst, vuurwerk boven het plein en een
+drone die over Stad wegvliegt, dan de aftiteling.
+
 **Elke uitdaging** begint met een kaart met titel en doel, dan 3-2-1-GO!, en tijdens het spelen staat het doel
 bovenin beeld.
 
@@ -113,6 +125,7 @@ Er zijn 31 geheimpjes. Bij elk geheimpje hoor je een eigen deuntje en verschijnt
 | Camera | muis (klik in beeld om de muis te vergrendelen, of slepen) | vegen over het scherm |
 | Klimmen | loop tegen meubels, kooien, bomen, jassen, palen aan | idem |
 | Menu | ☰, `P` of `Esc` | ☰ |
+| Voorwerp wisselen | `Q` | 🎒-knop |
 | Fluitconcert | `A` `S` `D` of pijltjes | tik op de banen |
 | Geluid aan/uit | `M` | via het menu |
 

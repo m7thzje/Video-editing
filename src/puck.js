@@ -267,7 +267,20 @@ export class Puck {
       const a = (i / 5) * Math.PI * 2;
       add(crown, new THREE.ConeGeometry(0.012, 0.035, 4), MATERIALS.gold, [Math.cos(a) * 0.042, 0.115, Math.sin(a) * 0.042]);
     }
-    this.hats = { kabouter: gnome, kroon: crown };
+    // Hoedjes uit de kringloop
+    const pet = new THREE.Group();
+    add(pet, new THREE.SphereGeometry(0.068, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xffd200), [0, 0.045, -0.005]);
+    add(pet, new THREE.CylinderGeometry(0.055, 0.055, 0.008, 12, 1, false, -Math.PI / 2, Math.PI), mat(0xffd200), [0, 0.05, 0.045], [1, 1, 0.9]);
+    const shades = new THREE.Group();
+    [-1, 1].forEach((s) => add(shades, new THREE.CylinderGeometry(0.02, 0.02, 0.006, 12), mat(0x111111), [s * 0.074, 0.012, 0.046], null, [0, 0, Math.PI / 2]));
+    add(shades, new THREE.BoxGeometry(0.14, 0.006, 0.006), mat(0x111111), [0, 0.03, 0.05]);
+    const chef = new THREE.Group();
+    add(chef, new THREE.CylinderGeometry(0.05, 0.05, 0.04, 12), MATERIALS.hatWhite, [0, 0.085, 0]);
+    add(chef, new THREE.SphereGeometry(0.068, 12, 8), MATERIALS.hatWhite, [0, 0.13, 0], [1, 0.7, 1]);
+    const party = new THREE.Group();
+    add(party, new THREE.ConeGeometry(0.04, 0.12, 12), mat(0xe86fb4), [0.02, 0.12, 0], null, [0, 0, -0.2]);
+    add(party, new THREE.SphereGeometry(0.014, 8, 6), mat(0xffd84a), [0.033, 0.18, 0]);
+    this.hats = { kabouter: gnome, kroon: crown, pet, zonnebril: shades, koksmuts: chef, feesthoed: party };
     Object.values(this.hats).forEach((h) => {
       h.visible = false;
       this.head.add(h);

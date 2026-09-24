@@ -99,6 +99,13 @@ export const NPC_LINES = {
     'Zie je dat bordje? "Niet voor papegaaien." Heb ik zelf geschreven. Met stift.',
     'Mijn moeder zegt dat ik te streng ben. Mijn moeder koopt bij de Lidl.',
   ],
+  sietske: ['Wat mag het zijn? Je hoeft nait te kiezen, ik geef je gewoon wat.', 'Ik bak al dertig joar. Mijn handen ruiken naar frituurvet. Mijn man vindt het lekker.', 'Mayo is gratis. De rest nait. Behalve voor jou. Jij bent schattig.'],
+  karin: [
+    'Alles hier heeft een verhaal. Deze lamp bijvoorbeeld: hij doet het nait.',
+    'Die hoedjes? Van een overleden goochelaar. Hij was er zelf ook best tevreden over.',
+    'Jij bent de eerste klant vandaag. Ook de eerste papegaai. Het is een dag van premières.',
+    'Die bekers in de kast zijn van jou, zeggen ze. Ik heb ze alvast afgestoft.',
+  ],
   zwerver: ['…', '(wiebelt heen en weer)', '…', '(kijkt naar zijn bordje)', '…', '(wiebelt de andere kant op)'],
   frank: [
     'Hallo! Ik ben Frank. Van karton.',

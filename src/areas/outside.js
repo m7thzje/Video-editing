@@ -62,6 +62,7 @@ export class Outside extends Area {
     this.buildTower();
     this.buildPeople();
     this.buildStage();
+    this.buildShops();
     this.addLights({ sunPos: new THREE.Vector3(-18, 30, 14), center: new THREE.Vector3(0, 0, 0), size: 31, sun: 2.4, hemi: 1.5 });
   }
 
@@ -638,7 +639,7 @@ export class Outside extends Area {
       spots.push([Math.cos(a) * d * 1.1, Math.sin(a) * d * 1.1]);
     }
     spots.push([-24, -4], [-9, 18], [18, 18], [24, -14], [-11, -22]);
-    const blocked = ([x, z]) => z > 19 || (x > 18.5 && x < 30.5 && z > -9 && z < 12.5) || Math.hypot(x + 24, z - 15) < 5 || (x > -9 && x < -2 && z > 4.5 && z < 10.5);
+    const blocked = ([x, z]) => z > 19 || (x > 18.5 && x < 30.5 && z > -9 && z < 12.5) || Math.hypot(x + 24, z - 15) < 5 || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18);
     for (let k = spots.length - 1; k >= 0; k--) if (blocked(spots[k])) spots.splice(k, 1);
     const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.2, 0.3, 2, 6), M.trunk, spots.length);
     const crown = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.5, 0), M.treeLeaf, spots.length);
@@ -688,7 +689,7 @@ export class Outside extends Area {
       do {
         x = (rnd() - 0.5) * 54;
         z = (rnd() - 0.5) * 54;
-      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 2 || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || Math.hypot(x - POND.x, z - POND.z) < POND.r + 1 || (Math.abs(x) < 9 && z < -15));
+      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 2 || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - POND.x, z - POND.z) < POND.r + 1 || (Math.abs(x) < 9 && z < -15));
       const sc = 0.8 + rnd() * 0.5;
       m.makeRotationY(rnd() * 6.28).scale(new THREE.Vector3(sc, sc, sc)).setPosition(x, 0, z);
       stems.setMatrixAt(i, m);
@@ -779,7 +780,7 @@ export class Outside extends Area {
       do {
         x = (rnd() - 0.5) * 56;
         z = (rnd() - 0.5) * 56;
-      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 1.2 || Math.hypot(x, z) < 3.4 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.5 || (Math.abs(x) < 9 && z < -15) || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5));
+      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 1.2 || Math.hypot(x, z) < 3.4 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.5 || (Math.abs(x) < 9 && z < -15) || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18));
       const sc = 0.7 + rnd() * 0.8;
       m.compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6), new THREE.Vector3(sc, sc, sc));
       tufts.setMatrixAt(i, m);
@@ -943,6 +944,45 @@ export class Outside extends Area {
     this.towerStart = { x: tx + r + 0.8, z: tz };
     this.sign(['Martinitoren-klim', 'Luid de klok binnen 30 s!'], tx + r + 1.5, 1.1, tz - 1.6, Math.PI / 2, { width: 1.4, height: 0.45 });
     this.block(tx + r + 1.47, 0, tz - 1.62, tx + r + 1.53, 0.9, tz - 1.58, M.woodDark, { collide: false });
+  }
+
+  buildShops() {
+    // Snackbar De Vette Hap (west van het plein) en Kringloop Van Alles Wat (bij de vijver)
+    const shop = (x0, z0, x1, z1, wallMat, roofMat, door, sign, to, spawn) => {
+      const h = 3.0;
+      this.block(x0, 0, z0, x1, h, z1, wallMat, { name: to });
+      this.block(x0 - 0.2, h, z0 - 0.2, x1 + 0.2, h + 0.18, z1 + 0.2, roofMat, { collide: false });
+      const roof = this.prism(x1 - x0 + 0.4, 1.1, z1 - z0 + 0.4, roofMat);
+      roof.position.set((x0 + x1) / 2, h + 0.18, (z0 + z1) / 2);
+      if (door.axis === 'x') roof.rotation.y = Math.PI / 2;
+      this.group.add(roof);
+      const d = door;
+      const dw = 0.9;
+      if (d.axis === 'x') {
+        this.block(d.x - 0.02, 0, d.z - dw / 2, d.x + 0.04, 2.1, d.z + dw / 2, lambert(0x3b2a1e), { collide: false, shadow: false });
+        this.portals.push({ x0: d.x - 0.1, z0: d.z - dw / 2, x1: d.x + 0.6, z1: d.z + dw / 2, to, spawn: 'deur' });
+        this.addSpawn(spawn, d.x + 1.0, 0, d.z, Math.PI / 2);
+        this.spawns[spawn].camYaw = -Math.PI / 2;
+        sign.rotation.y = Math.PI / 2;
+        sign.position.set(d.x + 0.05, 2.5, d.z);
+      } else {
+        this.block(d.x - dw / 2, 0, d.z - 0.04, d.x + dw / 2, 2.1, d.z + 0.02, lambert(0x3b2a1e), { collide: false, shadow: false });
+        this.portals.push({ x0: d.x - dw / 2, z0: d.z - 0.6, x1: d.x + dw / 2, z1: d.z + 0.1, to, spawn: 'deur' });
+        this.addSpawn(spawn, d.x, 0, d.z - 1.0, Math.PI);
+        this.spawns[spawn].camYaw = 0;
+        sign.rotation.y = Math.PI;
+        sign.position.set(d.x, 2.5, d.z - 0.05);
+      }
+      this.group.add(sign);
+    };
+    shop(-21, -9.5, -15, -4.5, worldTexture(lambert(0xffffff), 'stone-blocks', 1.6, 0xf0d8c8), M.roofDark,
+      { axis: 'x', x: -15, z: -7 },
+      makeSign(['🍟 DE VETTE HAP 🍟', 'Snackbar · ook eierballen'], { width: 2.2, height: 0.6, bg: '#d7263d', fg: '#ffffff', border: '#ffd84a' }), 'snackbar', 'snackbar');
+    // Raam met warm licht
+    this.block(-14.98, 1.0, -9.0, -14.94, 2.0, -7.8, M.windowBlue, { collide: false, shadow: false });
+    shop(11.5, 13, 17, 16.8, worldTexture(lambert(0xffffff), 'stone-rough', 1.6), M.roof,
+      { axis: 'z', x: 14.25, z: 13 },
+      makeSign(['♻️ KRINGLOOP', 'Van Alles Wat · hoedjes!'], { width: 2.2, height: 0.6, bg: '#2f6e4a', fg: '#ffffff', border: '#1d4a30' }), 'kringloop', 'kringloop');
   }
 
   buildStage() {
