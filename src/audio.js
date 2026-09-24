@@ -12,6 +12,7 @@ export const SOUND_NAMES = [
   'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
   'puck-wauw', 'puck-hallo', 'alert', 'caught',
   'puck-geluid-10', 'puck-hallo-2', 'puck-watskecola',
+  'puck-lach', 'puck-tok', 'puck-klik',
   'puck-praat-6', 'puck-praat-7', 'puck-praat-8', 'puck-praat-9', 'puck-praat-10', 'puck-praat-11',
 ];
 
@@ -27,6 +28,7 @@ const GROUPS = {
   // Hoge piepjes: alleen als de buurvrouw je betrapt
   piep: ['puck-geluid-2', 'puck-geluid-6', 'puck-praat-4', 'puck-praat-5', 'puck-geluid-10'],
   hallo: ['puck-hallo', 'puck-hallo-2'],
+  lach: ['puck-lach'],
 };
 
 // Volume per opname (de hoge krijsjes zijn fel)

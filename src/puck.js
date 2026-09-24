@@ -67,6 +67,8 @@ export class Puck {
     this.happy = 0; // >0 blij (in doos / nootje)
     this.stillTime = 0; // hoe lang Puck al stilstaat
     this.fluffing = 0; // >0 veren opzetten
+    this.peering = 0; // >0 diep voorover buigen en knikken (zoals op de zitstok)
+    this.gripPrev = 0;
     this.eating = 0; // >0 eten met het pootje vastgehouden
     this.hats = {};
     this.build();
@@ -315,6 +317,10 @@ export class Puck {
     if (s.climbing) {
       const c = this.walkPhase * 0.5;
       const reach = Math.max(0, Math.sin(c));
+      // Moment dat de snavel grijpt: tikje
+      const grip = Math.sin(c) > 0.95 ? 1 : 0;
+      if (grip && !this.gripPrev && this.onGrip) this.onGrip();
+      this.gripPrev = grip;
       this.head.rotation.x = -0.9 * reach + 0.35 * (1 - reach);
       this.head.position.z = this.headBase.z + 0.02 * reach;
       this.rig.position.y += Math.max(0, -Math.sin(c)) * 0.025;
@@ -335,12 +341,28 @@ export class Puck {
       this.head.scale.setScalar(1 + 0.12 * k);
       this.rig.rotation.z += Math.sin(t * 45) * 0.06 * k;
       this.tail.rotation.y = Math.sin(t * 30) * 0.3 * k;
+      // Aan het eind een flinke schudbeweging met de kop, zoals in het filmpje
+      const shake = this.fluffing < 0.6 ? Math.sin((this.fluffing / 0.6) * Math.PI) : 0;
+      this.head.rotation.y = Math.sin(t * 48) * 0.55 * shake;
+      this.wings.forEach((w) => (w.rotation.z = w.userData.side * 0.25 * k));
       if (this.fluffing <= 0) {
         this.body.scale.set(1, 1, 1);
         this.head.scale.setScalar(1);
+        this.head.rotation.y = 0;
         this.tail.rotation.y = 0;
         this.stillTime = 0;
       }
+    }
+
+    // Voorover buigen en knikken: kop laag, nieuwsgierig op en neer (zoals op de zitstok bij het raam)
+    if (idle && this.peering <= 0 && this.fluffing <= 0 && this.stillTime > 2.5 && Math.random() < dt * 0.35) this.peering = 2.4;
+    if (this.peering > 0) {
+      this.peering -= dt;
+      const k = Math.sin(Math.min(1, (2.4 - this.peering) / 2.4) * Math.PI);
+      this.rig.rotation.x = 0.55 * k;
+      this.head.rotation.x = 0.35 * k + Math.sin(t * 7) * 0.18 * k;
+      this.head.rotation.z = 0.3 * k;
+      this.tail.rotation.x = -0.35 * k;
     }
 
     // Eten: linkerpootje omhoog met het hapje, kop buigt knabbelend omlaag

@@ -16,7 +16,7 @@ ritmespel: tonen vallen in drie banen en je fluit mee op de beat (`A` `S` `D`, p
 Je begint in Puck's appartement, op zijn roze zitstok naast de grote zwarte kooi bij het raam. Het appartement is
 nagebouwd naar echte foto's: één open woonkamer met de kooi en de eettafel aan de raamkant, tegenover de kooi de
 balkondeur met daarnaast de grijze L-bank, een losse groene tv-wand, ronde bijzettafeltjes, het notenhouten dressoir
-met het letterbord *"Mag ik wel een koekje? Puck 2026"* (en het zwarte tasje waar Puck van gaat dansen), een balkon
+met het letterbord *"Mag ik wel een koekje? Puck 2026"*, en op de rugleuning van de bank het zwarte tasje (waar Puck van gaat dansen) met een blikje cola, een balkon
 met uitzicht over Stad en de gang met de zwarte voordeur.
 
 1. **De galerij (9e verdieping):** via de voordeur kom je op een lange galerij met balustrade en uitzicht over Stad,
@@ -68,7 +68,7 @@ meubels, tafels en dozen blokkeren haar zicht. Na binnenkomen heb je 2,5 seconde
 
 ### Geheimpjes (easter eggs) 🥚
 
-Er zijn 23 geheimpjes. Een paar hints (spoilers!):
+Er zijn 24 geheimpjes. Een paar hints (spoilers!):
 
 <details>
 <summary>Toon hints</summary>
@@ -125,6 +125,9 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | `puck-dans.mp3` | Het dansje (tik 5x op Puck) |
 | `puck-geluid-1.mp3` … `puck-geluid-7.mp3`, `puck-geluid-10.mp3` | Fluitjes (1, 3, 4, 5, 7: vaak) en hoge piepjes (2, 6, 10: af en toe) |
 | `puck-watskecola.mp3` | "Watskecola!" aan het eind van het fluitconcert |
+| `puck-lach.mp3` | Puck's lachje: bij een ster, tikken op Puck, bij Buurman Ben en soms uit zichzelf |
+| `puck-tok.mp3` | Snaveltikje als Puck zich met zijn snavel optrekt tijdens het klimmen |
+| `puck-klik.mp3` | Klikje als Puck stilstaat |
 | `npc-praat.mp3` | Game-gebrabbel: bij elk bericht van een Groninger speelt een kort willekeurig stukje (per persoon iets hoger of lager) |
 | `radio-russisch.mp3` | De radio bovenop het vogelhuisje in de merelboom (harder naarmate je dichterbij komt) |
 | `puck-wauw.mp3` | "Wauw wauw wauw!" bij een ster of een geheimpje (tot er eigen `star.mp3` / `secret.mp3` zijn) |

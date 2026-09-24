@@ -95,6 +95,9 @@ Object.values(areas).forEach((a) => {
   });
 });
 Object.values(areas).forEach((a) => mergeStatic(a.group));
+// Snaveltikje als Puck zich met zijn snavel optrekt tijdens het klimmen
+puck.onGrip = () => audio.play('puck-tok', { volume: 0.35, rate: 0.9 + Math.random() * 0.2 });
+
 const setHat = (n) => {
   puck.setHat(n);
   mirrorPuck.setHat(n);
@@ -177,6 +180,7 @@ const SECRETS = {
   tasje: 'Het tasje!',
   balkon: 'Uitzicht vanaf het balkon',
   radio: 'Radio Moskou in de merelboom',
+  cola: 'Watskecola! (op de bank)',
   ben: 'OP WELK NUMMER WOON JIJ?',
 };
 const SAVE_KEY = 'puck-avontuur-v2';
@@ -287,6 +291,7 @@ function award(id) {
   updateStarHud();
   audio.play('star');
   setTimeout(() => audio.play('level-complete'), 400);
+  if (!allStars()) setTimeout(() => say('Hahaha!', { sound: 'lach', seconds: 2 }), 1600);
   burst(starTex, tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 10, 0.3);
   confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 60);
   shockwave(tmpV.set(body.pos.x, body.pos.y + 0.02, body.pos.z), 0xffd84a, 3);
@@ -739,7 +744,9 @@ input.onTap = (x, y) => {
     secret('dans');
   } else {
     // Afwisselend een zinnetje of een krijsje
-    if (state.tapCount % 2) say(Math.random() < 0.5 ? 'Watskebeurt?' : 'Mag ik een koekje?');
+    const r = Math.random();
+    if (r < 0.25) say('Hahaha!', { sound: 'lach', seconds: 2 });
+    else if (state.tapCount % 2) say(Math.random() < 0.5 ? 'Watskebeurt?' : 'Mag ik een koekje?');
     else say(['Fiieuw! ♪', 'Fie-fiew! ♪', 'Tuut! ♪'][Math.floor(Math.random() * 3)], { sound: 'fluit', seconds: 1.4 });
     puck.cheer(0.6);
   }
@@ -1076,7 +1083,7 @@ function talkTo(npc) {
     return dialog.show(npc.name, dialog.next('mehmet'), 2.5);
   }
   if (npc.id === 'ben') {
-    audio.play('talk', { volume: 0.5 });
+    setTimeout(() => say('Hahaha! 141!', { sound: 'lach', seconds: 2 }), 1400);
     secret('ben');
     return dialog.show(npc.name, dialog.next('ben'));
   }
@@ -1646,7 +1653,10 @@ function update(dt) {
   if (state.idleTalk <= 0) {
     state.idleTalk = 12 + Math.random() * 14;
     if (!song.active && speechTimer <= 0) {
-      if (Math.random() < 0.6) {
+      const r = Math.random();
+      if (r < 0.12) say('Hahaha!', { sound: 'lach', seconds: 2 });
+      else if (r < 0.2) audio.play('puck-klik', { volume: 0.7 });
+      else if (r < 0.65) {
         say(['Fiieuw! ♪', 'Fie-fie-fiew! ♪', 'Tuuut-fiew! ♪'][Math.floor(Math.random() * 3)], { sound: 'fluit', seconds: 1.4 });
       } else {
         const lines = ['Watskebeurt?', 'Mag ik een koekje?', 'Watskebeurt?', 'Mag ik een koekje?', 'Hallo!'];
