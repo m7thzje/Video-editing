@@ -9,7 +9,7 @@ export const SOUND_NAMES = [
   'nut', 'box', 'hop', 'level-complete', 'feather', 'fries', 'secret', 'splash', 'squeak', 'star', 'door', 'checkpoint',
   'puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4', 'puck-praat-5', 'puck-dans', 'puck-lekker',
   'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
-  'puck-wauw', 'puck-hallo',
+  'puck-wauw', 'puck-hallo', 'alert', 'caught',
 ];
 
 // Groepen: er wordt willekeurig een geladen variant gekozen.
@@ -203,6 +203,16 @@ const PLACEHOLDERS = {
   },
   talk(ctx, out, v) {
     [700, 1100, 850, 1300].forEach((f, i) => tone(ctx, out, { type: 'sawtooth', from: f, to: f * 1.2, start: i * 0.09, dur: 0.08, vol: 0.06 * v }));
+  },
+  // Buurvrouw vermoedt iets
+  alert(ctx, out, v) {
+    tone(ctx, out, { type: 'triangle', from: 520, to: 780, dur: 0.14, vol: 0.25 * v });
+    tone(ctx, out, { type: 'triangle', from: 520, to: 780, start: 0.18, dur: 0.14, vol: 0.25 * v });
+  },
+  // Buurvrouw zet je buiten: boos "hmpf"
+  caught(ctx, out, v) {
+    tone(ctx, out, { type: 'sawtooth', from: 180, to: 110, dur: 0.35, vol: 0.2 * v });
+    tone(ctx, out, { type: 'sawtooth', from: 150, to: 90, start: 0.35, dur: 0.4, vol: 0.2 * v });
   },
   // Fanfare bij level voltooid
   'level-complete'(ctx, out, v) {

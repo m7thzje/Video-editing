@@ -14,7 +14,7 @@ Via de voordeur ga je **naar buiten**: een open wereld rond de flat met vier min
 
 | ⭐ | Minigame | Waar | Doel |
 |---|---|---|---|
-| 🥜 | **Pistachehuis** | Het bakstenen huis van de buren (links van het plein) | Vind 10 verstopte pistachenootjes. Kruip in een kartonnen doos voor de *pistacheradar*. |
+| 🥜 | **Pistachehuis** | Het bakstenen huis van de buren (links van het plein) | Pik 10 verstopte pistachenootjes zonder dat de **chagrijnige buurvrouw** je ziet. Kruip in een kartonnen doos om je te verstoppen (en voor de *pistacheradar*). |
 | 🪶 | **Verenjacht** | Overal buiten | Vind 8 rode veren (op daken, takken, stenen…). |
 | 🪨 | **Stapstenen** | De vijver | Loop door START en hop via de gele ringen naar de FINISH binnen 18 seconden. Niet in het water vallen! |
 | 🎵 | **Merel-liedjes** | De grote boom met het vogelhuisje | Druk op *E* / 💬 en zing 3 liedjes van de merel na. |
@@ -24,6 +24,14 @@ superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Patat komt na een t
 
 Met alle 4 sterren krijgt Puck een **kroon** 👑. Je voortgang (sterren, geheimpjes, beste tijd) wordt in de browser bewaard;
 via het menu (☰) kun je opnieuw beginnen.
+
+### De buurvrouw 👓
+
+In het Pistachehuis loopt een grote, chagrijnige buurvrouw met halflang wit haar en een bril haar vaste rondje.
+Haar **kijkkegel** zie je als lichtvlek op de vloer. Sta je daarin (en staan er geen meubels tussen), dan verschijnt er
+een **?** boven haar hoofd en wordt de vlek rood. Blijf je te lang in beeld (of loop je tegen haar aan), dan wordt het een
+**!** en zet ze je buiten. Gevonden pistachenootjes blijf je houden. In een kartonnen doos ben je onzichtbaar, en
+meubels, tafels en dozen blokkeren haar zicht. Na binnenkomen heb je 2,5 seconden voorsprong.
 
 ### Geheimpjes (easter eggs) 🥚
 
@@ -96,6 +104,8 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | `squeak.mp3` | badeendje |
 | `door.mp3` | door een deur gaan |
 | `checkpoint.mp3` | ring gehaald bij de stapstenen / goed liedje |
+| `alert.mp3` | de buurvrouw vermoedt iets |
+| `caught.mp3` | de buurvrouw zet je buiten |
 
 Wil je een Puck-geluid vervangen door een beter fragment? Overschrijf dan gewoon het bestand met dezelfde naam.
 Houd de bestanden kort en klein (bij voorkeur < 100 kB) zodat ze snel laden op mobiel.
@@ -120,6 +130,7 @@ src/
   areas/puckHouse.js    Puck's appartement (startgebied)
   areas/outside.js      de open wereld: flat, plein, vijver + stapstenen, merelboom, schuur, fietsenhok, veren, patat
   areas/pistachioHouse.js  het Pistachehuis (pistache-minigame met dozen en radar)
+  areas/neighbor.js     de chagrijnige buurvrouw: rondje lopen, kijkkegel, zichtlijn, buiten zetten
   world/area.js         basisklasse voor gebieden + gedeelde objecten (pistache, veer, patat, koekje, borden…)
   world/materials.js    gedeelde lowpoly-materialen
   songGame.js           merel-minigame (nazingen)

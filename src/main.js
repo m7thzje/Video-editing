@@ -59,7 +59,7 @@ input.onFirstInteraction = () => audio.unlock();
 // ---------- Voortgang (opgeslagen in de browser) ----------
 
 const STARS = [
-  { id: 'pistache', icon: '🥜', name: 'Pistachehuis', desc: 'Vind de 10 pistachenootjes bij de buren' },
+  { id: 'pistache', icon: '🥜', name: 'Pistachehuis', desc: 'Pik de 10 pistachenootjes van de buurvrouw, zonder dat ze je ziet' },
   { id: 'veren', icon: '🪶', name: 'Verenjacht', desc: 'Vind 8 rode veren in de buurt' },
   { id: 'stenen', icon: '🪨', name: 'Stapstenen', desc: `Steek de vijver over binnen ${STONE_TARGET_TIME} seconden` },
   { id: 'merel', icon: '🎵', name: 'Merel-liedjes', desc: 'Zing 3 liedjes van de merel na' },
@@ -324,7 +324,12 @@ function onAreaEntered(name) {
     toast('Buiten! Verdien sterren bij het Pistachehuis, de vijver, de merel en met de verenjacht ⭐', 5);
   } else if (name === 'pistachehuis') {
     const left = area.pistachios.filter((c) => !c.found).length;
-    toast(left ? `Het Pistachehuis! Er liggen hier nog ${left} pistachenootjes verstopt.` : 'Alle pistachenootjes zijn al op. Lekker!', 4);
+    toast(
+      left
+        ? `Het Pistachehuis! Nog ${left} pistachenootjes… maar pas op voor de chagrijnige buurvrouw. Blijf uit haar zicht (verstop je in een doos)!`
+        : 'Alle pistachenootjes zijn al op. Lekker! (De buurvrouw is nog steeds chagrijnig.)',
+      5,
+    );
   } else if (name === 'puckhuis' && !first) {
     toast('Weer thuis! 🏠', 2);
   }
@@ -544,6 +549,33 @@ function checkBoxes() {
   followCam.minPitch = box ? 0.95 : -0.25;
 }
 
+const GRUMBLES = ['Hé… wie is daar?', 'Hmpf! Hoor ik iets?', 'Is daar iemand?', 'Wat was dat?'];
+const SCOLDS = ['Hé! Wegwezen, rotvogel!', 'Eruit, jij! En blijf eruit!', 'Mijn pistachenootjes! Eruit!', 'Ksst! Naar buiten, jij!'];
+
+function updateNeighbor(dt) {
+  if (!area.updateNeighbor || state.transitioning || state.caught) return;
+  const res = area.updateNeighbor(dt, state.time, body.pos, !!state.insideBox);
+  if (res === 'suspicious' && !state.warned) {
+    state.warned = true;
+    audio.play('alert');
+    toast(`Buurvrouw: "${GRUMBLES[Math.floor(Math.random() * GRUMBLES.length)]}" Snel, verstop je!`, 2.2);
+  } else if (!res) {
+    state.warned = false;
+  } else if (res === 'caught') {
+    state.caught = true;
+    state.frozen = true;
+    audio.play('caught');
+    say('Watskebeurt?!', { sound: 'chirp' });
+    toast(`Buurvrouw: "${SCOLDS[Math.floor(Math.random() * SCOLDS.length)]}" Je bent buiten gezet. Blijf uit haar zicht!`, 4.5);
+    setTimeout(() => {
+      state.frozen = false;
+      state.caught = false;
+      state.warned = false;
+      enterArea('buiten', 'pistachehuis');
+    }, 1300);
+  }
+}
+
 function inZone(z) {
   const dx = body.pos.x - z.x;
   const dz = body.pos.z - z.z;
@@ -714,6 +746,7 @@ function update(dt) {
   collect();
   updateFlying(dt);
   checkBoxes();
+  updateNeighbor(dt);
   checkZones();
   updateStoneRun(dt);
   updateCounter();

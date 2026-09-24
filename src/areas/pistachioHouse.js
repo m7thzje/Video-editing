@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { puckPortraitTexture, rugTexture, skyTexture, wallpaperTexture, woodFloorTexture } from '../textures.js';
 import { Area, makePistachio } from '../world/area.js';
+import { Neighbor } from './neighbor.js';
 import { lambert, M } from '../world/materials.js';
 
 // Het Pistachehuis van de buren: hier verstopt de buurvrouw 10 pistachenootjes.
@@ -40,6 +41,27 @@ export class PistachioHouse extends Area {
     this.buildBoxes();
     this.buildNuts();
     this.buildLights();
+
+    // De chagrijnige buurvrouw loopt haar vaste rondje
+    this.neighbor = new Neighbor(this.group, [
+      [-1.0, -1.6, 1.5],
+      [1.6, -1.5, 1.0],
+      [3.0, -0.4, 2.0],
+      [2.9, 0.0, 0.5],
+      [0.3, 0.0, 0.5],
+      [0.1, 2.55, 1.5],
+      [-1.3, 1.3, 1.0],
+      [-1.2, -0.6, 0.5],
+    ]);
+  }
+
+  enter() {
+    super.enter();
+    this.neighbor.reset();
+  }
+
+  updateNeighbor(dt, time, puckPos, hidden) {
+    return this.neighbor.update(dt, time, puckPos, hidden, this.colliders);
   }
 
   // ---------- Kamer ----------
