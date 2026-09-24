@@ -62,6 +62,9 @@ export class Puck {
     this.idleTime = 0;
     this.squash = 0; // >0 net geland
     this.happy = 0; // >0 blij (in doos / nootje)
+    this.stillTime = 0; // hoe lang Puck al stilstaat
+    this.fluffing = 0; // >0 veren opzetten
+    this.eating = 0; // >0 eten met het pootje vastgehouden
     this.hats = {};
     this.build();
   }
@@ -115,6 +118,7 @@ export class Puck {
     // Kop
     this.head = new THREE.Group();
     this.head.position.set(0, 0.128, 0.035);
+    this.headBase = this.head.position.clone();
     this.body.add(this.head);
     add(this.head, ball(0.078), MATERIALS.head, null, [1, 0.97, 1.02]);
 
@@ -143,6 +147,10 @@ export class Puck {
       rig.add(pivot);
       return pivot;
     });
+    this.legBase = this.legs[0].position.clone();
+    // Hapje dat Puck in zijn pootje vasthoudt tijdens het eten
+    this.snack = add(this.legs[0], new THREE.IcosahedronGeometry(0.022, 0), new THREE.MeshLambertMaterial({ color: 0xd9b36b, flatShading: true }), [0, -0.075, 0.035]);
+    this.snack.visible = false;
 
     // Hoedjes (easter eggs): kaboutermuts en kroon
     const gnome = new THREE.Group();
@@ -272,6 +280,58 @@ export class Puck {
     const bob = this.happy > 0 ? Math.sin(t * 20) * 0.25 : 0;
     this.head.rotation.z = THREE.MathUtils.lerp(this.head.rotation.z, tilt, 1 - Math.exp(-dt * 6));
     this.head.rotation.x = THREE.MathUtils.lerp(this.head.rotation.x, bob + (s.climbing ? -0.4 : 0), 1 - Math.exp(-dt * 10));
+
+    // Snavelklimmen: de snavel is een derde poot. Kop reikt omhoog, grijpt, en trekt het lijf op.
+    if (s.climbing) {
+      const c = this.walkPhase * 0.5;
+      const reach = Math.max(0, Math.sin(c));
+      this.head.rotation.x = -0.9 * reach + 0.35 * (1 - reach);
+      this.head.position.z = this.headBase.z + 0.02 * reach;
+      this.rig.position.y += Math.max(0, -Math.sin(c)) * 0.025;
+      this.legs[0].rotation.x = -0.6 + Math.sin(c) * 0.5;
+      this.legs[1].rotation.x = -0.6 - Math.sin(c) * 0.5;
+    } else {
+      this.head.position.z += (this.headBase.z - this.head.position.z) * Math.min(1, dt * 10);
+    }
+
+    // Veren opzetten: na een tijdje stilstaan schudt Puck zich even helemaal pluizig
+    this.stillTime = idle ? this.stillTime + dt : 0;
+    if (idle && this.fluffing <= 0 && this.stillTime > 7 && Math.random() < dt * 0.25) this.fluffing = 1.4;
+    if (this.fluffing > 0) {
+      this.fluffing -= dt;
+      const k = Math.sin(Math.min(1, (1.4 - this.fluffing) / 1.4) * Math.PI);
+      const f = 1 + 0.2 * k;
+      this.body.scale.set(f, 1 + 0.08 * k, f);
+      this.head.scale.setScalar(1 + 0.12 * k);
+      this.rig.rotation.z += Math.sin(t * 45) * 0.06 * k;
+      this.tail.rotation.y = Math.sin(t * 30) * 0.3 * k;
+      if (this.fluffing <= 0) {
+        this.body.scale.set(1, 1, 1);
+        this.head.scale.setScalar(1);
+        this.tail.rotation.y = 0;
+        this.stillTime = 0;
+      }
+    }
+
+    // Eten: linkerpootje omhoog met het hapje, kop buigt knabbelend omlaag
+    if (this.eating > 0) {
+      this.eating -= dt;
+      // Pootje omhoog tot vlak onder de snavel, lijf leunt op het andere pootje
+      const lift = 1 - Math.exp(-dt * 14);
+      const leg = this.legs[0];
+      leg.position.y = THREE.MathUtils.lerp(leg.position.y, this.legBase.y + 0.07, lift);
+      leg.position.z = THREE.MathUtils.lerp(leg.position.z, this.legBase.z + 0.05, lift);
+      leg.position.x = THREE.MathUtils.lerp(leg.position.x, 0, lift);
+      leg.rotation.x = THREE.MathUtils.lerp(leg.rotation.x, -1.9, lift);
+      this.rig.rotation.z = 0.1;
+      this.head.rotation.x = 0.5 + Math.max(0, Math.sin(t * 16)) * 0.3;
+      this.snack.scale.setScalar(Math.max(0.35, this.eating / 1.8));
+      if (this.eating <= 0) {
+        this.snack.visible = false;
+        this.snack.scale.setScalar(1);
+        leg.position.copy(this.legBase);
+      }
+    }
   }
 
   applyDance(dt) {
@@ -285,6 +345,13 @@ export class Puck {
     this.body.scale.set(fluff, 1, fluff);
     this.wings.forEach((w) => (w.rotation.z = w.userData.side * (0.5 + Math.sin(t * 18) * 0.3)));
     if (this.dancing <= 0) this.body.scale.set(1, 1, 1);
+  }
+
+  /** Puck pakt een hapje met zijn pootje en knabbelt ervan. */
+  eat(color = 0xd9b36b, seconds = 1.8) {
+    this.eating = seconds;
+    this.snack.material.color.set(color);
+    this.snack.visible = true;
   }
 
   land(impact) {

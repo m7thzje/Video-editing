@@ -108,6 +108,10 @@ export const M = {
   friesBag: lambert(0xe23b3b),
 };
 
+// Avondstand: lampen gaan feller branden en ramen lichten warm op
+M.lampShade.userData.night = 'lamp';
+M.windowBlue.userData.night = 'window';
+
 // Bladeren wiegen zachtjes in de wind
 applyWind(M.leaf);
 applyWind(M.leafDark);

@@ -184,6 +184,7 @@ export class Outside extends Area {
     plinth.position.set(0, fh / 2, z1 + 0.02);
     this.group.add(plinth);
     const lampMat = lambert(0xffd89a, { emissive: 0xffb050, emissiveIntensity: 1.2 });
+    lampMat.userData.night = 'lamp';
     [-6.6, -4.3, 4.1, 6.9].forEach((x) => {
       this.block(x - 0.45, 0, z1, x + 0.45, 2.05, z1 + 0.05, lambert(0xf6f4ef), { collide: false, shadow: false });
       this.block(x + 0.3, 0.95, z1 + 0.05, x + 0.36, 1.05, z1 + 0.08, M.metalDark, { collide: false, shadow: false });
@@ -909,6 +910,7 @@ export class Outside extends Area {
     });
     this.block(S.x0, 3.3, S.z1 - 0.3, S.x1, 3.4, S.z1 - 0.18, M.metalDark, { collide: false });
     const spotMat = lambert(0xfff1c2, { emissive: 0xffd27a, emissiveIntensity: 0.8 });
+    spotMat.userData.night = 'lamp';
     [-6.9, -5.5, -4.1].forEach((x) => {
       const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 0.22, 8), spotMat);
       lamp.position.set(x, 3.2, S.z1 - 0.4);

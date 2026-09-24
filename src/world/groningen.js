@@ -17,7 +17,7 @@ const G = {
   bikeFrames: [0x2b2f3a, 0xd7263d, 0x3d7ea6, 0x6aa36b, 0xe8b04b, 0x8e6bb0].map((c) => lambert(c)),
   tyre: lambert(0x1b1b1d),
   facade: [0xa65b43, 0x7d4a3a, 0xc98b5e, 0x8c5a4a, 0xb86a4e, 0x6f4c3e].map((c) => lambert(c)),
-  window: lambert(0x2f3e4c, { emissive: 0x1a2530, emissiveIntensity: 0.3 }),
+  window: Object.assign(lambert(0x2f3e4c, { emissive: 0x1a2530, emissiveIntensity: 0.3 }), { userData: { night: 'window' } }),
   roofTile: lambert(0x7d3a2e),
 };
 

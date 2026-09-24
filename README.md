@@ -4,24 +4,38 @@ Een vrolijke 3D open-world game in de browser, gebouwd met [Three.js](https://th
 Speel als **Puck**, een grijze roodstaart papegaai die niet graag vliegt: hij loopt, klimt op meubels, bomen en
 kooien en kan hooguit een klein stukje hoppen. Puck's favoriete zinnen: *"Watskebeurt?"* en *"Mag ik een koekje?"*
 
+## Het verhaal
+
+Puck is **alleen thuis** op nummer 141, op de 9e verdieping van de Donderslaanflat in Groningen. Stil hoor. Veel te stil.
+Dus bedenkt Puck een plan: hij geeft een groot **fluitconcert** op het plein, net zo lang tot hij niet meer alleen is.
+Daarvoor moet hij heel Stad warm krijgen: verdien alle 9 sterren, dan komt iedereen luisteren. Het concert zelf is een
+ritmespel: tonen vallen in drie banen en je fluit mee op de beat (`A` `S` `D`, pijltjes, of tikken op de banen).
+
 ## Het spel
 
-Puck woont op de **9e verdieping van de Donderslaanflat in Groningen**. Je begint in zijn appartement, op zijn roze
-zitstok naast de grote zwarte kooi. Het appartement is nagebouwd naar echte foto's: grijze L-bank, groene tv-wand,
-ronde bijzettafeltjes, eettafel met mintgroene stoelen, het notenhouten dressoir met het letterbord
-*"Mag ik wel een koekje? Puck 2026"* en de gang met de zwarte voordeur.
+Je begint in Puck's appartement, op zijn roze zitstok naast de grote zwarte kooi bij het raam. Het appartement is
+nagebouwd naar echte foto's: één open woonkamer met de kooi en de eettafel aan de raamkant, tegenover de kooi de
+balkondeur met daarnaast de grijze L-bank, een losse groene tv-wand, ronde bijzettafeltjes, het notenhouten dressoir
+met het letterbord *"Mag ik wel een koekje? Puck 2026"* (en het zwarte tasje waar Puck van gaat dansen), een balkon
+met uitzicht over Stad en de gang met de zwarte voordeur.
 
 1. **De galerij (9e verdieping):** via de voordeur kom je op een lange galerij met balustrade en uitzicht over Stad,
-   met de Martinitoren in de verte. Nr. 93 is de deur van de chagrijnige buurvrouw (het Pistachehuis).
+   met de Martinitoren in de verte. Nr. 143 is de deur van de chagrijnige buurvrouw (het Pistachehuis).
 2. **De lift:** achter de rode liftdeuren aan het eind van de galerij. Binnen (witte wanden, leuningen, lichtpaneel)
    druk je op de knop: de deuren schuiven dicht, de teller loopt van 9 naar 0 en de lift schudt even. Hop op de
-   leuning en je ziet jezelf in de liftspiegel!
+   leuning en je ziet jezelf in de liftspiegel! Buurman Ben hangt altijd in de lift en wil maar één ding weten:
+   *OP WELK NUMMER WOON JIJ?*
 3. **Groningen op straatniveau:** de ingang van de Donderslaanflat (glazen hal, grijze plint, rij fietsen, coniferen,
    klinkerpad met paaltje, parkeerplaats), een plein met fontein en snackbar, de vijver, de merelboom, een gracht met
    brug, bootje en grachtenpanden, stadsvlaggen en de Martinitoren. Op de parkeerplaats staat Puck's eigen witte
-   Citroën DS3 met zwart dak (kenteken P-UCK-91).
+   Citroën DS3 met zwart dak (kenteken P-UCK-141). Verder: de Jumbo, de Martinitoren, en het podium voor het concert.
 
-Elke minigame levert een ⭐ op (5 in totaal):
+**De Groningers** zijn droog en kort van stof: Postbode Harm, Visser Geert, Studente Sjoukje, Duivenman Jan (en
+duif Henk), Buurman Klaas, Oma Moi, Jumbo-Bas en Eline van de Jumbo, Buurvrouw Tineke (klaagt over scheef geparkeerde
+auto's), Torenwachter Wiebe, Meneer Mehmet met zijn oranje kat Pasja (zegt alleen "Hoi.", en ruikt een beetje) en
+Buurman Ben in de lift.
+
+Elke minigame levert een ⭐ op (9 in totaal):
 
 | ⭐ | Minigame | Waar | Doel |
 |---|---|---|---|
@@ -30,6 +44,10 @@ Elke minigame levert een ⭐ op (5 in totaal):
 | 🪶 | **Verenjacht** | Overal buiten | Vind 8 rode veren (op daken, takken, stenen…). |
 | 🪨 | **Stapstenen** | De vijver | Loop door START en hop via de gele ringen naar de FINISH binnen 18 seconden. Niet in het water vallen! |
 | 🎵 | **Merel-liedjes** | De grote boom met het vogelhuisje | Druk op *E* / 💬 en zing 3 liedjes van de merel na. |
+| 🕊️ | **Duiven wegjagen** | Het plein, bij Duivenman Jan | Jaag alle duiven weg binnen de tijd. |
+| 🚲 | **Fietsrace** | De brug, bij Studente Sjoukje | Ren door alle blauwe ringen en wees eerder terug dan Sjoukje op haar fiets. |
+| 📦 | **Dozen plat** | Achter de Jumbo, bij Jumbo-Bas | Spring op alle 15 dozen binnen 40 seconden. |
+| 🔔 | **Martinitoren** | De toren, bij Torenwachter Wiebe | Klim naar het balkon en luid de klok binnen 30 seconden. |
 
 **Patat 🍟 en de Groningse eierbal** (bij de snackbar) geven 15 seconden **superkracht**: supersnel lopen en
 superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Ze komen na een tijdje terug.
@@ -37,7 +55,7 @@ superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Ze komen na een tij
 Alles wat je vrijspeelt krijgt een duidelijk effect: een grote pop-up met stralen, confetti, een schokgolf en een flits
 (sterren krijgen een eigen ⭐ STER!-banner). Gevonden ingrediënten staan in de inventaris linksboven.
 
-Met alle 5 sterren krijgt Puck een **kroon** 👑. Je voortgang (sterren, geheimpjes, items, beste tijd) wordt in de
+Met alle 9 sterren krijgt Puck een **kroon** 👑 en kan het fluitconcert beginnen. Je voortgang (sterren, geheimpjes, items, beste tijd) wordt in de
 browser bewaard; via het menu (☰) kun je opnieuw beginnen.
 
 ### De buurvrouw 👓
@@ -50,7 +68,7 @@ meubels, tafels en dozen blokkeren haar zicht. Na binnenkomen heb je 2,5 seconde
 
 ### Geheimpjes (easter eggs) 🥚
 
-Er zijn 19 geheimpjes. Een paar hints (spoilers!):
+Er zijn 23 geheimpjes. Een paar hints (spoilers!):
 
 <details>
 <summary>Toon hints</summary>
@@ -66,6 +84,7 @@ Er zijn 19 geheimpjes. Een paar hints (spoilers!):
 - Bel eens aan bij de fietsen voor de flat. En proef een Groningse eierbal.
 - Het vuurdraak-kaartje is een zeldzame holo-kaart: bekijk hem goed als je hem vindt.
 - In de lift hangt een spiegel. Op de galerij staat een pakketje. En welke auto is van Puck?
+- Loop eens het balkon op. Zoek het zwarte tasje. Praat met Buurman Ben. En ruik je iets als Meneer Mehmet voorbij komt?
 
 </details>
 
@@ -79,6 +98,7 @@ Er zijn 19 geheimpjes. Een paar hints (spoilers!):
 | Camera | muis (klik in beeld om de muis te vergrendelen, of slepen) | vegen over het scherm |
 | Klimmen | loop tegen meubels, kooien, bomen, jassen, palen aan | idem |
 | Menu | ☰, `P` of `Esc` | ☰ |
+| Fluitconcert | `A` `S` `D` of pijltjes | tik op de banen |
 | Geluid aan/uit | `M` | via het menu |
 
 ## Ontwikkelen
@@ -103,7 +123,8 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | `puck-praat-1.mp3` … `puck-praat-5.mp3` | Puck praat (spraakballonnen, tikken op Puck, in een doos). Er wordt willekeurig één gekozen. |
 | `puck-lekker.mp3` | Puck eet iets (pistache, patat, eierbal, koekje) en zegt "lekker!" (alleen het woord) |
 | `puck-dans.mp3` | Het dansje (tik 5x op Puck) |
-| `puck-geluid-1.mp3` … `puck-geluid-11.mp3` | Krijsjes en fluitjes: blij in een doos, bij een veer, bij tikken op Puck en af en toe uit zichzelf |
+| `puck-geluid-1.mp3` … `puck-geluid-7.mp3`, `puck-geluid-10.mp3` | Fluitjes (1, 3, 4, 5, 7: vaak) en hoge piepjes (2, 6, 10: af en toe) |
+| `puck-watskecola.mp3` | "Watskecola!" aan het eind van het fluitconcert |
 | `puck-wauw.mp3` | "Wauw wauw wauw!" bij een ster of een geheimpje (tot er eigen `star.mp3` / `secret.mp3` zijn) |
 | `puck-hallo.mp3`, `puck-hallo-2.mp3` | "Hallo!" bij de start en als Puck spontaan hallo zegt |
 
@@ -125,6 +146,12 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | `checkpoint.mp3` | ring gehaald bij de stapstenen / goed liedje |
 | `alert.mp3` | de buurvrouw vermoedt iets |
 | `caught.mp3` | de buurvrouw zet je buiten |
+| `meow.mp3` | Pasja de kat |
+| `bell.mp3` | fietsbel en de klok van de Martinitoren |
+| `crunch.mp3` | een doos plat springen |
+
+De achtergrondmuziek wordt in de browser zelf gemaakt, met een eigen deuntje per plek: thuis, de galerij, Stad,
+de bakkerij, het Pistachehuis, de lift (liftmuziek) en het concert.
 
 Wil je een Puck-geluid vervangen door een beter fragment? Overschrijf dan gewoon het bestand met dezelfde naam.
 Houd de bestanden kort en klein (bij voorkeur < 100 kB) zodat ze snel laden op mobiel.
@@ -158,6 +185,12 @@ src/
   world/fx.js           sfeer: lucht, wolken, wind, vlinders, vogels, fontein, vlaggetjes, zonnestralen, stofjes
   world/groningen.js    Martinitoren, stadsvlag, fietsen, auto's, grachtenpanden, stadsgezicht
   songGame.js           merel-minigame (nazingen)
+  concert.js            het fluitconcert: ritmespel met eigen begeleiding
+  minigames.js          duiven, fietsrace, dozen plat, rondlopers (Mehmet)
+  dialog.js             droge Groningse dialogen
+  world/people.js       Groningers (gezichten, kleding, haar) en hun animaties
+  world/detail.js       detail-shader: vlekjes, korrel en contactschaduw op alle materialen
+  world/optimize.js     stilstaande meshes samenvoegen per materiaal
   puck.js               Puck-model (geschubde veren, gele iris, rode spikkels) + animaties, hoedjes, gloed
   physics.js            karakterfysica: lopen, klimmen, hoppen, botsen met blokken
   camera.js             third-person volgcamera met botsing
@@ -171,5 +204,8 @@ src/
 - Lambert-materialen met flat shading (lowpoly), één schaduwcasterende zon per gebied met **statische** schaduwmap
   (alleen ververst bij het wisselen van gebied); Puck heeft een goedkope blob-schaduw.
 - Alleen het actieve gebied wordt getekend; bomen, bloemen, ramen en hekpaaltjes zijn instanced; kooitralies samengevoegd.
-- Pixel ratio begrensd (max. 1,5 op touch) en wordt automatisch verlaagd als de framerate onder de 45 fps zakt.
+- Stilstaande objecten worden per gebied samengevoegd (van honderden naar enkele tientallen tekenopdrachten).
+- Pixel ratio begrensd (max. 1,5 op desktop, 1,25 op touch) en wordt automatisch verlaagd als de framerate zakt.
+- De gloed (bloom) staat op telefoons standaard uit, draait op een kwart resolutie en gaat vanzelf uit onder 50 fps.
+- In het menu: *Minder effecten* voor oudere telefoons en een fps-teller.
 - Alle texturen worden procedureel gemaakt (geen afbeeldingen downloaden).

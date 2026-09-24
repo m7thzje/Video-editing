@@ -23,7 +23,7 @@ const P = {
   gutter: lambert(0x1f2123),
   panel: lambert(0x3a5486),
   frame: lambert(0xf4f1ea),
-  glass: lambert(0x9fb4c4, { emissive: 0x3b5266, emissiveIntensity: 0.35 }),
+  glass: Object.assign(lambert(0x9fb4c4, { emissive: 0x3b5266, emissiveIntensity: 0.35 }), { userData: { night: 'window' } }),
   red: lambert(0xb3121f),
   concrete: lambert(0xd8d2c6),
   concreteDark: lambert(0xb3ac9f),

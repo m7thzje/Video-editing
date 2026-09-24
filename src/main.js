@@ -22,6 +22,7 @@ import { vuurdraakCardCanvas } from './textures.js';
 import { fxTime } from './world/fx.js';
 import { makePerson } from './world/people.js';
 import { mergeStatic } from './world/optimize.js';
+import { glowSprite } from './world/area.js';
 
 // ---------- Setup ----------
 
@@ -72,6 +73,27 @@ const mirrorPuck = new Puck();
 areas.lift.mirrorInner.add(mirrorPuck.root);
 mirrorPuck.root.userData.dynamic = true;
 // Prestaties: stilstaande onderdelen per materiaal samenvoegen
+// Avondstand: verzamel lampen (voor gloed-sprites) en lichtgevende materialen vóór het samenvoegen
+const nightMats = new Map();
+const nightGlows = [];
+Object.values(areas).forEach((a) => {
+  a.group.updateMatrixWorld(true);
+  const spots = [];
+  a.group.traverse((o) => {
+    const n = o.material?.userData?.night;
+    if (!n) return;
+    if (!nightMats.has(o.material)) nightMats.set(o.material, { color: o.material.emissive.clone(), intensity: o.material.emissiveIntensity, kind: n });
+    if (n === 'lamp' && spots.length < 40) spots.push(o.getWorldPosition(new THREE.Vector3()));
+  });
+  const inv = a.group.matrixWorld.clone().invert();
+  spots.forEach((p) => {
+    const glow = glowSprite(0xffc870, 0.9, 0.7);
+    glow.position.copy(p.applyMatrix4(inv));
+    glow.visible = false;
+    a.group.add(glow);
+    nightGlows.push(glow);
+  });
+});
 Object.values(areas).forEach((a) => mergeStatic(a.group));
 const setHat = (n) => {
   puck.setHat(n);
@@ -731,7 +753,9 @@ const wish = new THREE.Vector3();
 const center = new THREE.Vector3();
 const flying = [];
 
-function eat() {
+function eat(color) {
+  puck.eat(color);
+  mirrorPuck.eat(color);
   audio.play('puck-lekker');
   say('Lekker!', { sound: null, seconds: 1.6 });
 }
@@ -769,7 +793,7 @@ function onCollect(c) {
   switch (c.type) {
     case 'pistache': {
       audio.play('nut');
-      eat();
+      eat(0x9cc75a);
       puck.cheer(0.8);
       const all = area.pistachios;
       const got = all.filter((x) => x.found).length;
@@ -789,17 +813,17 @@ function onCollect(c) {
     case 'patat':
       audio.play('fries');
       confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.3, body.pos.z), 20);
-      eat();
+      eat(0xf7cf4a);
       state.powerTime = 15;
       toast('🍟 Patat-power! Supersnel en superhoog hoppen!', 3);
       break;
     case 'koekje':
-      eat();
+      eat(0xb9803f);
       secret('koekje');
       break;
     case 'eierbal':
       audio.play('fries');
-      eat();
+      eat(0xc98a3c);
       state.powerTime = 15;
       toast('🥚 Eierbal-power! Supersnel en superhoog hoppen!', 3);
       secret('eierbal');
@@ -1769,15 +1793,26 @@ function applySettings() {
   fpsEl.classList.toggle('hidden', !settings.fps);
   const eve = settings.evening ? 1 : 0;
   skyMats.forEach((m) => (m.uniforms.uEvening.value = eve));
+  nightMats.forEach((d, m) => {
+    m.emissive.copy(d.color);
+    m.emissiveIntensity = d.intensity;
+    if (!eve) return;
+    if (d.kind === 'lamp') m.emissiveIntensity = d.intensity * 2.4;
+    else {
+      m.emissive.set(0xffc36e);
+      m.emissiveIntensity = 0.75;
+    }
+  });
+  nightGlows.forEach((g) => (g.visible = !!eve));
   Object.values(areas).forEach((a) => {
     const d = dayLight[a.name];
     const outdoorish = OUTDOOR.includes(a.name);
     if (a.sun) {
-      a.sun.intensity = d.sun * (eve ? (outdoorish ? 0.45 : 0.6) : 1);
+      a.sun.intensity = d.sun * (eve ? (outdoorish ? 0.3 : 0.45) : 1);
       a.sun.color.copy(d.sunColor);
       if (eve) a.sun.color.lerp(new THREE.Color(0xff9a5a), 0.6);
     }
-    if (a.hemi) a.hemi.intensity = d.hemi * (eve ? 0.6 : 1);
+    if (a.hemi) a.hemi.intensity = d.hemi * (eve ? (outdoorish ? 0.42 : 0.55) : 1);
     if (a.fog) {
       a.fog.color.copy(d.fog);
       if (eve) a.fog.color.set(0x7a6f8a);

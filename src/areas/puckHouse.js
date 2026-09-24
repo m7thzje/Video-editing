@@ -386,7 +386,7 @@ export class PuckHouse extends Area {
     cage.castShadow = true;
     this.group.add(cage);
     // Bodemlade
-    this.block(x0 - 0.1, base - 0.12, z0 - 0.05, x1 + 0.1, base, z1 + 0.05, P.black, { climbable: true, name: 'kooi' });
+    this.block(x0 - 0.03, base - 0.12, z0 - 0.03, x1 + 0.03, base, z1 + 0.03, P.black, { climbable: true, name: 'kooi' });
     this.block(x0, base, z0, x1, base + 0.03, z1, lambert(0x8b6a44), { collide: false, shadow: false });
     this.addCollider(x0, 0, z0, x1, base - 0.12, z1, { climbable: true });
     this.addCollider(x0, base, z0, x1, top, z1, { climbable: true, name: 'kooi' });
@@ -604,6 +604,7 @@ export class PuckHouse extends Area {
     this.group.add(pipe);
     // Lichtsnoer onder het plafond
     const bulbMat = lambert(0xfff1c2, { emissive: 0xffd27a, emissiveIntensity: 0.9 });
+    bulbMat.userData.night = 'lamp';
     for (let z = R.minZ + 0.3; z < R.maxZ; z += 0.45) {
       const b = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), bulbMat);
       b.position.set(x1 - 0.12, H - 0.12 - Math.abs(Math.sin(z * 2.2)) * 0.12, z);
