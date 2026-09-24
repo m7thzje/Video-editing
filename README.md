@@ -120,7 +120,7 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 
 | Bestand | Wanneer |
 |---|---|
-| `puck-praat-1.mp3` … `puck-praat-5.mp3` | Puck praat (spraakballonnen, tikken op Puck, in een doos). Er wordt willekeurig één gekozen. |
+| `puck-praat-1.mp3` … `puck-praat-11.mp3` | Puck praat (spraakballonnen, tikken op Puck, in een doos). Ze gaan op roulatie: elk praatje komt aan de beurt voordat er één terugkomt. De schelle (4 en 5) worden alleen gebruikt als de buurvrouw je betrapt. |
 | `puck-lekker.mp3` | Puck eet iets (pistache, patat, eierbal, koekje) en zegt "lekker!" (alleen het woord) |
 | `puck-dans.mp3` | Het dansje (tik 5x op Puck) |
 | `puck-geluid-1.mp3` … `puck-geluid-7.mp3`, `puck-geluid-10.mp3` | Fluitjes (1, 3, 4, 5, 7: vaak) en hoge piepjes (2, 6, 10: af en toe) |

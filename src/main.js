@@ -122,7 +122,7 @@ audio.onUnlock = () => music.resume();
 
 // ---------- Instellingen (per speler in de browser) ----------
 const SETTINGS_KEY = 'puck-settings-v1';
-const settings = { music: 0.5, sfx: 0.8, voice: 1, sens: 1, lowfx: false, evening: false, arrow: true, fps: false };
+const settings = { music: 0.5, sfx: 0.8, voice: 1, sens: 1, lowfx: false, evening: false, arrow: true, fps: false, hat: true };
 const fpsEl = document.getElementById('fps');
 try {
   Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {});
@@ -272,7 +272,7 @@ function updateStarHud() {
 }
 
 function applyHat() {
-  setHat(allStars() ? 'kroon' : progress.hat);
+  setHat(!settings.hat ? null : allStars() ? 'kroon' : progress.hat);
 }
 
 function award(id) {
@@ -1076,7 +1076,7 @@ function talkTo(npc) {
     return dialog.show(npc.name, dialog.next('mehmet'), 2.5);
   }
   if (npc.id === 'ben') {
-    audio.play('piep', { volume: 0.4 });
+    audio.play('talk', { volume: 0.5 });
     secret('ben');
     return dialog.show(npc.name, dialog.next('ben'));
   }
@@ -1805,6 +1805,7 @@ function applySettings() {
   audio.setVolumes(settings);
   followCam.sensitivity = 0.0035 * settings.sens;
   fpsEl.classList.toggle('hidden', !settings.fps);
+  if (typeof applyHat === 'function') applyHat();
   const eve = settings.evening ? 1 : 0;
   skyMats.forEach((m) => (m.uniforms.uEvening.value = eve));
   nightMats.forEach((d, m) => {
@@ -1847,6 +1848,7 @@ function buildSettingsUI() {
     slider('sens', '🎥 Camera', 0.3, 2.5, 0.1) +
     check('evening', '🌆 Avond in Stad') +
     check('arrow', '🎯 Doel-pijl') +
+    check('hat', '🧢 Muts of kroon op (als je die gevonden hebt)') +
     check('lowfx', '📱 Minder effecten (sneller)') +
     check('fps', '📊 FPS tonen');
   box.querySelectorAll('input').forEach((inp) =>

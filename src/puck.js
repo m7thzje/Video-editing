@@ -44,7 +44,9 @@ const MATERIALS = {
   eyeShine: new THREE.MeshBasicMaterial({ color: 0xffffff }),
   tail: mat(0xe11d2b),
   speckle: mat(0xee7a64),
-  legs: mat(0x55595d),
+  legs: mat(0x7d8288),
+  claw: mat(0x2a2a2c),
+  rump: mat(0xffffff, { map: scaleTexture('#c3c8cc', '#e0e3e5') }),
   hatRed: mat(0xd7263d),
   hatWhite: mat(0xfaf3e8),
   gold: mat(0xf2c230, { emissive: 0x8a5a00, emissiveIntensity: 0.4 }),
@@ -85,8 +87,10 @@ export class Puck {
     this.body = new THREE.Group();
     this.body.position.y = 0.16;
     rig.add(this.body);
-    add(this.body, ball(0.1), MATERIALS.body, [0, 0, -0.01], [1, 1.25, 1.05], [0.25, 0, 0]);
-    add(this.body, ball(0.086), MATERIALS.belly, [0, -0.01, 0.035], [0.92, 1.15, 0.75]);
+    add(this.body, ball(0.1, 2), MATERIALS.body, [0, 0, -0.01], [1, 1.25, 1.05], [0.25, 0, 0]);
+    add(this.body, ball(0.086, 2), MATERIALS.belly, [0, -0.01, 0.035], [0.92, 1.15, 0.75]);
+    // Lichte stuit boven de staart (typisch voor een grijze roodstaart)
+    add(this.body, ball(0.05, 1), MATERIALS.rump, [0, -0.07, -0.07], [1.1, 0.7, 0.8]);
     // Rode spikkels op buik en dijen (zoals bij Puck op de foto)
     [[0.03, -0.03, 0.095], [-0.035, -0.05, 0.09], [0.0, -0.075, 0.085], [0.045, -0.085, 0.07], [-0.05, -0.09, 0.065], [0.02, 0.0, 0.098]].forEach(
       ([x, y, z], i) => add(this.body, ball(0.013, 0), MATERIALS.speckle, [x, y, z], [1.3, 0.8, 0.4], [0, 0, i]),
@@ -96,10 +100,12 @@ export class Puck {
     this.tail = new THREE.Group();
     this.tail.position.set(0, -0.075, -0.075);
     this.body.add(this.tail);
-    const featherGeo = new THREE.BoxGeometry(0.035, 0.014, 0.15);
+    // Losse staartveren met afgeronde punt, als een waaier
+    const featherGeo = new THREE.SphereGeometry(1, 8, 4);
+    featherGeo.scale(0.02, 0.006, 0.08);
     featherGeo.translate(0, 0, -0.075);
-    [-0.35, -0.12, 0.12, 0.35].forEach((spread) => {
-      add(this.tail, featherGeo, MATERIALS.tail, [spread * 0.05, 0, 0], null, [-0.55, spread, 0]);
+    [-0.42, -0.25, -0.08, 0.08, 0.25, 0.42].forEach((spread, i) => {
+      add(this.tail, featherGeo, MATERIALS.tail, [spread * 0.05, (i % 2) * 0.004, 0], null, [-0.55, spread, 0]);
     });
     add(this.tail, ball(0.045, 0), MATERIALS.tail, [0, -0.005, 0.005], [1, 0.6, 1.2]);
     add(this.tail, ball(0.05, 0), MATERIALS.wing, [0, 0.03, 0.03], [0.9, 0.5, 1.1]);
@@ -108,8 +114,13 @@ export class Puck {
     this.wings = [-1, 1].map((side) => {
       const pivot = new THREE.Group();
       pivot.position.set(side * 0.085, 0.05, -0.01);
-      add(pivot, ball(0.075), MATERIALS.wing, [side * 0.012, -0.055, -0.02], [0.36, 1.2, 1], [0.35, 0, 0]);
-      add(pivot, ball(0.04, 0), MATERIALS.primaries, [side * 0.012, -0.11, -0.075], [0.3, 0.9, 1.0], [0.7, 0, 0]);
+      add(pivot, ball(0.075, 2), MATERIALS.wing, [side * 0.012, -0.055, -0.02], [0.36, 1.2, 1], [0.35, 0, 0]);
+      // Donkere slagpennen in een waaiertje naar achteren
+      const pf = new THREE.SphereGeometry(1, 6, 4);
+      pf.scale(0.012, 0.022, 0.05);
+      for (let i = 0; i < 4; i++) {
+        add(pivot, pf, MATERIALS.primaries, [side * (0.012 - i * 0.003), -0.095 - i * 0.006, -0.06 - i * 0.004], null, [0.75 + i * 0.1, 0, side * 0.12]);
+      }
       pivot.userData.side = side;
       this.body.add(pivot);
       return pivot;
@@ -120,7 +131,7 @@ export class Puck {
     this.head.position.set(0, 0.128, 0.035);
     this.headBase = this.head.position.clone();
     this.body.add(this.head);
-    add(this.head, ball(0.078), MATERIALS.head, null, [1, 0.97, 1.02]);
+    add(this.head, ball(0.078, 2), MATERIALS.head, null, [1, 0.97, 1.02]);
 
     // Witte naakte huid rond de ogen, lichtgele iris, zwarte pupil
     [-1, 1].forEach((side) => {
@@ -142,8 +153,18 @@ export class Puck {
     this.legs = [-1, 1].map((side) => {
       const pivot = new THREE.Group();
       pivot.position.set(side * 0.04, 0.075, 0.01);
-      add(pivot, new THREE.CylinderGeometry(0.012, 0.012, 0.07, 5), MATERIALS.legs, [0, -0.035, 0]);
-      add(pivot, new THREE.BoxGeometry(0.04, 0.012, 0.055), MATERIALS.legs, [0, -0.07, 0.012]);
+      add(pivot, new THREE.CylinderGeometry(0.011, 0.013, 0.07, 7), MATERIALS.legs, [0, -0.035, 0]);
+      // Papegaaienvoet: twee tenen naar voren, twee naar achteren, met donkere nageltjes
+      const toe = new THREE.CapsuleGeometry(0.0065, 0.03, 2, 6);
+      toe.rotateX(Math.PI / 2);
+      [[-0.35, 1], [0.35, 1], [-0.45, -1], [0.45, -1]].forEach(([spread, dir]) => {
+        const t = new THREE.Group();
+        t.position.set(0, -0.068, 0);
+        t.rotation.y = spread + (dir < 0 ? Math.PI : 0);
+        pivot.add(t);
+        add(t, toe, MATERIALS.legs, [0, 0, 0.02]);
+        add(t, new THREE.ConeGeometry(0.005, 0.012, 5), MATERIALS.claw, [0, -0.003, 0.041], null, [Math.PI / 2 + 0.6, 0, 0]);
+      });
       rig.add(pivot);
       return pivot;
     });
@@ -296,7 +317,7 @@ export class Puck {
 
     // Veren opzetten: na een tijdje stilstaan schudt Puck zich even helemaal pluizig
     this.stillTime = idle ? this.stillTime + dt : 0;
-    if (idle && this.fluffing <= 0 && this.stillTime > 7 && Math.random() < dt * 0.25) this.fluffing = 1.4;
+    if (idle && this.fluffing <= 0 && this.stillTime > 4 && Math.random() < dt * 0.6) this.fluffing = 1.4;
     if (this.fluffing > 0) {
       this.fluffing -= dt;
       const k = Math.sin(Math.min(1, (1.4 - this.fluffing) / 1.4) * Math.PI);

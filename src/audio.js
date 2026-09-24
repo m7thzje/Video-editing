@@ -12,22 +12,20 @@ export const SOUND_NAMES = [
   'puck-geluid-1', 'puck-geluid-2', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-6', 'puck-geluid-7',
   'puck-wauw', 'puck-hallo', 'alert', 'caught',
   'puck-geluid-10', 'puck-hallo-2', 'puck-watskecola',
+  'puck-praat-6', 'puck-praat-7', 'puck-praat-8', 'puck-praat-9', 'puck-praat-10', 'puck-praat-11',
 ];
 
-// Groepen: er wordt willekeurig een geladen variant gekozen.
+// Groepen: de varianten gaan op roulatie (geschud, elk geluidje komt aan de beurt voor er één terugkomt).
 const GROUPS = {
-  // Praatjes: de middelhoge vaker, de schelle zelden
-  talk: ['puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-4'],
+  // Praatjes (zonder de schelle piepjes)
+  talk: ['puck-praat-1', 'puck-praat-2', 'puck-praat-3', 'puck-praat-6', 'puck-praat-7', 'puck-praat-8', 'puck-praat-9', 'puck-praat-10', 'puck-praat-11'],
   // Leuke fluitjes (zuivere toon, 1-1,7 kHz)
   fluit: ['puck-geluid-1', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-7'],
   // Mix: vooral fluitjes, af en toe een hoog piepje
-  chirp: [
-    'puck-geluid-1', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-7',
-    'puck-geluid-1', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-7',
-    'puck-geluid-2', 'puck-geluid-6',
-  ],
-  // Hoge piepjes, alleen voor schrikmomenten
-  piep: ['puck-geluid-2', 'puck-geluid-6', 'puck-praat-5', 'puck-geluid-10'],
+  // Mix van fluitjes en praatjes
+  chirp: ['puck-geluid-1', 'puck-geluid-3', 'puck-geluid-4', 'puck-geluid-5', 'puck-geluid-7', 'puck-praat-6', 'puck-praat-8', 'puck-praat-10'],
+  // Hoge piepjes: alleen als de buurvrouw je betrapt
+  piep: ['puck-geluid-2', 'puck-geluid-6', 'puck-praat-4', 'puck-praat-5', 'puck-geluid-10'],
   hallo: ['puck-hallo', 'puck-hallo-2'],
 };
 
@@ -113,8 +111,8 @@ export class AudioManager {
       if (this.buffers.has(fb) || (GROUPS[fb] || []).some((n) => this.buffers.has(n))) name = fb;
     }
     if (GROUPS[name]) {
-      const loaded = GROUPS[name].filter((n) => this.buffers.has(n));
-      if (loaded.length) name = loaded[Math.floor(Math.random() * loaded.length)];
+      const pick = this.nextInGroup(name);
+      if (pick) name = pick;
     }
     const buffer = this.buffers.get(name);
     if (buffer) {
@@ -129,6 +127,25 @@ export class AudioManager {
     }
     const synth = PLACEHOLDERS[name] || (name.startsWith('puck-') || GROUPS[name] ? PLACEHOLDERS.talk : null);
     if (synth) synth(this.ctx, this.synthOut, volume, freq);
+  }
+
+  /** Roulatie: schud de groep, speel ze één voor één af, en begin nooit met de laatst gespeelde. */
+  nextInGroup(group) {
+    this.bags = this.bags || {};
+    this.lastPick = this.lastPick || {};
+    let bag = this.bags[group];
+    if (!bag || !bag.length) {
+      bag = [...new Set(GROUPS[group].filter((n) => this.buffers.has(n)))];
+      for (let i = bag.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [bag[i], bag[j]] = [bag[j], bag[i]];
+      }
+      if (bag.length > 1 && bag[bag.length - 1] === this.lastPick[group]) [bag[0], bag[bag.length - 1]] = [bag[bag.length - 1], bag[0]];
+      this.bags[group] = bag;
+    }
+    const pick = bag.pop();
+    this.lastPick[group] = pick;
+    return pick;
   }
 
   /** Speelt een kort willekeurig stukje van een lang geluid (NPC-gebrabbel), met zachte in- en uitfade. */
