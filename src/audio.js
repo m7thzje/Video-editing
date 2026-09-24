@@ -287,6 +287,7 @@ export class AudioManager {
   toggleMute() {
     this.muted = !this.muted;
     if (this.amb) this.setAmbience(this.amb.kind);
+    if (this.ctx) this.musicOut.gain.setTargetAtTime(this.muted ? 0 : (this.volumes?.music ?? 0.5) * 1.5, this.ctx.currentTime, 0.1);
     return this.muted;
   }
 }
@@ -450,6 +451,21 @@ const TRACKS = {
   feest: { drums: 1, root: 62, bpm: 128, prog: [[0, 4, 7], [7, 11, 14], [9, 12, 16], [5, 9, 12]], pad: 'square', lead: 'square', scale: [0, 2, 4, 7, 9], swing: 0 },
 };
 
+// Echte muziekbestanden (public/assets/music). Een plek die hier staat gebruikt het bestand;
+// de rest (bijv. de lift) valt terug op de muziek die in de browser wordt gemaakt.
+const MUSIC_DIR = `${import.meta.env.BASE_URL}assets/music/`;
+const MUSIC_FILES = {
+  thuis: 'rustig-thuis',
+  galerij: 'rustig-stad',
+  buiten: 'rustig-stad',
+  bakkerij: 'vrolijk',
+  feest: 'vrolijk',
+  pistachehuis: 'sluipen',
+  spannend: 'spannend',
+};
+// Hoe hard elk bestand klinkt ten opzichte van de muziekschuif
+const FILE_GAIN = 0.4;
+
 export class MusicPlayer {
   constructor(audio) {
     this.audio = audio;
@@ -460,8 +476,34 @@ export class MusicPlayer {
     this.timer = null;
   }
 
+  /** Laadt (één keer) een muziekbestand; geeft null bij een fout, dan wordt de gemaakte muziek gebruikt. */
+  loadFile(file) {
+    this.files = this.files || {};
+    if (!this.files[file]) {
+      this.files[file] = fetch(`${MUSIC_DIR}${file}.mp3`)
+        .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.status))))
+        .then((b) => this.audio.ctx.decodeAudioData(b))
+        .catch(() => null);
+    }
+    return this.files[file];
+  }
+
+  stopFile() {
+    if (!this.fileSrc) return;
+    const { src, gain } = this.fileSrc;
+    const ctx = this.audio.ctx;
+    gain.gain.setTargetAtTime(0, ctx.currentTime, 0.25);
+    src.stop(ctx.currentTime + 1.2);
+    this.fileSrc = null;
+  }
+
   play(name) {
-    if (!TRACKS[name] || name === this.track) return;
+    if ((!TRACKS[name] && !MUSIC_FILES[name]) || name === this.track) return;
+    if (this.audio.ctx && MUSIC_FILES[name]) {
+      this.playFile(name);
+      return;
+    }
+    this.stopFile();
     if (!this.audio.ctx) {
       this.pending = name;
       return;
@@ -485,9 +527,42 @@ export class MusicPlayer {
     } else start();
   }
 
+  playFile(name) {
+    const ctx = this.audio.ctx;
+    const out = this.audio.musicOut;
+    this.track = name;
+    this.t = null; // gemaakte muziek zwijgt
+    const token = (this.token = (this.token || 0) + 1);
+    this.loadFile(MUSIC_FILES[name]).then((buffer) => {
+      if (token !== this.token || this.track !== name) return;
+      if (!buffer) {
+        // Bestand ontbreekt: terug naar de gemaakte muziek
+        this.track = null;
+        if (TRACKS[name]) this.play(name);
+        return;
+      }
+      this.stopFile();
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      src.loop = true;
+      src.loopStart = 0.03;
+      src.loopEnd = buffer.duration - 0.03;
+      const gain = ctx.createGain();
+      gain.gain.value = 0;
+      gain.gain.setTargetAtTime(FILE_GAIN, ctx.currentTime, 0.4);
+      src.connect(gain).connect(out);
+      src.start(ctx.currentTime, 0.03);
+      this.fileSrc = { src, gain };
+      out.gain.cancelScheduledValues(ctx.currentTime);
+      out.gain.setTargetAtTime((this.audio.volumes?.music ?? 0.5) * 1.5, ctx.currentTime, 0.3);
+    });
+  }
+
   stop() {
     this.track = null;
     this.pending = null;
+    this.token = (this.token || 0) + 1;
+    if (this.audio.ctx) this.stopFile();
   }
 
   resume() {
@@ -528,7 +603,7 @@ export class MusicPlayer {
 
   tick() {
     const ctx = this.audio.ctx;
-    if (!this.track || !ctx || this.audio.muted) return;
+    if (!this.track || !this.t || !ctx || this.audio.muted) return;
     const t = this.t;
     const eighth = 60 / t.bpm / 2;
     while (this.nextTime < ctx.currentTime + 0.15) {

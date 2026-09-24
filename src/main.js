@@ -1735,6 +1735,13 @@ function frame(timestamp) {
 
   fxTime.value = elapsed;
   if (area.update(dt, elapsed)) renderer.shadowMap.needsUpdate = true;
+  // Spannende muziek zolang er een minigame loopt
+  const b = areas.buiten;
+  const busy = area === b && !state.concert && (b.race.active || b.boxSmash.active || !!b.towerRun || b.pigeons.active || b.stoneRun?.active);
+  if (busy !== !!state.tenseMusic) {
+    state.tenseMusic = busy;
+    music.play(busy ? 'spannend' : musicFor(area.name));
+  }
   // Omgevingsgeluid per plek
   const ambKind = state.mode !== 'play' || state.concert ? null : { buiten: 'buiten', galerij: 'galerij', lift: 'lift', puckhuis: 'binnen', bakkerij: 'binnen' }[area.name] || null;
   if (ambKind !== state.ambKind) {
@@ -1873,4 +1880,4 @@ buildSettingsUI();
 applySettings();
 
 // Debug-hulpje in de console
-window.__puck = { concert, startConcert, talkTo, perf, renderer, bloom: () => bloomOn, audio, body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };
+window.__puck = { music, concert, startConcert, talkTo, perf, renderer, bloom: () => bloomOn, audio, body, areas, state, cam: followCam, enterArea, progress: () => progress, puck, song, area: () => area };

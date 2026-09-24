@@ -156,8 +156,18 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | `crunch.mp3` | een doos plat springen |
 
 Omgevingsgeluid (stadsgeruis, vogels, meeuwen, fietsbellen, de klok thuis, de liftzoem) wordt ook in de browser
-gemaakt. De achtergrondmuziek wordt in de browser zelf gemaakt, met een eigen deuntje per plek: thuis, de galerij, Stad,
-de bakkerij, het Pistachehuis, de lift (liftmuziek) en het concert.
+gemaakt. **Muziek** staat in `public/assets/music/` (rechtenvrije loops, genormaliseerd op gelijk volume):
+
+| Bestand | Karakter | Waar |
+|---|---|---|
+| `rustig-thuis.mp3` | rustig | Puck's appartement |
+| `rustig-stad.mp3` | rustig | Stad en de galerij |
+| `sluipen.mp3` | spannend, mysterieus | het Pistachehuis (langs de buurvrouw sluipen) |
+| `spannend.mp3` | spannend | tijdens elke minigame: fietsrace, dozen, toren, duiven, stapstenen |
+| `vrolijk.mp3` | vrolijk | Bakkerij Haafs en het feest na het fluitconcert |
+
+De lift heeft een liftdeuntje dat in de browser wordt gemaakt. Ontbreekt een muziekbestand, dan valt het spel
+daar ook op terug.
 
 Wil je een Puck-geluid vervangen door een beter fragment? Overschrijf dan gewoon het bestand met dezelfde naam.
 Houd de bestanden kort en klein (bij voorkeur < 100 kB) zodat ze snel laden op mobiel.
