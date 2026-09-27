@@ -1,0 +1,90 @@
+[
+  {
+    "id": "wft-iati",
+    "page": "/we-fixed-that/",
+    "variant": "iati",
+    "eyebrow": "For NGOs publishing to IATI",
+    "h1": "Another quarter lost to your IATI export?",
+    "fixed": true,
+    "metric": [
+      "IATI FILE",
+      "A week per quarter",
+      "10 minutes"
+    ],
+    "url": "https://impactid.nl/we-fixed-that/?utm_source=linkedin&utm_medium=paid_social&utm_campaign=we_fixed_that&utm_content=iati",
+    "intro": "Another quarter, another week lost to the IATI export? impactID turns the project data you already keep into a validated IATI file. In 10 minutes.",
+    "headline": "Your IATI file in 10 minutes, not a week"
+  },
+  {
+    "id": "wft-donor-reporting",
+    "page": "/we-fixed-that/",
+    "variant": "donor_reporting",
+    "eyebrow": "For programme and finance teams",
+    "h1": "Three colleagues, one week, one donor report?",
+    "fixed": true,
+    "metric": [
+      "DONOR REPORT",
+      "3 people, a week",
+      "One button"
+    ],
+    "url": "https://impactid.nl/we-fixed-that/?utm_source=linkedin&utm_medium=paid_social&utm_campaign=we_fixed_that&utm_content=donor_reporting",
+    "intro": "Three colleagues, one week, one donor report? In impactID every donor report comes from one dataset, so the numbers match. One button, every period.",
+    "headline": "Donor reports in one click, from one dataset"
+  },
+  {
+    "id": "wft-portfolio",
+    "page": "/we-fixed-that/",
+    "variant": "portfolio",
+    "eyebrow": "For programme managers and directors",
+    "h1": "Six projects running. Three you cannot see?",
+    "fixed": true,
+    "metric": [
+      "PORTFOLIO",
+      "Quarterly updates",
+      "One live dashboard"
+    ],
+    "url": "https://impactid.nl/we-fixed-that/?utm_source=linkedin&utm_medium=paid_social&utm_campaign=we_fixed_that&utm_content=portfolio",
+    "intro": "Six projects running. How many can you actually see today? impactID puts every programme, budget and result on one live dashboard.",
+    "headline": "Every project on one live dashboard"
+  },
+  {
+    "id": "wft-field-data",
+    "page": "/we-fixed-that/",
+    "variant": "field_data",
+    "eyebrow": "For M&E and field teams",
+    "h1": "Field data that takes two weeks to reach the office?",
+    "fixed": true,
+    "metric": [
+      "FIELD DATA",
+      "Two weeks",
+      "The moment it syncs"
+    ],
+    "url": "https://impactid.nl/we-fixed-that/?utm_source=linkedin&utm_medium=paid_social&utm_campaign=we_fixed_that&utm_content=field_data",
+    "intro": "Field results taking two weeks to reach the office? Teams record data on their phone, online or offline. It lands in the project the moment it syncs.",
+    "headline": "Field data in your project the moment it syncs"
+  },
+  {
+    "id": "iati-benchmark",
+    "page": "/iati-reporting-demo/",
+    "variant": "benchmark",
+    "eyebrow": "IATI benchmark · 927 NGOs",
+    "h1": "78% of NGOs publish their IATI data late.",
+    "fixed": true,
+    "sub": "See how your own record scores in a free 30-minute demo.",
+    "source": "Source: impactID IATI Health Check, September 2026, 927 organisations.",
+    "url": "https://impactid.nl/iati-reporting-demo/?utm_source=linkedin&utm_medium=paid_social&utm_campaign=iati_reporting_demo&utm_content=benchmark",
+    "intro": "We checked the public IATI records of 927 NGOs. 78% publish later than they committed to. In a free demo we show you how your own record scores.",
+    "headline": "Free IATI health check of your own record"
+  },
+  {
+    "id": "iati-healthcheck",
+    "page": "/iati-reporting-demo/",
+    "variant": "healthcheck",
+    "eyebrow": "Free with your IATI demo",
+    "h1": "We check your IATI record before the call.",
+    "sub": "Timeliness, completeness and validation errors, on screen. No preparation from your side.",
+    "url": "https://impactid.nl/iati-reporting-demo/?utm_source=linkedin&utm_medium=paid_social&utm_campaign=iati_reporting_demo&utm_content=healthcheck",
+    "intro": "Before your demo we run your public IATI record through our health check: timeliness, completeness, validation. You see the results on screen.",
+    "headline": "See your IATI health check in a 30-minute demo"
+  }
+]

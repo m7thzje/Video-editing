@@ -1,0 +1,192 @@
+<title>impactID LinkedIn Ads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --ground: #f5f7f9; --surface: #ffffff; --ink: #003872; --body: #26313f; --muted: #4d6a88;
+  --line: #dde5ee; --accent: #007fd8; --accent-soft: #e0effa; --chip: #ebeff4; --shadow: 0 8px 24px rgba(0,56,114,0.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { color-scheme: dark;
+    --ground: #0b1a2e; --surface: #11243d; --ink: #e6f1fa; --body: #c7d6e6; --muted: #93aac2;
+    --line: #22395a; --accent: #5ab6ff; --accent-soft: #15345a; --chip: #1a3150; --shadow: 0 8px 24px rgba(0,0,0,0.35); }
+}
+:root[data-theme="dark"] { color-scheme: dark;
+  --ground: #0b1a2e; --surface: #11243d; --ink: #e6f1fa; --body: #c7d6e6; --muted: #93aac2;
+  --line: #22395a; --accent: #5ab6ff; --accent-soft: #15345a; --chip: #1a3150; --shadow: 0 8px 24px rgba(0,0,0,0.35); }
+* { box-sizing: border-box; }
+body { background: var(--ground); color: var(--body); font: 16px/1.55 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif; padding: 0 20px; }
+main { max-width: 1240px; margin: 0 auto; padding-block: 48px 72px; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { color: var(--ink); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 800; line-height: 1.1; }
+h2 { font-size: clamp(22px, 3.2vw, 30px); font-weight: 800; display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
+h2 code { font: 500 15px/1 'JetBrains Mono', ui-monospace, monospace; color: var(--accent); background: var(--accent-soft); padding: 6px 10px; border-radius: 8px; }
+h3 { font-size: 19px; font-weight: 700; line-height: 1.3; }
+p { margin: 0; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.intro { display: flex; flex-direction: column; gap: 14px; max-width: 760px; }
+.intro .lede { font-size: 17px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.facts span { font-size: 13px; font-weight: 600; color: var(--ink); background: var(--chip); padding: 6px 12px; border-radius: 999px; }
+.lede { color: var(--muted); max-width: 70ch; }
+.page { display: flex; flex-direction: column; gap: 28px; }
+.page-head { display: flex; flex-direction: column; gap: 10px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.ad { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 20px; display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 24px; }
+.shots { display: grid; grid-template-columns: 1.914fr 1fr; gap: 12px; align-items: start; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+figure img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--line); }
+figcaption { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.copy { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.copy-head { display: flex; flex-direction: column; gap: 6px; }
+.key { align-self: flex-start; font: 500 12px/1 'JetBrains Mono', ui-monospace, monospace; color: var(--muted); background: var(--chip); padding: 5px 8px; border-radius: 6px; }
+dl { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+dl > div { display: flex; flex-direction: column; gap: 3px; }
+dt { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.count { font-variant-numeric: tabular-nums; letter-spacing: 0; font-weight: 600; }
+dd { margin: 0; font-size: 14.5px; }
+dd.hl { font-weight: 700; color: var(--ink); }
+dd.url { display: flex; gap: 8px; align-items: flex-start; }
+dd.url code { flex: 1; min-width: 0; font: 400 12px/1.5 'JetBrains Mono', ui-monospace, monospace; overflow-wrap: anywhere; color: var(--body); background: var(--ground); border: 1px solid var(--line); padding: 8px 10px; border-radius: 8px; }
+.copybtn { flex-shrink: 0; font: 700 13px 'Plus Jakarta Sans', sans-serif; color: #ffffff; background: #007fd8; border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+.copybtn:hover { background: #006bb8; }
+.copybtn:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(0,127,216,0.35); }
+.checks { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.checks ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; max-width: 80ch; }
+@media (max-width: 960px) { .ad { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .shots { grid-template-columns: 1fr; } .ad { padding: 14px; } }
+</style>
+<main>
+  <header class="intro">
+    <p class="eyebrow">impactID · LinkedIn demo campaign</p>
+    <h1>LinkedIn ads for the two demo landing pages</h1>
+    <p class="lede">Each ad repeats the hero of the page it links to: same headline, same “We fixed that.”, same before-and-after line, same dark ripple. Single-image ads in both LinkedIn feed formats, with the ad copy and tracked URL next to each.</p>
+    <div class="facts"><span>6 concepts</span><span>12 images</span><span>1200 × 627 and 1200 × 1200</span><span>PNG, under 1 MB each</span></div>
+  </header>
+  
+<section class="page">
+  <header class="page-head">
+    <p class="eyebrow">Landing page · 4 concepts · 8 images</p>
+    <h2>We fixed that. <code>/we-fixed-that/</code></h2>
+    <p class="lede">Four hero variants. The landing page reads utm_content and swaps headline and before/after line to match the ad, and writes the key into the hidden field ad_variant. Form tags leads as lead_source_detail = &quot;LI We fixed that&quot;. utm_campaign=we_fixed_that.</p>
+  </header>
+  
+<article class="ad" id="wft-iati">
+  <div class="shots">
+    <figure class="land"><img src="export/impactid-li-wft-iati-1200x627.png" alt="Another quarter lost to your IATI export? (1200 by 627)" loading="lazy" width="1200" height="627"><figcaption>1200 × 627 · landscape</figcaption></figure>
+    <figure class="sq"><img src="export/impactid-li-wft-iati-1200x1200.png" alt="Another quarter lost to your IATI export? (1200 by 1200)" loading="lazy" width="1200" height="1200"><figcaption>1200 × 1200 · square</figcaption></figure>
+  </div>
+  <div class="copy">
+    <div class="copy-head"><h3>Another quarter lost to your IATI export?</h3><span class="key">utm_content=iati</span></div>
+    <dl>
+      <div><dt>Intro text <span class="count">146/150</span></dt><dd>Another quarter, another week lost to the IATI export? impactID turns the project data you already keep into a validated IATI file. In 10 minutes.</dd></div>
+      <div><dt>Headline <span class="count">40/70</span></dt><dd class="hl">Your IATI file in 10 minutes, not a week</dd></div>
+      <div><dt>CTA button</dt><dd>Request demo</dd></div>
+      <div><dt>Destination URL</dt><dd class="url"><code id="u-wft-iati">https://impactid.nl/we-fixed-that/?utm_source=linkedin&amp;utm_medium=paid_social&amp;utm_campaign=we_fixed_that&amp;utm_content=iati</code><button type="button" class="copybtn" data-target="u-wft-iati">Copy</button></dd></div>
+    </dl>
+  </div>
+</article>
+<article class="ad" id="wft-donor-reporting">
+  <div class="shots">
+    <figure class="land"><img src="export/impactid-li-wft-donor-reporting-1200x627.png" alt="Three colleagues, one week, one donor report? (1200 by 627)" loading="lazy" width="1200" height="627"><figcaption>1200 × 627 · landscape</figcaption></figure>
+    <figure class="sq"><img src="export/impactid-li-wft-donor-reporting-1200x1200.png" alt="Three colleagues, one week, one donor report? (1200 by 1200)" loading="lazy" width="1200" height="1200"><figcaption>1200 × 1200 · square</figcaption></figure>
+  </div>
+  <div class="copy">
+    <div class="copy-head"><h3>Three colleagues, one week, one donor report?</h3><span class="key">utm_content=donor_reporting</span></div>
+    <dl>
+      <div><dt>Intro text <span class="count">148/150</span></dt><dd>Three colleagues, one week, one donor report? In impactID every donor report comes from one dataset, so the numbers match. One button, every period.</dd></div>
+      <div><dt>Headline <span class="count">44/70</span></dt><dd class="hl">Donor reports in one click, from one dataset</dd></div>
+      <div><dt>CTA button</dt><dd>Request demo</dd></div>
+      <div><dt>Destination URL</dt><dd class="url"><code id="u-wft-donor-reporting">https://impactid.nl/we-fixed-that/?utm_source=linkedin&amp;utm_medium=paid_social&amp;utm_campaign=we_fixed_that&amp;utm_content=donor_reporting</code><button type="button" class="copybtn" data-target="u-wft-donor-reporting">Copy</button></dd></div>
+    </dl>
+  </div>
+</article>
+<article class="ad" id="wft-portfolio">
+  <div class="shots">
+    <figure class="land"><img src="export/impactid-li-wft-portfolio-1200x627.png" alt="Six projects running. Three you cannot see? (1200 by 627)" loading="lazy" width="1200" height="627"><figcaption>1200 × 627 · landscape</figcaption></figure>
+    <figure class="sq"><img src="export/impactid-li-wft-portfolio-1200x1200.png" alt="Six projects running. Three you cannot see? (1200 by 1200)" loading="lazy" width="1200" height="1200"><figcaption>1200 × 1200 · square</figcaption></figure>
+  </div>
+  <div class="copy">
+    <div class="copy-head"><h3>Six projects running. Three you cannot see?</h3><span class="key">utm_content=portfolio</span></div>
+    <dl>
+      <div><dt>Intro text <span class="count">130/150</span></dt><dd>Six projects running. How many can you actually see today? impactID puts every programme, budget and result on one live dashboard.</dd></div>
+      <div><dt>Headline <span class="count">35/70</span></dt><dd class="hl">Every project on one live dashboard</dd></div>
+      <div><dt>CTA button</dt><dd>Request demo</dd></div>
+      <div><dt>Destination URL</dt><dd class="url"><code id="u-wft-portfolio">https://impactid.nl/we-fixed-that/?utm_source=linkedin&amp;utm_medium=paid_social&amp;utm_campaign=we_fixed_that&amp;utm_content=portfolio</code><button type="button" class="copybtn" data-target="u-wft-portfolio">Copy</button></dd></div>
+    </dl>
+  </div>
+</article>
+<article class="ad" id="wft-field-data">
+  <div class="shots">
+    <figure class="land"><img src="export/impactid-li-wft-field-data-1200x627.png" alt="Field data that takes two weeks to reach the office? (1200 by 627)" loading="lazy" width="1200" height="627"><figcaption>1200 × 627 · landscape</figcaption></figure>
+    <figure class="sq"><img src="export/impactid-li-wft-field-data-1200x1200.png" alt="Field data that takes two weeks to reach the office? (1200 by 1200)" loading="lazy" width="1200" height="1200"><figcaption>1200 × 1200 · square</figcaption></figure>
+  </div>
+  <div class="copy">
+    <div class="copy-head"><h3>Field data that takes two weeks to reach the office?</h3><span class="key">utm_content=field_data</span></div>
+    <dl>
+      <div><dt>Intro text <span class="count">149/150</span></dt><dd>Field results taking two weeks to reach the office? Teams record data on their phone, online or offline. It lands in the project the moment it syncs.</dd></div>
+      <div><dt>Headline <span class="count">46/70</span></dt><dd class="hl">Field data in your project the moment it syncs</dd></div>
+      <div><dt>CTA button</dt><dd>Request demo</dd></div>
+      <div><dt>Destination URL</dt><dd class="url"><code id="u-wft-field-data">https://impactid.nl/we-fixed-that/?utm_source=linkedin&amp;utm_medium=paid_social&amp;utm_campaign=we_fixed_that&amp;utm_content=field_data</code><button type="button" class="copybtn" data-target="u-wft-field-data">Copy</button></dd></div>
+    </dl>
+  </div>
+</article>
+</section>
+<section class="page">
+  <header class="page-head">
+    <p class="eyebrow">Landing page · 2 concepts · 4 images</p>
+    <h2>IATI reporting demo <code>/iati-reporting-demo/</code></h2>
+    <p class="lede">For IATI publishers. Leads the benchmark and the free IATI health check that the landing page offers before the demo. Form tags leads as lead_source_detail = &quot;LI IATI kern&quot;. utm_campaign=iati_reporting_demo.</p>
+  </header>
+  
+<article class="ad" id="iati-benchmark">
+  <div class="shots">
+    <figure class="land"><img src="export/impactid-li-iati-benchmark-1200x627.png" alt="78% of NGOs publish their IATI data late. (1200 by 627)" loading="lazy" width="1200" height="627"><figcaption>1200 × 627 · landscape</figcaption></figure>
+    <figure class="sq"><img src="export/impactid-li-iati-benchmark-1200x1200.png" alt="78% of NGOs publish their IATI data late. (1200 by 1200)" loading="lazy" width="1200" height="1200"><figcaption>1200 × 1200 · square</figcaption></figure>
+  </div>
+  <div class="copy">
+    <div class="copy-head"><h3>78% of NGOs publish their IATI data late.</h3><span class="key">utm_content=benchmark</span></div>
+    <dl>
+      <div><dt>Intro text <span class="count">144/150</span></dt><dd>We checked the public IATI records of 927 NGOs. 78% publish later than they committed to. In a free demo we show you how your own record scores.</dd></div>
+      <div><dt>Headline <span class="count">41/70</span></dt><dd class="hl">Free IATI health check of your own record</dd></div>
+      <div><dt>CTA button</dt><dd>Request demo</dd></div>
+      <div><dt>Destination URL</dt><dd class="url"><code id="u-iati-benchmark">https://impactid.nl/iati-reporting-demo/?utm_source=linkedin&amp;utm_medium=paid_social&amp;utm_campaign=iati_reporting_demo&amp;utm_content=benchmark</code><button type="button" class="copybtn" data-target="u-iati-benchmark">Copy</button></dd></div>
+    </dl>
+  </div>
+</article>
+<article class="ad" id="iati-healthcheck">
+  <div class="shots">
+    <figure class="land"><img src="export/impactid-li-iati-healthcheck-1200x627.png" alt="We check your IATI record before the call. (1200 by 627)" loading="lazy" width="1200" height="627"><figcaption>1200 × 627 · landscape</figcaption></figure>
+    <figure class="sq"><img src="export/impactid-li-iati-healthcheck-1200x1200.png" alt="We check your IATI record before the call. (1200 by 1200)" loading="lazy" width="1200" height="1200"><figcaption>1200 × 1200 · square</figcaption></figure>
+  </div>
+  <div class="copy">
+    <div class="copy-head"><h3>We check your IATI record before the call.</h3><span class="key">utm_content=healthcheck</span></div>
+    <dl>
+      <div><dt>Intro text <span class="count">142/150</span></dt><dd>Before your demo we run your public IATI record through our health check: timeliness, completeness, validation. You see the results on screen.</dd></div>
+      <div><dt>Headline <span class="count">46/70</span></dt><dd class="hl">See your IATI health check in a 30-minute demo</dd></div>
+      <div><dt>CTA button</dt><dd>Request demo</dd></div>
+      <div><dt>Destination URL</dt><dd class="url"><code id="u-iati-healthcheck">https://impactid.nl/iati-reporting-demo/?utm_source=linkedin&amp;utm_medium=paid_social&amp;utm_campaign=iati_reporting_demo&amp;utm_content=healthcheck</code><button type="button" class="copybtn" data-target="u-iati-healthcheck">Copy</button></dd></div>
+    </dl>
+  </div>
+</article>
+</section>
+  <section class="checks">
+    <h2>Before launch</h2>
+    <ul>
+      <li>Confirm the live domain and paths. The URLs assume <code>impactid.nl/we-fixed-that/</code> and <code>impactid.nl/iati-reporting-demo/</code>, with utm_source=linkedin and utm_medium=paid_social.</li>
+      <li>The IATI benchmark figures (927 NGOs, 78%, 47%, 35%) come from the IATI landing page, which flags them as “check before launch”. Check them before the benchmark ad runs.</li>
+      <li>The UI cards in the ads (IATI validation, report generator, FieldCollab, health check) are drawn in the style of the product and use the same example programmes as the landing page. The dashboard in the portfolio ad is the real ProjectConnect screen.</li>
+      <li>The donor-report ad uses the stock photo from the landing page. Confirm its licence covers paid social.</li>
+      <li>Run the square versions on mobile-heavy placements. LinkedIn shows the first 150 characters of intro text before “see more”; every intro stays under that.</li>
+    </ul>
+  </section>
+</main>
+<script>
+document.querySelectorAll('.copybtn').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var el = document.getElementById(b.dataset.target);
+    var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); };
+    var fallback = function () { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Selected'; };
+    try { navigator.clipboard.writeText(el.textContent).then(done, fallback); } catch (e) { fallback(); }
+  });
+});
+</script>
