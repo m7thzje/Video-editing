@@ -16,10 +16,10 @@ const check = (c, s, w = 3) =>
 // "We fixed that." signature at a given font size. The underline is a filled brush stroke
 // that sits inside the text span, so it always spans exactly the words.
 const sig = (size) => {
-  const b = Math.round(size * 0.9);
+  const b = Math.round(size * 0.92);
   return `<div class="sig" style="font-size: ${size}px; gap: ${Math.round(size * 0.3)}px;">
-    <span class="sig-text">We fixed that.<svg class="swoosh" viewBox="0 0 400 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 12 C 120 5, 270 1, 398 3 C 400 5, 400 9, 396 10 C 270 10, 130 14, 8 20 C 2 20, 0 14, 2 12 Z" fill="#5ab6ff"/></svg></span>
-    <span class="badge" style="width: ${b}px; height: ${b}px; box-shadow: 0 0 0 ${Math.round(size * 0.16)}px rgba(90,182,255,0.16);">${check('#ffffff', Math.round(b * 0.6), 3.2)}</span>
+    <span class="sig-text"><svg class="marker" viewBox="0 0 400 40" preserveAspectRatio="none" aria-hidden="true"><path d="M6 10 C 110 4, 280 2, 394 6 C 400 12, 399 28, 392 33 C 280 36, 120 38, 10 36 C 2 30, 0 16, 6 10 Z"/></svg><span class="t">We fixed that.</span></span>
+    <span class="badge" style="width: ${b}px; height: ${b}px;">${check('#ffffff', Math.round(b * 0.6), 3.2)}</span>
   </div>`;
 };
 
@@ -42,12 +42,12 @@ const A = `
   ${glow(900, 780, 640, 0.42)}
   ${rings(900, 780, [230, 360, 500, 650])}
   <div class="abs head">${HEAD}</div>
-  <div class="abs" style="left: 72px; top: 385px; display: flex; align-items: baseline; gap: 26px;">
+  <div class="abs" style="left: 0; right: 0; top: 385px; display: flex; justify-content: center;">
     <span style="position: relative; font-size: 170px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; color: #6f8fb3;">1 week
       <span style="position: absolute; left: -4px; right: -8px; top: 50%; height: 16px; border-radius: 999px; background: #cc0254; transform: rotate(-5deg);"></span>
     </span>
   </div>
-  <div class="abs" style="left: 64px; top: 560px; font-size: 290px; font-weight: 800; letter-spacing: -0.055em; line-height: 1; color: #ffffff;">10 min.</div>
+  <div class="abs" style="left: 0; right: 0; top: 560px; text-align: center; font-size: 290px; font-weight: 800; letter-spacing: -0.055em; line-height: 1; color: #ffffff;">10 min.</div>
   ${foot(76)}
 `;
 
@@ -90,18 +90,18 @@ const B = `
 
 // ---------- C: one product moment ----------
 const C = `
-  ${glow(600, 640, 600, 0.5)}
-  ${rings(600, 640, [190, 290, 400, 520, 650], '90,182,255', 0.34)}
+  ${glow(600, 655, 640, 0.5)}
+  ${rings(600, 655, [240, 290, 400, 520, 650], '90,182,255', 0.34)}
   <div class="abs head">${HEAD}</div>
 
-  <div class="abs" style="left: 0; right: 0; top: 420px; display: flex; flex-direction: column; align-items: center; gap: 36px;">
-    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 26px 12px 12px; border-radius: 999px; background: #ffffff; color: #003872; font-size: 28px; font-weight: 700; box-shadow: 0 14px 36px rgba(0,15,40,0.35);">
-      <span style="width: 44px; height: 44px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center;">${check('#ffffff', 26, 3.4)}</span>14 of 14 activities valid
+  <div class="abs" style="left: 0; right: 0; top: 425px; display: flex; flex-direction: column; align-items: center; gap: 40px;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 30px 14px 14px; border-radius: 999px; background: #ffffff; color: #003872; font-size: 32px; font-weight: 700; box-shadow: 0 14px 36px rgba(0,15,40,0.35);">
+      <span style="width: 50px; height: 50px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center;">${check('#ffffff', 30, 3.4)}</span>14 of 14 activities valid
     </div>
-    <div style="position: relative; width: 700px; height: 140px; border-radius: 999px; background: #cc0254; display: flex; align-items: center; justify-content: center; gap: 20px; font-size: 48px; font-weight: 800; letter-spacing: -0.01em; box-shadow: 0 0 0 14px rgba(204,2,84,0.22), 0 30px 60px rgba(0,10,30,0.5);">
+    <div style="position: relative; width: 940px; height: 190px; border-radius: 999px; background: #cc0254; display: flex; align-items: center; justify-content: center; gap: 26px; font-size: 70px; font-weight: 800; letter-spacing: -0.01em; box-shadow: 0 0 0 18px rgba(204,2,84,0.22), 0 30px 60px rgba(0,10,30,0.5);">
       Publish to IATI
-      <svg width="46" height="46" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="#ffffff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <svg style="position: absolute; left: 560px; top: 92px; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.4));" width="84" height="100" viewBox="0 0 24 28" aria-hidden="true">
+      <svg width="66" height="66" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="#ffffff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg style="position: absolute; left: 790px; top: 128px; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.4));" width="100" height="120" viewBox="0 0 24 28" aria-hidden="true">
         <path d="M3 2 L3 22 L8.5 17 L12 26 L15.5 24.5 L12 16 L19.5 16 Z" fill="#ffffff" stroke="#003872" stroke-width="1.4" stroke-linejoin="round"/>
       </svg>
     </div>

@@ -14,9 +14,12 @@ body { background: #ffffff; font-family: 'Plus Jakarta Sans', 'Segoe UI', system
 .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 180px; z-index: 5; background: #ffffff; display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 0 80px; }
 .bar > img { display: block; height: 112px; width: auto; }
 /* On white the signature switches to the darker sky blue so it keeps contrast */
-.bar .sig { color: #007fd8; }
-.bar .sig .badge { background: #007fd8; }
-.bar .sig .swoosh path { fill: #007fd8; }
+.bar .sig { color: #003872; }
+.bar .sig .badge { background: #007fd8; box-shadow: 0 0 0 10px rgba(0,127,216,0.14); }
+/* Sky-blue marker stroke behind the lower part of the words */
+.sig-text .t { position: relative; z-index: 1; }
+.sig-text .marker { position: absolute; z-index: 0; left: -0.12em; right: -0.1em; bottom: 0.02em; width: calc(100% + 0.22em); height: 0.56em; transform: rotate(-1.2deg); }
+.sig-text .marker path { fill: #99ccef; }
 .sig { position: relative; display: inline-flex; align-items: center; color: #5ab6ff; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
 .sig .badge { flex-shrink: 0; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; }
 .sig-text { position: relative; display: inline-block; padding-bottom: 0.1em; }
@@ -29,4 +32,4 @@ body { background: #ffffff; font-family: 'Plus Jakarta Sans', 'Segoe UI', system
 .ring { position: absolute; border-radius: 50%; }
 
 /* Headline: same size and position in every direction, broken at the phrase boundary */
-.head { left: 80px; top: 76px; width: 1040px; font-size: 90px; line-height: 1.04; font-weight: 700; letter-spacing: -0.03em; }
+.head { left: 80px; top: 76px; width: 1040px; text-align: center; font-size: 90px; line-height: 1.04; font-weight: 700; letter-spacing: -0.03em; }
