@@ -35,7 +35,7 @@ const rings = (cx, cy, radii, color = '255,255,255', base = 0.14) =>
 const glow = (cx, cy, r, a = 0.38) =>
   `<div class="ring" style="left: ${cx - r}px; top: ${cy - r}px; width: ${2 * r}px; height: ${2 * r}px; background: radial-gradient(circle, rgba(0,127,216,${a}) 0%, rgba(0,127,216,0) 62%);"></div>`;
 
-const HEAD = 'Another quarter lost<br>to your IATI export?';
+const HEAD = 'Losing a week every quarter<br>to your IATI export?';
 
 // ---------- A: typographic ----------
 const A = `

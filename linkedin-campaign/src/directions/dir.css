@@ -32,4 +32,4 @@ body { background: #ffffff; font-family: 'Plus Jakarta Sans', 'Segoe UI', system
 .ring { position: absolute; border-radius: 50%; }
 
 /* Headline: same size and position in every direction, broken at the phrase boundary */
-.head { left: 80px; top: 76px; width: 1040px; text-align: center; font-size: 90px; line-height: 1.04; font-weight: 700; letter-spacing: -0.03em; }
+.head { left: 80px; top: 84px; width: 1040px; text-align: center; font-size: 80px; line-height: 1.06; font-weight: 700; letter-spacing: -0.03em; }

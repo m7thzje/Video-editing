@@ -129,10 +129,10 @@ const utm = (base, campaign, content) =>
 export const concepts = [
   {
     id: 'wft-iati', page: '/we-fixed-that/', variant: 'iati',
-    eyebrow: 'For NGOs publishing to IATI', h1: 'Another quarter lost to your IATI export?', fixed: true,
+    eyebrow: 'For NGOs publishing to IATI', h1: 'Losing a week every quarter to your IATI export?', fixed: true,
     metric: ['IATI FILE', 'A week per quarter', '10 minutes'], visual: V.iati,
     url: utm(WFT, 'we_fixed_that', 'iati'),
-    intro: 'Another quarter, another week lost to the IATI export? impactID turns the project data you already keep into a validated IATI file. In 10 minutes.',
+    intro: 'Losing a week every quarter to the IATI export? impactID turns the project data you already keep into a validated IATI file. In 10 minutes.',
     headline: 'Your IATI file in 10 minutes, not a week',
   },
   {
