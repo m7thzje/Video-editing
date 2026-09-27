@@ -35,19 +35,19 @@ const rings = (cx, cy, radii, color = '255,255,255', base = 0.14) =>
 const glow = (cx, cy, r, a = 0.38) =>
   `<div class="ring" style="left: ${cx - r}px; top: ${cy - r}px; width: ${2 * r}px; height: ${2 * r}px; background: radial-gradient(circle, rgba(0,127,216,${a}) 0%, rgba(0,127,216,0) 62%);"></div>`;
 
-const HEAD = 'Another quarter lost to your IATI export?';
+const HEAD = 'Another quarter lost<br>to your IATI export?';
 
 // ---------- A: typographic ----------
 const A = `
   ${glow(900, 780, 640, 0.42)}
   ${rings(900, 780, [230, 360, 500, 650])}
-  <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 76px; line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; text-wrap: balance;">${HEAD}</div>
-  <div class="abs" style="left: 74px; top: 375px; display: flex; align-items: baseline; gap: 26px;">
+  <div class="abs head">${HEAD}</div>
+  <div class="abs" style="left: 72px; top: 385px; display: flex; align-items: baseline; gap: 26px;">
     <span style="position: relative; font-size: 170px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; color: #6f8fb3;">1 week
       <span style="position: absolute; left: -4px; right: -8px; top: 50%; height: 16px; border-radius: 999px; background: #cc0254; transform: rotate(-5deg);"></span>
     </span>
   </div>
-  <div class="abs" style="left: 66px; top: 555px; font-size: 290px; font-weight: 800; letter-spacing: -0.055em; line-height: 1; color: #ffffff;">10 min.</div>
+  <div class="abs" style="left: 64px; top: 560px; font-size: 290px; font-weight: 800; letter-spacing: -0.055em; line-height: 1; color: #ffffff;">10 min.</div>
   ${foot(76)}
 `;
 
@@ -59,17 +59,17 @@ const sheet = (x, y, rot, z) => `
 const errDot = (x, y) => `<div class="abs" style="left: ${x}px; top: ${y}px; z-index: 9; width: 52px; height: 52px; border-radius: 50%; background: #cc0254; color: #fff; font-size: 34px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.35);">!</div>`;
 
 const B = `
-  <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 64px; line-height: 1.08; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance;">${HEAD}</div>
+  <div class="abs head">${HEAD}</div>
 
-  <div class="abs" style="left: 60px; top: 280px; width: 520px; height: 600px; border-radius: 28px; background: rgba(255,255,255,0.04); border: 2px dashed rgba(255,255,255,0.16); overflow: hidden;">
-    ${sheet(46, 44, -9, 1)}${sheet(210, 38, 7, 2)}${sheet(70, 164, 4, 3)}${sheet(230, 194, -6, 4)}${sheet(120, 280, -2, 5)}
-    ${errDot(56, 154)}${errDot(398, 264)}${errDot(210, 392)}
+  <div class="abs" style="left: 80px; top: 350px; width: 500px; height: 580px; border-radius: 28px; background: rgba(255,255,255,0.04); border: 2px dashed rgba(255,255,255,0.16); overflow: hidden;">
+    ${sheet(36, 36, -9, 1)}${sheet(200, 30, 7, 2)}${sheet(60, 150, 4, 3)}${sheet(220, 176, -6, 4)}${sheet(110, 250, -2, 5)}
+    ${errDot(46, 140)}${errDot(388, 246)}${errDot(200, 360)}
     <div class="abs" style="left: 0; right: 0; bottom: 34px; z-index: 10; text-align: center; font-size: 54px; font-weight: 800; letter-spacing: -0.02em; color: #8fa8c4;"><span style="text-decoration: line-through; text-decoration-color: #cc0254; text-decoration-thickness: 7px;">1 week</span></div>
   </div>
 
-  <div class="abs" style="left: 620px; top: 280px; width: 520px; height: 600px; border-radius: 28px; background: radial-gradient(circle at 50% 42%, rgba(0,127,216,0.55) 0%, rgba(0,127,216,0.10) 60%), rgba(255,255,255,0.05); border: 2px solid rgba(90,182,255,0.45); overflow: hidden;">
-    ${rings(260, 265, [150, 210, 270], '90,182,255', 0.35)}
-    <div class="abs" style="left: 130px; top: 120px; width: 260px; height: 290px; background: #ffffff; border-radius: 22px; box-shadow: 0 24px 50px rgba(0,10,30,0.5); padding: 28px; display: flex; flex-direction: column; gap: 14px;">
+  <div class="abs" style="left: 620px; top: 350px; width: 500px; height: 580px; border-radius: 28px; background: radial-gradient(circle at 50% 42%, rgba(0,127,216,0.55) 0%, rgba(0,127,216,0.10) 60%), rgba(255,255,255,0.05); border: 2px solid rgba(90,182,255,0.45); overflow: hidden;">
+    ${rings(250, 255, [150, 210, 270], '90,182,255', 0.35)}
+    <div class="abs" style="left: 120px; top: 110px; width: 260px; height: 290px; background: #ffffff; border-radius: 22px; box-shadow: 0 24px 50px rgba(0,10,30,0.5); padding: 28px; display: flex; flex-direction: column; gap: 14px;">
       <div style="font-size: 26px; font-weight: 800; color: #003872;">IATI file</div>
       <div style="height: 12px; border-radius: 6px; background: #ebeff4;"></div>
       <div style="height: 12px; width: 80%; border-radius: 6px; background: #ebeff4;"></div>
@@ -77,11 +77,11 @@ const B = `
       <div style="flex: 1;"></div>
       <div style="font-size: 20px; font-weight: 700; color: #00912b;">14 of 14 valid</div>
     </div>
-    <div class="abs" style="left: 330px; top: 80px; width: 104px; height: 104px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 14px rgba(0,145,43,0.22), 0 12px 30px rgba(0,0,0,0.35);">${check('#ffffff', 60, 3.4)}</div>
+    <div class="abs" style="left: 320px; top: 70px; width: 104px; height: 104px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 14px rgba(0,145,43,0.22), 0 12px 30px rgba(0,0,0,0.35);">${check('#ffffff', 60, 3.4)}</div>
     <div class="abs" style="left: 0; right: 0; bottom: 34px; text-align: center; font-size: 54px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">10 minutes</div>
   </div>
 
-  <div class="abs" style="left: 560px; top: 538px; z-index: 10; width: 80px; height: 80px; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 10px #003872;">
+  <div class="abs" style="left: 560px; top: 600px; z-index: 10; width: 80px; height: 80px; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 10px #003872;">
     <svg width="40" height="40" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="#003872" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </div>
 
@@ -90,11 +90,11 @@ const B = `
 
 // ---------- C: one product moment ----------
 const C = `
-  ${glow(600, 620, 600, 0.5)}
-  ${rings(600, 620, [190, 290, 400, 520, 650], '90,182,255', 0.34)}
-  <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 72px; line-height: 1.08; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance;">${HEAD}</div>
+  ${glow(600, 640, 600, 0.5)}
+  ${rings(600, 640, [190, 290, 400, 520, 650], '90,182,255', 0.34)}
+  <div class="abs head">${HEAD}</div>
 
-  <div class="abs" style="left: 0; right: 0; top: 400px; display: flex; flex-direction: column; align-items: center; gap: 36px;">
+  <div class="abs" style="left: 0; right: 0; top: 420px; display: flex; flex-direction: column; align-items: center; gap: 36px;">
     <div style="display: flex; align-items: center; gap: 12px; padding: 12px 26px 12px 12px; border-radius: 999px; background: #ffffff; color: #003872; font-size: 28px; font-weight: 700; box-shadow: 0 14px 36px rgba(0,15,40,0.35);">
       <span style="width: 44px; height: 44px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center;">${check('#ffffff', 26, 3.4)}</span>14 of 14 activities valid
     </div>
