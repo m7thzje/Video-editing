@@ -1,0 +1,22 @@
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url(../../assets/PlusJakartaSans-latin.woff2) format('woff2');
+  font-weight: 200 800;
+  font-display: block;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #ffffff; font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+.ad { position: relative; width: 1200px; height: 1200px; overflow: hidden; background: #003872; color: #ffffff; }
+.abs { position: absolute; }
+
+/* Campaign signature: "We fixed that." + check badge + hand-drawn underline */
+.sig { position: absolute; display: inline-flex; align-items: center; color: #5ab6ff; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+.sig .badge { flex-shrink: 0; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; }
+.sig .swoosh { position: absolute; left: 0; overflow: visible; }
+
+/* Small logo plate */
+.logo { position: absolute; background: #ffffff; border-radius: 16px; padding: 12px 18px; box-shadow: 0 10px 30px rgba(0,15,40,0.35); }
+.logo img { display: block; height: 58px; width: auto; }
+
+.ring { position: absolute; border-radius: 50%; }
