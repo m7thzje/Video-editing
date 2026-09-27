@@ -13,17 +13,20 @@ try { playwright = require('playwright'); } catch { playwright = require('/opt/n
 const check = (c, s, w = 3) =>
   `<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-// "We fixed that." signature at a given font size
-const sig = (size, style) => {
-  const b = Math.round(size * 0.92);
-  return `<div class="sig" style="font-size: ${size}px; gap: ${Math.round(size * 0.28)}px; padding-bottom: ${Math.round(size * 0.22)}px; ${style}">
-    <span>We fixed that.</span>
-    <span class="badge" style="width: ${b}px; height: ${b}px; box-shadow: 0 0 0 ${Math.round(size * 0.18)}px rgba(90,182,255,0.16);">${check('#003872', Math.round(b * 0.6), 3)}</span>
-    <svg class="swoosh" viewBox="0 0 400 24" preserveAspectRatio="none" aria-hidden="true" style="bottom: -${Math.round(size * 0.12)}px; width: calc(100% - ${b + Math.round(size * 0.28)}px); height: ${Math.round(size * 0.3)}px;"><path d="M4 16 C 90 5, 210 2, 300 8 S 380 15, 396 7" stroke="#5ab6ff" stroke-width="${Math.max(5, Math.round(size / 14))}" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+// "We fixed that." signature at a given font size. The underline is a filled brush stroke
+// that sits inside the text span, so it always spans exactly the words.
+const sig = (size) => {
+  const b = Math.round(size * 0.9);
+  return `<div class="sig" style="font-size: ${size}px; gap: ${Math.round(size * 0.3)}px;">
+    <span class="sig-text">We fixed that.<svg class="swoosh" viewBox="0 0 400 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 12 C 120 5, 270 1, 398 3 C 400 5, 400 9, 396 10 C 270 10, 130 14, 8 20 C 2 20, 0 14, 2 12 Z" fill="#5ab6ff"/></svg></span>
+    <span class="badge" style="width: ${b}px; height: ${b}px; box-shadow: 0 0 0 ${Math.round(size * 0.16)}px rgba(90,182,255,0.16);">${check('#003872', Math.round(b * 0.6), 3)}</span>
   </div>`;
 };
 
-const logo = (style) => `<div class="logo" style="${style}"><img src="../../assets/impactid-logo.png" alt="impactID"></div>`;
+// Bottom row shared by every direction: signature left, logo right, on one centre line
+const foot = (size) => `<div class="foot">${sig(size)}${logo()}</div>`;
+
+const logo = () => `<div class="logo"><img src="../../assets/impactid-logo.png" alt="impactID"></div>`;
 
 const rings = (cx, cy, radii, color = '255,255,255', base = 0.14) =>
   radii.map((r, i) => `<div class="ring" style="left: ${cx - r}px; top: ${cy - r}px; width: ${2 * r}px; height: ${2 * r}px; border: ${i === 0 ? 2 : 1.5}px solid rgba(${color},${(base * (1 - i / (radii.length + 1))).toFixed(3)});"></div>`).join('');
@@ -37,15 +40,14 @@ const HEAD = 'Another quarter lost to your IATI export?';
 const A = `
   ${glow(900, 780, 640, 0.42)}
   ${rings(900, 780, [230, 360, 500, 650])}
-  <div class="abs" style="left: 80px; top: 84px; width: 1000px; font-size: 76px; line-height: 1.06; font-weight: 700; letter-spacing: -0.025em;">${HEAD}</div>
-  <div class="abs" style="left: 76px; top: 318px; display: flex; align-items: baseline; gap: 26px;">
+  <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 76px; line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; text-wrap: balance;">${HEAD}</div>
+  <div class="abs" style="left: 74px; top: 360px; display: flex; align-items: baseline; gap: 26px;">
     <span style="position: relative; font-size: 170px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; color: #6f8fb3;">1 week
-      <span style="position: absolute; left: -12px; right: -12px; top: 52%; height: 16px; border-radius: 999px; background: #cc0254; transform: rotate(-5deg);"></span>
+      <span style="position: absolute; left: -4px; right: -8px; top: 50%; height: 16px; border-radius: 999px; background: #cc0254; transform: rotate(-5deg);"></span>
     </span>
   </div>
-  <div class="abs" style="left: 70px; top: 510px; font-size: 290px; font-weight: 800; letter-spacing: -0.055em; line-height: 1; color: #ffffff;">10 min.</div>
-  ${sig(92, 'left: 80px; top: 872px;')}
-  ${logo('right: 72px; bottom: 64px;')}
+  <div class="abs" style="left: 66px; top: 535px; font-size: 290px; font-weight: 800; letter-spacing: -0.055em; line-height: 1; color: #ffffff;">10 min.</div>
+  ${foot(88)}
 `;
 
 // ---------- B: before / after split ----------
@@ -56,15 +58,15 @@ const sheet = (x, y, rot, z) => `
 const errDot = (x, y) => `<div class="abs" style="left: ${x}px; top: ${y}px; z-index: 9; width: 52px; height: 52px; border-radius: 50%; background: #cc0254; color: #fff; font-size: 34px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.35);">!</div>`;
 
 const B = `
-  <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 64px; line-height: 1.08; font-weight: 700; letter-spacing: -0.02em;">${HEAD}</div>
+  <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 64px; line-height: 1.08; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance;">${HEAD}</div>
 
-  <div class="abs" style="left: 60px; top: 290px; width: 520px; height: 600px; border-radius: 28px; background: rgba(255,255,255,0.04); border: 2px dashed rgba(255,255,255,0.16); overflow: hidden;">
+  <div class="abs" style="left: 60px; top: 280px; width: 520px; height: 600px; border-radius: 28px; background: rgba(255,255,255,0.04); border: 2px dashed rgba(255,255,255,0.16); overflow: hidden;">
     ${sheet(46, 40, -9, 1)}${sheet(210, 34, 7, 2)}${sheet(70, 160, 4, 3)}${sheet(230, 190, -6, 4)}${sheet(120, 290, -2, 5)}
     ${errDot(56, 150)}${errDot(398, 260)}${errDot(210, 400)}
     <div class="abs" style="left: 0; right: 0; bottom: 34px; z-index: 10; text-align: center; font-size: 54px; font-weight: 800; letter-spacing: -0.02em; color: #8fa8c4;"><span style="text-decoration: line-through; text-decoration-color: #cc0254; text-decoration-thickness: 7px;">1 week</span></div>
   </div>
 
-  <div class="abs" style="left: 620px; top: 290px; width: 520px; height: 600px; border-radius: 28px; background: radial-gradient(circle at 50% 42%, rgba(0,127,216,0.55) 0%, rgba(0,127,216,0.10) 60%), rgba(255,255,255,0.05); border: 2px solid rgba(90,182,255,0.45); overflow: hidden;">
+  <div class="abs" style="left: 620px; top: 280px; width: 520px; height: 600px; border-radius: 28px; background: radial-gradient(circle at 50% 42%, rgba(0,127,216,0.55) 0%, rgba(0,127,216,0.10) 60%), rgba(255,255,255,0.05); border: 2px solid rgba(90,182,255,0.45); overflow: hidden;">
     ${rings(260, 250, [150, 210, 270], '90,182,255', 0.35)}
     <div class="abs" style="left: 130px; top: 110px; width: 260px; height: 290px; background: #ffffff; border-radius: 22px; box-shadow: 0 24px 50px rgba(0,10,30,0.5); padding: 28px; display: flex; flex-direction: column; gap: 14px;">
       <div style="font-size: 26px; font-weight: 800; color: #003872;">IATI file</div>
@@ -78,42 +80,37 @@ const B = `
     <div class="abs" style="left: 0; right: 0; bottom: 34px; text-align: center; font-size: 54px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">10 minutes</div>
   </div>
 
-  <div class="abs" style="left: 560px; top: 548px; z-index: 10; width: 80px; height: 80px; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 10px #003872;">
+  <div class="abs" style="left: 560px; top: 538px; z-index: 10; width: 80px; height: 80px; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 10px #003872;">
     <svg width="40" height="40" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="#003872" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </div>
 
-  ${sig(76, 'left: 80px; top: 968px;')}
-  ${logo('right: 72px; bottom: 64px;')}
+  ${foot(80)}
 `;
 
 // ---------- C: one product moment ----------
 const C = `
-  ${glow(600, 760, 620, 0.5)}
-  ${rings(600, 760, [190, 290, 400, 520, 650], '90,182,255', 0.34)}
-  <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 64px; line-height: 1.08; font-weight: 700; letter-spacing: -0.02em;">${HEAD}</div>
-  ${sig(76, 'left: 80px; top: 256px;')}
+  ${glow(600, 670, 600, 0.5)}
+  ${rings(600, 670, [190, 290, 400, 520, 650], '90,182,255', 0.34)}
+  <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 72px; line-height: 1.08; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance;">${HEAD}</div>
 
-  <div class="abs" style="left: 395px; top: 560px; display: flex; align-items: center; gap: 12px; padding: 12px 24px 12px 12px; border-radius: 999px; background: #ffffff; color: #003872; font-size: 26px; font-weight: 700; box-shadow: 0 14px 36px rgba(0,15,40,0.35);">
-    <span style="width: 42px; height: 42px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center;">${check('#ffffff', 24, 3.4)}</span>14 of 14 activities valid
-  </div>
-
-  <div class="abs" style="left: 250px; top: 690px; width: 700px; height: 140px; border-radius: 999px; background: #cc0254; display: flex; align-items: center; justify-content: center; gap: 20px; font-size: 46px; font-weight: 800; letter-spacing: -0.01em; box-shadow: 0 0 0 14px rgba(204,2,84,0.22), 0 30px 60px rgba(0,10,30,0.5);">
-    Publish to IATI
-    <svg width="44" height="44" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="#ffffff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </div>
-
-  <svg class="abs" style="left: 800px; top: 790px; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.4));" width="84" height="100" viewBox="0 0 24 28" aria-hidden="true">
-    <path d="M3 2 L3 22 L8.5 17 L12 26 L15.5 24.5 L12 16 L19.5 16 Z" fill="#ffffff" stroke="#003872" stroke-width="1.4" stroke-linejoin="round"/>
-  </svg>
-
-  <div class="abs" style="left: 0; right: 0; top: 930px; display: flex; justify-content: center;">
-    <div style="display: flex; align-items: center; gap: 22px; padding: 16px 30px; border-radius: 20px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); font-size: 38px; font-weight: 700;">
+  <div class="abs" style="left: 0; right: 0; top: 450px; display: flex; flex-direction: column; align-items: center; gap: 36px;">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 26px 12px 12px; border-radius: 999px; background: #ffffff; color: #003872; font-size: 28px; font-weight: 700; box-shadow: 0 14px 36px rgba(0,15,40,0.35);">
+      <span style="width: 44px; height: 44px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center;">${check('#ffffff', 26, 3.4)}</span>14 of 14 activities valid
+    </div>
+    <div style="position: relative; width: 700px; height: 140px; border-radius: 999px; background: #cc0254; display: flex; align-items: center; justify-content: center; gap: 20px; font-size: 48px; font-weight: 800; letter-spacing: -0.01em; box-shadow: 0 0 0 14px rgba(204,2,84,0.22), 0 30px 60px rgba(0,10,30,0.5);">
+      Publish to IATI
+      <svg width="46" height="46" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="#ffffff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg style="position: absolute; left: 560px; top: 92px; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.4));" width="84" height="100" viewBox="0 0 24 28" aria-hidden="true">
+        <path d="M3 2 L3 22 L8.5 17 L12 26 L15.5 24.5 L12 16 L19.5 16 Z" fill="#ffffff" stroke="#003872" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div style="display: flex; align-items: center; gap: 22px; margin-top: 30px; padding: 16px 30px; border-radius: 20px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); font-size: 38px; font-weight: 700;">
       <span style="color: #9fb6cf; text-decoration: line-through; text-decoration-color: rgba(159,182,207,0.8); font-weight: 500;">1 week</span>
       <svg width="34" height="34" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="#5ab6ff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>10 minutes</span>
     </div>
   </div>
-  ${logo('left: 72px; bottom: 64px;')}
+  ${foot(80)}
 `;
 
 const DIRS = { 'a-typographic': A, 'b-before-after': B, 'c-one-click': C };
