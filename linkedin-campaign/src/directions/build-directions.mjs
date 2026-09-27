@@ -23,8 +23,10 @@ const sig = (size) => {
   </div>`;
 };
 
-// Bottom row shared by every direction: signature left, logo right, on one centre line
-const foot = (size) => `<div class="foot">${sig(size)}${logo()}</div>`;
+// Bottom of every direction: a white brand bar with the logo, and the signature standing on its own just above it
+const foot = (size) => `
+  <div class="sigwrap">${sig(size)}</div>
+  <div class="bar"><img src="../../assets/impactid-logo.png" alt="impactID"><span class="url">impactid.nl</span></div>`;
 
 const logo = () => `<div class="logo"><img src="../../assets/impactid-logo.png" alt="impactID"></div>`;
 
@@ -41,13 +43,13 @@ const A = `
   ${glow(900, 780, 640, 0.42)}
   ${rings(900, 780, [230, 360, 500, 650])}
   <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 76px; line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; text-wrap: balance;">${HEAD}</div>
-  <div class="abs" style="left: 74px; top: 360px; display: flex; align-items: baseline; gap: 26px;">
+  <div class="abs" style="left: 74px; top: 320px; display: flex; align-items: baseline; gap: 26px;">
     <span style="position: relative; font-size: 170px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; color: #6f8fb3;">1 week
       <span style="position: absolute; left: -4px; right: -8px; top: 50%; height: 16px; border-radius: 999px; background: #cc0254; transform: rotate(-5deg);"></span>
     </span>
   </div>
-  <div class="abs" style="left: 66px; top: 535px; font-size: 290px; font-weight: 800; letter-spacing: -0.055em; line-height: 1; color: #ffffff;">10 min.</div>
-  ${foot(88)}
+  <div class="abs" style="left: 66px; top: 490px; font-size: 290px; font-weight: 800; letter-spacing: -0.055em; line-height: 1; color: #ffffff;">10 min.</div>
+  ${foot(100)}
 `;
 
 // ---------- B: before / after split ----------
@@ -60,15 +62,15 @@ const errDot = (x, y) => `<div class="abs" style="left: ${x}px; top: ${y}px; z-i
 const B = `
   <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 64px; line-height: 1.08; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance;">${HEAD}</div>
 
-  <div class="abs" style="left: 60px; top: 280px; width: 520px; height: 600px; border-radius: 28px; background: rgba(255,255,255,0.04); border: 2px dashed rgba(255,255,255,0.16); overflow: hidden;">
-    ${sheet(46, 40, -9, 1)}${sheet(210, 34, 7, 2)}${sheet(70, 160, 4, 3)}${sheet(230, 190, -6, 4)}${sheet(120, 290, -2, 5)}
-    ${errDot(56, 150)}${errDot(398, 260)}${errDot(210, 400)}
+  <div class="abs" style="left: 60px; top: 270px; width: 520px; height: 540px; border-radius: 28px; background: rgba(255,255,255,0.04); border: 2px dashed rgba(255,255,255,0.16); overflow: hidden;">
+    ${sheet(46, 30, -9, 1)}${sheet(210, 24, 7, 2)}${sheet(70, 140, 4, 3)}${sheet(230, 165, -6, 4)}${sheet(120, 225, -2, 5)}
+    ${errDot(56, 130)}${errDot(398, 235)}${errDot(210, 335)}
     <div class="abs" style="left: 0; right: 0; bottom: 34px; z-index: 10; text-align: center; font-size: 54px; font-weight: 800; letter-spacing: -0.02em; color: #8fa8c4;"><span style="text-decoration: line-through; text-decoration-color: #cc0254; text-decoration-thickness: 7px;">1 week</span></div>
   </div>
 
-  <div class="abs" style="left: 620px; top: 280px; width: 520px; height: 600px; border-radius: 28px; background: radial-gradient(circle at 50% 42%, rgba(0,127,216,0.55) 0%, rgba(0,127,216,0.10) 60%), rgba(255,255,255,0.05); border: 2px solid rgba(90,182,255,0.45); overflow: hidden;">
-    ${rings(260, 250, [150, 210, 270], '90,182,255', 0.35)}
-    <div class="abs" style="left: 130px; top: 110px; width: 260px; height: 290px; background: #ffffff; border-radius: 22px; box-shadow: 0 24px 50px rgba(0,10,30,0.5); padding: 28px; display: flex; flex-direction: column; gap: 14px;">
+  <div class="abs" style="left: 620px; top: 270px; width: 520px; height: 540px; border-radius: 28px; background: radial-gradient(circle at 50% 42%, rgba(0,127,216,0.55) 0%, rgba(0,127,216,0.10) 60%), rgba(255,255,255,0.05); border: 2px solid rgba(90,182,255,0.45); overflow: hidden;">
+    ${rings(260, 230, [150, 210, 270], '90,182,255', 0.35)}
+    <div class="abs" style="left: 130px; top: 90px; width: 260px; height: 280px; background: #ffffff; border-radius: 22px; box-shadow: 0 24px 50px rgba(0,10,30,0.5); padding: 28px; display: flex; flex-direction: column; gap: 14px;">
       <div style="font-size: 26px; font-weight: 800; color: #003872;">IATI file</div>
       <div style="height: 12px; border-radius: 6px; background: #ebeff4;"></div>
       <div style="height: 12px; width: 80%; border-radius: 6px; background: #ebeff4;"></div>
@@ -76,11 +78,11 @@ const B = `
       <div style="flex: 1;"></div>
       <div style="font-size: 20px; font-weight: 700; color: #00912b;">14 of 14 valid</div>
     </div>
-    <div class="abs" style="left: 330px; top: 70px; width: 104px; height: 104px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 14px rgba(0,145,43,0.22), 0 12px 30px rgba(0,0,0,0.35);">${check('#ffffff', 60, 3.4)}</div>
+    <div class="abs" style="left: 330px; top: 50px; width: 104px; height: 104px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 14px rgba(0,145,43,0.22), 0 12px 30px rgba(0,0,0,0.35);">${check('#ffffff', 60, 3.4)}</div>
     <div class="abs" style="left: 0; right: 0; bottom: 34px; text-align: center; font-size: 54px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">10 minutes</div>
   </div>
 
-  <div class="abs" style="left: 560px; top: 538px; z-index: 10; width: 80px; height: 80px; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 10px #003872;">
+  <div class="abs" style="left: 560px; top: 500px; z-index: 10; width: 80px; height: 80px; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 10px #003872;">
     <svg width="40" height="40" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="#003872" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </div>
 
@@ -89,11 +91,11 @@ const B = `
 
 // ---------- C: one product moment ----------
 const C = `
-  ${glow(600, 670, 600, 0.5)}
-  ${rings(600, 670, [190, 290, 400, 520, 650], '90,182,255', 0.34)}
+  ${glow(600, 550, 600, 0.5)}
+  ${rings(600, 550, [190, 290, 400, 520, 650], '90,182,255', 0.34)}
   <div class="abs" style="left: 80px; top: 80px; width: 1040px; font-size: 72px; line-height: 1.08; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance;">${HEAD}</div>
 
-  <div class="abs" style="left: 0; right: 0; top: 450px; display: flex; flex-direction: column; align-items: center; gap: 36px;">
+  <div class="abs" style="left: 0; right: 0; top: 330px; display: flex; flex-direction: column; align-items: center; gap: 36px;">
     <div style="display: flex; align-items: center; gap: 12px; padding: 12px 26px 12px 12px; border-radius: 999px; background: #ffffff; color: #003872; font-size: 28px; font-weight: 700; box-shadow: 0 14px 36px rgba(0,15,40,0.35);">
       <span style="width: 44px; height: 44px; border-radius: 50%; background: #00912b; display: flex; align-items: center; justify-content: center;">${check('#ffffff', 26, 3.4)}</span>14 of 14 activities valid
     </div>
@@ -104,7 +106,7 @@ const C = `
         <path d="M3 2 L3 22 L8.5 17 L12 26 L15.5 24.5 L12 16 L19.5 16 Z" fill="#ffffff" stroke="#003872" stroke-width="1.4" stroke-linejoin="round"/>
       </svg>
     </div>
-    <div style="display: flex; align-items: center; gap: 22px; margin-top: 30px; padding: 16px 30px; border-radius: 20px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); font-size: 38px; font-weight: 700;">
+    <div style="display: flex; align-items: center; gap: 22px; margin-top: 22px; padding: 16px 30px; border-radius: 20px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); font-size: 38px; font-weight: 700;">
       <span style="color: #9fb6cf; text-decoration: line-through; text-decoration-color: rgba(159,182,207,0.8); font-weight: 500;">1 week</span>
       <svg width="34" height="34" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" stroke="#5ab6ff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>10 minutes</span>

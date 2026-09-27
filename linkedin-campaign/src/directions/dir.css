@@ -11,7 +11,10 @@ body { background: #ffffff; font-family: 'Plus Jakarta Sans', 'Segoe UI', system
 .abs { position: absolute; }
 
 /* Campaign signature: "We fixed that." + check badge + hand-drawn underline */
-.foot { position: absolute; left: 80px; right: 80px; bottom: 72px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+.sigwrap { position: absolute; left: 80px; bottom: 214px; z-index: 5; }
+.bar { position: absolute; left: 0; right: 0; bottom: 0; height: 158px; z-index: 5; background: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 80px; }
+.bar img { display: block; height: 104px; width: auto; }
+.bar .url { font-size: 30px; font-weight: 700; color: #003872; letter-spacing: -0.01em; }
 .sig { position: relative; display: inline-flex; align-items: center; color: #5ab6ff; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
 .sig .badge { flex-shrink: 0; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; }
 .sig-text { position: relative; display: inline-block; padding-bottom: 0.1em; }
