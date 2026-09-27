@@ -18,7 +18,7 @@ body { background: #ffffff; font-family: 'Plus Jakarta Sans', 'Segoe UI', system
 .bar .sig .badge { background: #007fd8; box-shadow: 0 0 0 10px rgba(0,127,216,0.14); }
 /* Sky-blue marker stroke behind the lower part of the words */
 .sig-text .t { position: relative; z-index: 1; }
-.sig-text .marker { position: absolute; z-index: 0; left: -0.12em; right: -0.1em; bottom: 0.02em; width: calc(100% + 0.22em); height: 0.56em; transform: rotate(-1.2deg); }
+.sig-text .marker { position: absolute; z-index: 0; left: -0.12em; right: -0.1em; bottom: -0.14em; width: calc(100% + 0.22em); height: 0.44em; transform: rotate(-1.2deg); }
 .sig-text .marker path { fill: #99ccef; }
 .sig { position: relative; display: inline-flex; align-items: center; color: #5ab6ff; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
 .sig .badge { flex-shrink: 0; border-radius: 50%; background: #5ab6ff; display: flex; align-items: center; justify-content: center; }
