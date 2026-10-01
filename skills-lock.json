@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "skills": {
+    "ad-creative-generation": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ad-creative-generation/SKILL.md",
+      "computedHash": "6ab1dff7765057dae1a2f6c366273ab8203cf01eba61822dcd67c6fdc14e8d42"
+    },
+    "amazon-ads": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/amazon-ads/SKILL.md",
+      "computedHash": "f93fb1eed2f4164c55217c5004baf0ab6216b2facbcdee7ce12985156d1f5576"
+    },
+    "analytics-insights": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/analytics-insights/SKILL.md",
+      "computedHash": "5ffefa14164cda33ef27f0003dfed74ac0c3df8a449da1c95c478f079cbbe36a"
+    },
+    "blog-generation": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/blog-generation/SKILL.md",
+      "computedHash": "24f8a77c9a938795121d9d6c79f478d1ba1e1d543735cc24af41d68b262633af"
+    },
+    "brand-context": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/brand-context/SKILL.md",
+      "computedHash": "4d40d81f1f637ae6ca71949e3cb885007dd965b9856dc21eb2516500f3ea8208"
+    },
+    "cold-email-outreach": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/cold-email-outreach/SKILL.md",
+      "computedHash": "ca82e08450ed474aacabe45572465678bab30b0de2594c242dfd499459d0d126"
+    },
+    "competitor-intel": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/competitor-intel/SKILL.md",
+      "computedHash": "52ba700cda6f9d5906f3c2d353c0242a1d1d258de1969903f00c69bbb5e9ab0e"
+    },
+    "customer-research": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/customer-research/SKILL.md",
+      "computedHash": "f707bb36b6d9bea5708e21af4228abb92f31eaa56bd50097566ae453e401f717"
+    },
+    "email-lifecycle": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/email-lifecycle/SKILL.md",
+      "computedHash": "74bad3e446424405acff43fd982964c017016e34dfbc7d64b5aab3cff6203a41"
+    },
+    "gmail": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/gmail/SKILL.md",
+      "computedHash": "926f004ba716e1bc4edf6cd22bd3e3dd606416f66fc8b93cf576df4a9ec48205"
+    },
+    "google-ads": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/google-ads/SKILL.md",
+      "computedHash": "a7f3980e543ee25a9573ee02ba89e6d0100b4281ca3b8144afb52946c2a417d5"
+    },
+    "google-sheets": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/google-sheets/SKILL.md",
+      "computedHash": "17cd98f6797e5e9052a184ea1413c7cf5b2327cae04f77cef5af18553e0d94c7"
+    },
+    "hyper-cli": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/hyper-cli/SKILL.md",
+      "computedHash": "b1770b4e452029c8139673ccdfc472166c475f2f546e41ff6acb47ab32a18b00"
+    },
+    "image-generation": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/image-generation/SKILL.md",
+      "computedHash": "b773d511dfe0203521f25ea55342f82abb43c709dc983da0fad089082d121df4"
+    },
+    "instagram": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/instagram/SKILL.md",
+      "computedHash": "317be3a42fa030aa21b5c1261eab0ed2088cf5d9d9b25e618cf29775cf850c4b"
+    },
+    "linkedin": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/linkedin/SKILL.md",
+      "computedHash": "ea66484e9d3ff3fa81ab7dddb8b94975a3708205989f73ee39ef5bc3347c7f4f"
+    },
+    "meta-ads": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/meta-ads/SKILL.md",
+      "computedHash": "c7687a81a9dfaf01c06dc278b2d2a9f85639b62e6be1a374d73287f53fd40452"
+    },
+    "meta-ads-library": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/meta-ads-library/SKILL.md",
+      "computedHash": "98f2b12a0a3e9d4da2c4d4acb1e0a11d38d03daa4f2a41a5b0d4177a1a4b5458"
+    },
+    "openai-ads": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/openai-ads/SKILL.md",
+      "computedHash": "2ee62c578393fcc79b358d4441754f9386e9cc9aca4c8a05397a5a69a656626d"
+    },
+    "pinterest-ads": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pinterest-ads/SKILL.md",
+      "computedHash": "9703c5d91cc8f7ebd6a78b9c4550108b5e02fda92d17087677dcffdce32eafa4"
+    },
+    "reddit": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/reddit/SKILL.md",
+      "computedHash": "af21de74b3bb0af37ee3443b855c0ecc4ed368ad2bd5b6ef948dc4f6182938ec"
+    },
+    "reddit-ads": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/reddit-ads/SKILL.md",
+      "computedHash": "24e303fef2c912edfdbb33a904dc30572174b5307d30e6a599aa959046fad386"
+    },
+    "seo-research": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/seo-research/SKILL.md",
+      "computedHash": "18e00182e0aae7815cd6cbf4d9423746c83c8a3632ce143bc156a5574240c253"
+    },
+    "slack": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/slack/SKILL.md",
+      "computedHash": "7ddf3364ec22233db105c0a41bfa797789000b9957d95f81d7bb0c421039f3a8"
+    },
+    "snapchat-ads": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/snapchat-ads/SKILL.md",
+      "computedHash": "3bfe4f464678610e800da0bbcb509cbad082fb85b297f0ee97d8f5aaa1955398"
+    },
+    "tiktok": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tiktok/SKILL.md",
+      "computedHash": "fbf517c0c7a47d5cff02bd68019b33f18dcacbd73e288df5b12f5e0ec9de7df2"
+    },
+    "tiktok-ads": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tiktok-ads/SKILL.md",
+      "computedHash": "d3e96a4b8ae8ea87c3b7b164ee8b2cf9266633e49b97d81140e12707714a99f5"
+    },
+    "twilio": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/twilio/SKILL.md",
+      "computedHash": "427a45f6f6dc8ab298950e1ad658a8f42178679cbb6e37aa5b620d96a1e3992e"
+    },
+    "video-generation": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/video-generation/SKILL.md",
+      "computedHash": "d73622b3d620b9275d268b756a01ca58ae29e55c4aea09db6561b441829c2232"
+    },
+    "youtube": {
+      "source": "hyperfx-ai/marketing-skills",
+      "sourceType": "github",
+      "skillPath": "skills/youtube/SKILL.md",
+      "computedHash": "d95510fe54242a1824222912d182fcec795d080f5fae058f3d633b16ec10e3c8"
+    }
+  }
+}
