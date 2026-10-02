@@ -1,24 +1,25 @@
-// Gevecht tegen Bertus de buizerd, in de stijl van een Pokémon-gevecht: beurten, HP-balken, 4 aanvallen.
+// Gevecht tegen Sjors de slechtvalk, in de stijl van een Pokémon-gevecht: beurten, HP-balken, 4 aanvallen.
 // De 3D-kant (camera, uitvallen, schudden) gaat via callbacks naar main.js.
 
 const MOVES = [
-  { name: 'Fluitstoot', type: 'GELUID', power: 18, acc: 0.95, text: 'Puck fluit zo hard dat Bertus zijn veren ervan rechtop gaan staan!' },
-  { name: 'Snavelpik', type: 'SNAVEL', power: 26, acc: 0.8, text: 'Puck pikt Bertus in zijn teen. Au.' },
-  { name: 'Watskebeurt?!', type: 'VERWARRING', power: 0, acc: 1, text: 'Puck kijkt Bertus heel indringend aan. "Watskebeurt?!" Bertus raakt in de war.', confuse: true },
+  { name: 'Fluitstoot', type: 'GELUID', power: 18, acc: 0.95, text: 'Puck fluit zo hard dat Sjors zijn veren ervan rechtop gaan staan!' },
+  { name: 'Snavelpik', type: 'SNAVEL', power: 26, acc: 0.8, text: 'Puck pikt Sjors in zijn teen. Au.' },
+  { name: 'Watskebeurt?!', type: 'VERWARRING', power: 0, acc: 1, text: 'Puck kijkt Sjors heel indringend aan. "Watskebeurt?!" Sjors raakt in de war.', confuse: true },
   { name: 'Pistache', type: 'ETEN', power: 0, acc: 1, heal: 32, uses: 2, text: 'Puck eet een pistache. Lekker! Puck voelt zich beter.' },
 ];
 
 const FOE_MOVES = [
-  { name: 'Klauwgreep', power: 16, acc: 0.9, text: 'Bertus grijpt met zijn klauwen!' },
-  { name: 'Duikvlucht', power: 24, acc: 0.65, text: 'Bertus duikt van de dakrand naar beneden!' },
-  { name: 'Snerpende krijs', power: 0, acc: 1, text: 'Bertus krijst. Puck schrikt zich een hoedje. Puck valt minder hard aan.', weaken: true },
-  { name: 'Veer in je oog', power: 10, acc: 1, text: 'Bertus wappert een veer in Puck\'s oog. Gemeen.' },
+  { name: 'Klauwgreep', power: 16, acc: 0.9, text: 'Sjors grijpt met zijn klauwen!' },
+  { name: 'Duikvlucht', power: 24, acc: 0.65, text: 'Sjors duikt met 300 kilometer per uur naar beneden! Sneller dan de trein naar Assen.' },
+  { name: 'Snerpende krijs', power: 0, acc: 1, text: 'Sjors krijst. Puck schrikt zich een hoedje. Puck valt minder hard aan.', weaken: true },
+  { name: 'Veer in je oog', power: 10, acc: 1, text: 'Sjors wappert een veer in Puck\'s oog. Gemeen.' },
 ];
 
 const FOE_TAUNTS = [
   'Dit is MIJN dak. Ik heb er een nest. En een parkeervergunning.',
   'Papegaaien horen in een kooi. Of in een dierentuin. Of in een kooi in een dierentuin.',
-  'Ik heb bij de Gasunie gewerkt. Als dak. Nou ja, óp het dak.',
+  'Ik broed hier al jaren. Echt waar, vraag maar aan de Gasunie. Ze hebben een webcam op me gericht.',
+  'Ik ben het snelste dier ter wereld. Jij bent… een papegaai die loopt.',
 ];
 
 export class Battle {
@@ -48,7 +49,7 @@ export class Battle {
     this.uses = MOVES.map((m) => m.uses ?? Infinity);
     this.el.classList.remove('hidden');
     this.render();
-    this.say(['Een wilde BERTUS DE BUIZERD verschijnt!', FOE_TAUNTS[Math.floor(Math.random() * FOE_TAUNTS.length)], 'Wat doet Puck?']).then(() => this.ask());
+    this.say(['Een wilde SJORS DE SLECHTVALK verschijnt!', FOE_TAUNTS[Math.floor(Math.random() * FOE_TAUNTS.length)], 'Wat doet Puck?']).then(() => this.ask());
   }
 
   stop() {
@@ -108,7 +109,7 @@ export class Battle {
     const lines = [`Puck gebruikt ${m.name.toUpperCase()}!`];
     this.onAttack('puck', m);
     if (Math.random() > m.acc) {
-      lines.push('Mis! Bertus kijkt verveeld.');
+      lines.push('Mis! Sjors kijkt verveeld.');
       this.audio.play('splash', { volume: 0.3 });
     } else {
       lines.push(m.text);
@@ -119,7 +120,7 @@ export class Battle {
         this.audio.play(i === 0 ? 'whistle' : 'crunch', { freq: 1500 });
         setTimeout(() => this.onHit('foe'), 350);
         if (crit) lines.push('Een voltreffer! Recht in de veren!');
-        if (m.type === 'GELUID') lines.push('Het is supereffectief! Buizerds houden niet van fluiten.');
+        if (m.type === 'GELUID') lines.push('Het is supereffectief! Slechtvalken houden niet van fluiten.');
       }
       if (m.heal) {
         this.puck.hp = Math.min(this.puck.max, this.puck.hp + m.heal);
@@ -144,12 +145,12 @@ export class Battle {
       if (Math.random() < 0.5) {
         this.foe.hp -= 8;
         this.render();
-        await this.say(['Bertus is in de war…', 'Bertus pikt zichzelf in zijn eigen vleugel. Watskebeurt?']);
+        await this.say(['Sjors is in de war…', 'Sjors pikt zichzelf in zijn eigen vleugel. Watskebeurt?']);
         if (this.foe.hp <= 0) return this.finish(true);
         return this.ask();
       }
     }
-    const lines = [`Bertus gebruikt ${m.name.toUpperCase()}!`];
+    const lines = [`Sjors gebruikt ${m.name.toUpperCase()}!`];
     this.onAttack('foe', m);
     if (Math.random() > m.acc) lines.push('Mis! Puck hopt opzij. Vliegen doet hij niet, hoppen wel.');
     else {
@@ -171,9 +172,9 @@ export class Battle {
   async finish(won) {
     this.render();
     if (won) {
-      await this.say(['Bertus de buizerd is verslagen!', 'Bertus: "Pff. Ik ga wel op het provinciehuis zitten. Daar is het ook gezellig."']);
+      await this.say(['Sjors de slechtvalk is verslagen!', 'Sjors: "Pff. Ik ga wel op het provinciehuis zitten. Daar is het ook gezellig."']);
     } else {
-      await this.say(['Puck is uitgeput…', 'Bertus: "Kom maar terug als je groot bent. Of een buizerd."']);
+      await this.say(['Puck is uitgeput…', 'Sjors: "Kom maar terug als je kunt vliegen. O wacht."']);
     }
     this.stop();
     this.onEnd(won);

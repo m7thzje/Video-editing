@@ -221,7 +221,7 @@ const STARS = [
   { id: 'rondje', icon: '🚲', name: 'Fietsrace', desc: 'Race tegen Studente Sjoukje op de fiets door alle ringen' },
   { id: 'dozen', icon: '📦', name: 'Dozen plat', desc: 'Maak voor Jumbo-Bas alle dozen plat binnen 40 s' },
   { id: 'toren', icon: '🔥', name: 'Gasunie-klim', desc: 'Klim het Gasunie-gebouw op en tik de gasvlam aan binnen 40 s' },
-  { id: 'roofvogel', icon: '⚔️', name: 'Bertus de buizerd', desc: 'Versla de roofvogel op het dak van de Gasunie in een gevecht' },
+  { id: 'roofvogel', icon: '⚔️', name: 'Sjors de slechtvalk', desc: 'Versla de roofvogel op het dak van de Gasunie in een gevecht' },
 ];
 const SECRETS = {
   portret: 'Het schilderij bij de buren',
@@ -677,7 +677,7 @@ const dialog = new Dialog();
 const DUIVEN_TIME = 30;
 const RONDJE_TIME = 60;
 const DOZEN_TIME = 40;
-const TOREN_TIME = 40;
+const TOREN_TIME = 60;
 
 const song = new SongGame({
   audio,
@@ -1288,7 +1288,7 @@ function interact() {
     return;
   }
   if (z.id === 'roofvogel') {
-    if (progress.stars.roofvogel) return dialog.show('Bertus de buizerd', 'Jij weer. Ik zit hier alleen nog voor het uitzicht. Ga weg.', 3);
+    if (progress.stars.roofvogel) return dialog.show('Sjors de slechtvalk', 'Jij weer. Ik zit hier alleen nog voor het uitzicht. Ga weg.', 3);
     startBattle();
     return;
   }
@@ -1435,7 +1435,7 @@ function talkTo(npc) {
   }
   if (npc.id === 'toren') {
     if (o.towerRun) return dialog.show(npc.name, 'Klimmen. Nait kletsen.');
-    dialog.show(npc.name, progress.stars.toren ? dialog.next('torenIdle') : `Moi. Ik ben de conciërge. Klim naar het dak en tik de gasvlam aan. ${TOREN_TIME} tellen. Pas op voor Bertus.`, 4);
+    dialog.show(npc.name, progress.stars.toren ? dialog.next('torenIdle') : `Moi. Ik ben de conciërge. Klim naar het dak en tik de gasvlam aan. ${TOREN_TIME} tellen. Pas op voor Sjors.`, 4);
     startChallenge({
       icon: '🔥', title: 'GASUNIE-KLIM', goal: `Klim naar het dak en tik de gasvlam aan binnen ${TOREN_TIME} seconden`,
       tip: 'Loop tegen de gevel aan om te klimmen. De gele pijl wijst naar de vlam.', onGo: () => (o.towerRun = { time: 0 }), active: () => !!o.towerRun,
@@ -1539,7 +1539,7 @@ function currentObjective() {
   if (!S.rondje) list.push({ area: 'buiten', pos: V3(-5.4, 0, 20.6), text: 'Fietsrace: praat met Studente Sjoukje bij de brug' });
   if (!S.dozen) list.push({ area: 'buiten', pos: V3(20.5, 0, -2.5), text: 'Dozen plat: praat met Jumbo-Bas achter de Jumbo' });
   if (!S.toren) list.push({ area: 'buiten', pos: V3(areas.buiten.towerStart.x, 0, areas.buiten.towerStart.z), text: 'Gasunie-klim: praat met Conciërge Wiebe' });
-  if (!S.roofvogel) list.push({ area: 'buiten', pos: V3(areas.buiten.towerTop.x, 0, areas.buiten.towerTop.z), text: 'Klim op de Gasunie en daag Bertus de buizerd uit' });
+  if (!S.roofvogel) list.push({ area: 'buiten', pos: V3(areas.buiten.towerTop.x, 0, areas.buiten.towerTop.z), text: 'Klim op de Gasunie en daag Sjors de slechtvalk uit' });
   if (!S.koek) {
     const missing = b.collectibles.filter((c) => c.type === 'ingredient' && !c.found);
     if (!state.omaMet || !missing.length) list.push({ area: 'bakkerij', pos: V3(0, 0, 0.55), text: missing.length ? 'Praat met oma Moi in Bakkerij Haafs' : 'Breng de ingrediënten naar oma Moi' });
@@ -1705,7 +1705,7 @@ function endConcert(acc, best) {
   startFinale();
 }
 
-// ---------- Gevecht tegen Bertus de buizerd ----------
+// ---------- Gevecht tegen Sjors de slechtvalk ----------
 const battle = new Battle({
   audio,
   onAttack: (who) => (state.btAnim = { who, kind: 'attack', t: 0 }),
@@ -1722,9 +1722,9 @@ function startBattle() {
   dialog.hide();
   document.body.classList.add('cinema');
   music.play('spannend');
-  // Puck tegenover de buizerd
-  const dir = V3(Math.sin(r.rotation.y), 0, Math.cos(r.rotation.y));
-  state.btPuck = V3(r.position.x + dir.x * 2.2, r.position.y, r.position.z + dir.z * 2.2);
+  // Puck tegenover de slechtvalk
+  // Op het dak, links van de valk (het dak is breed in x)
+  state.btPuck = V3(r.position.x - 2.6, r.position.y, r.position.z);
   state.btFoe = r.position.clone();
   body.teleport(state.btPuck, Math.atan2(r.position.x - state.btPuck.x, r.position.z - state.btPuck.z));
   battle.start();
@@ -1774,7 +1774,7 @@ function endBattle(won) {
   music.play(musicFor(area.name));
   if (won) {
     award('roofvogel');
-    // Bertus vliegt weg
+    // Sjors vliegt weg
     state.raptorAway = 0.01;
   } else {
     toast('Puck is even uitgeteld. Eet wat (snackbar!) en probeer het nog eens.', 4);
@@ -2212,7 +2212,7 @@ const minimap = new Minimap($('minimap'), {
 minimap.build(areas.buiten.group);
 minimap.pois = [
   { icon: '🛗', x: 0, z: -14.3 }, { icon: '🥖', x: -11.2, z: 5.55 }, { icon: '🛒', x: 19.3, z: 5 },
-  { icon: '🏢', x: 21.5, z: -24.5 }, { icon: '🎤', x: -5.5, z: 7.3 }, { icon: '🐦', x: 17, z: -8 },
+  { icon: '🏢', x: 21, z: -24 }, { icon: '🎤', x: -5.5, z: 7.3 }, { icon: '🐦', x: 17, z: -8 },
   { icon: '🚲', x: -5.4, z: 20.6 }, { icon: '📦', x: 24, z: -5 },
   { icon: '🍟', x: -14.4, z: -7 }, { icon: '🧢', x: -23, z: 0.25 },
 ];
@@ -2336,7 +2336,7 @@ function frame(timestamp) {
     audio.play('kassa', { volume: 0.5 });
     toast(`📢 ${lines[Math.floor(Math.random() * lines.length)]}`, 5.5);
   }
-  // Bertus vliegt weg na het verloren gevecht
+  // Sjors vliegt weg na het verloren gevecht
   if (state.raptorAway) {
     const r = areas.buiten.raptor;
     state.raptorAway += dt;

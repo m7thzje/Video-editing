@@ -126,7 +126,7 @@ export const NPC_LINES = {
   torenIdle: [
     'Dit gebouw heeft geen rechte hoek. Ik heb ze geteld. Nul. Mijn waterpas is in therapie.',
     'Ze noemen het het Apenrots-gebouw. Ik zeg niks. Ik ben maar conciërge.',
-    'Bertus woont op het dak. Huur betaalt hij nait. Wel elke dag een muis op de mat.',
+    'Sjors de slechtvalk broedt op het dak. Huur betaalt hij nait. Wel elke dag een duif op de mat.',
     'Ik dweil hier al twintig joar. Alles is rond. Ik dweil in rondjes.',
     'Gas is gevaarlijk. Daarom heb ik een helm. Hij is van karton, maar het gaat om het gebaar.',
   ],

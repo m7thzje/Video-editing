@@ -352,15 +352,52 @@ export function makeResidentialTower(h = 40) {
 }
 
 /**
- * Het Gasunie-gebouw (Groningen), in het klein: bruine baksteen, verdiepingen die organisch
- * om elkaar heen kronkelen met donkere raambanden ertussen, een koperen dakrand en een gasvlam.
- * Footprint ongeveer 9 x 9 m rond (0,0), dak op `height`.
+ * Het Gasunie-gebouw (Groningen), naar foto's: een brede, hoge schijf met zalmkleurige gevels vol ramen,
+ * blauwe glazen stroken aan beide uiteinden, een groene glazen "V" in het midden die onderaan uitwaaiert,
+ * schuine puntdaken en lage bakstenen vleugels met grijze daken aan de voet.
+ * Lokaal: breed langs x (-7..7), diep langs z (-3.5..3.5), voorkant +z. Plat dak op `height`.
  */
-export function makeGasunie({ floors = 7, fh = 1.6, brickMat, roofMat } = {}) {
+export function makeGasunie({ height = 22 } = {}) {
   const g = new THREE.Group();
-  const brick = brickMat || lambert(0x8a4e36);
-  const glass = Object.assign(lambert(0x23303a, { emissive: 0x16202a, emissiveIntensity: 0.4 }), { userData: { night: 'window' } });
-  const copper = lambert(0x5f8f7a);
+  const facadeTex = (() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#e2b493';
+    ctx.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 400; i++) {
+      ctx.fillStyle = `rgba(150,90,60,${Math.random() * 0.08})`;
+      ctx.fillRect(Math.random() * 256, Math.random() * 256, 3, 3);
+    }
+    // 4 verdiepingen x 4 ramen per tegel (tegel = 4 x 4 m)
+    for (let r = 0; r < 4; r++) {
+      for (let k = 0; k < 4; k++) {
+        const x = 12 + k * 64;
+        const y = 14 + r * 64;
+        ctx.fillStyle = '#2d6e7a';
+        ctx.fillRect(x, y, 34, 30);
+        ctx.fillStyle = 'rgba(190,240,250,0.35)';
+        ctx.fillRect(x + 2, y + 2, 14, 12);
+        ctx.fillStyle = '#c99a7a';
+        ctx.fillRect(x - 2, y + 30, 38, 4);
+      }
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    return t;
+  })();
+  const facade = (w, h) => {
+    const t = facadeTex.clone();
+    t.needsUpdate = true;
+    t.repeat.set(w / 4, h / 4);
+    return new THREE.MeshLambertMaterial({ map: t });
+  };
+  const plain = lambert(0xe2b493);
+  const blue = Object.assign(lambert(0x2f6fd0, { emissive: 0x123a7a, emissiveIntensity: 0.35 }), { userData: { night: 'window' } });
+  const green = new THREE.MeshLambertMaterial({ color: 0x1f6b5a, emissive: 0x0d3a30, emissiveIntensity: 0.4, transparent: true, opacity: 0.92 });
+  const brick = lambert(0xa8705a);
+  const grey = lambert(0x6b7377);
   const add = (geo, mat, x, y, z, ry = 0) => {
     const m = new THREE.Mesh(geo, mat);
     m.position.set(x, y, z);
@@ -370,30 +407,45 @@ export function makeGasunie({ floors = 7, fh = 1.6, brickMat, roofMat } = {}) {
     g.add(m);
     return m;
   };
-  for (let f = 0; f < floors; f++) {
-    const y = f * fh;
-    // Elke verdieping een iets andere, ronde vorm: een paar overlappende "lobben"
-    const sway = Math.sin(f * 1.3) * 0.35;
-    const lobes = [
-      [0 + sway, 0, 3.6],
-      [1.4, 1.3 - sway, 2.9],
-      [-1.5 - sway * 0.5, 1.1, 2.7],
-      [1.2, -1.5, 2.8 + sway * 0.3],
-      [-1.2 + sway, -1.4, 2.9],
-    ];
-    lobes.forEach(([x, z, r], i) => {
-      add(new THREE.CylinderGeometry(r, r * 0.97, fh * 0.62, 9 + (i % 3)), brick, x, y + fh * 0.31, z, f * 0.3 + i);
-      add(new THREE.CylinderGeometry(r - 0.12, r - 0.12, fh * 0.38, 9 + (i % 3)), glass, x, y + fh * 0.81, z, f * 0.3 + i);
-    });
-  }
-  const H = floors * fh;
-  // Dak met koperen rand
-  add(new THREE.CylinderGeometry(4.6, 4.6, 0.25, 14), roofMat || lambert(0x6f6a64), 0, H + 0.12, 0);
-  add(new THREE.TorusGeometry(4.6, 0.12, 5, 28), copper, 0, H + 0.26, 0).rotation.x = Math.PI / 2;
-  // Installaties op het dak
-  add(new THREE.BoxGeometry(1.4, 0.8, 1.0), lambert(0x9aa1a6), 2.4, H + 0.65, -2.6);
-  add(new THREE.CylinderGeometry(0.06, 0.06, 2.6, 6), M.metalDark, 1.8, H + 1.55, -1.6);
-  // Logo
+  const H = height;
+  // Twee torens die in het midden tegen elkaar staan
+  [[-1, H], [1, H]].forEach(([side, h]) => {
+    const w = 6.2;
+    const cx = side * (0.9 + w / 2);
+    add(new THREE.BoxGeometry(w, h, 7), [plain, plain, plain, plain, facade(w, h), facade(w, h)], cx, h / 2, 0);
+    // Zijgevels met ramen
+    const sideFace = new THREE.Mesh(new THREE.PlaneGeometry(7, h), facade(7, h));
+    sideFace.position.set(side * (0.9 + w) + side * 0.01, h / 2, 0);
+    sideFace.rotation.y = side * Math.PI / 2;
+    g.add(sideFace);
+    // Schuin puntdak bovenop
+    // (aan het uiteinde, zodat het platte dak in het midden vrij blijft)
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(2.2, side > 0 ? 4 : 3, 4, 1), plain);
+    roof.position.set(side * (0.9 + w - 1.0), h + (side > 0 ? 2 : 1.5), -1.0);
+    roof.rotation.y = Math.PI / 4;
+    roof.scale.set(0.9, 1, 1.4);
+    roof.castShadow = true;
+    g.add(roof);
+    // Blauwe glazen strook aan het uiteinde, iets uitstekend
+    add(new THREE.BoxGeometry(1.2, h + 1.5, 6.0), blue, side * (0.9 + w + 0.3), (h + 1.5) / 2, 0.3);
+    // Lage bakstenen vleugel met grijs dak aan de voet
+    add(new THREE.BoxGeometry(5.6, 3, 2.8), brick, side * 4.6, 1.5, 4.9);
+    const wr = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 2.0, 1.2, 4, 1), grey);
+    wr.position.set(side * 4.6, 3.6, 4.9);
+    wr.rotation.y = Math.PI / 4;
+    wr.scale.set(2.0, 1, 1.0);
+    g.add(wr);
+  });
+  // Middenstuk tussen de torens (achter de glazen V), zodat het dak één geheel is
+  add(new THREE.BoxGeometry(1.9, H, 6.8), plain, 0, H / 2, -0.1);
+  // Groene glazen "V" in het midden die onderaan uitwaaiert
+  add(new THREE.BoxGeometry(2.2, H - 2, 1.2), green, 0, (H - 2) / 2, 3.6);
+  const fan = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 3.4, 6, 4, 1), green);
+  fan.position.set(0, 3, 4.2);
+  fan.rotation.y = Math.PI / 4;
+  fan.scale.set(1, 1, 0.5);
+  g.add(fan);
+  // Logo hoog op de rechtertoren
   const c = document.createElement('canvas');
   c.width = 512;
   c.height = 128;
@@ -407,9 +459,12 @@ export function makeGasunie({ floors = 7, fh = 1.6, brickMat, roofMat } = {}) {
   ctx.fillText('Gasunie', 256, 68);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
-  const logo = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.8), new THREE.MeshBasicMaterial({ map: tex }));
-  logo.position.set(0, H - 0.9, 3.75);
+  const logo = new THREE.Mesh(new THREE.PlaneGeometry(4, 1), new THREE.MeshBasicMaterial({ map: tex }));
+  logo.position.set(4.0, H - 1.4, 3.52);
   g.add(logo);
+  // Installaties op het dak
+  add(new THREE.BoxGeometry(1.6, 0.9, 1.1), lambert(0x9aa1a6), 3.0, H + 0.45, -2.6);
+  add(new THREE.CylinderGeometry(0.06, 0.06, 3, 6), M.metalDark, -3.5, H + 1.5, -2.6);
   g.userData.height = H;
   return g;
 }

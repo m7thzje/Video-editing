@@ -31,7 +31,7 @@ met uitzicht over Stad en de gang met de zwarte voordeur.
 3. **Groningen op straatniveau:** de ingang van de Donderslaanflat (glazen hal, grijze plint, rij fietsen, coniferen,
    klinkerpad met paaltje, parkeerplaats), een plein met fontein en snackbar, de vijver, de merelboom, een gracht met
    brug, bootje en grachtenpanden, stadsvlaggen en de Martinitoren. Op de parkeerplaats staat Puck's eigen witte
-   Citroën DS3 met zwart dak (kenteken P-UCK-141). Verder: de Jumbo, het Gasunie-gebouw (met Bertus de buizerd op het dak) en het podium voor het concert.
+   Citroën DS3 met zwart dak (kenteken P-UCK-141). Verder: de Jumbo, het Gasunie-gebouw (met Sjors de slechtvalk op het dak) en het podium voor het concert.
 
 **De Jumbo** kun je in: pak een zak pistachenoten uit de aanbiedingsbak en reken af bij Kassière Anja (met een
 glimmend knoopje), of loop zonder betalen door de poortjes. Dan gaat het alarm af en ontploft Bedrijfsleider Gerrit:
@@ -75,7 +75,7 @@ Elke minigame levert een ⭐ op (10 in totaal):
 | 🚲 | **Fietsrace** | De brug, bij Studente Sjoukje | Ren door alle blauwe ringen en wees eerder terug dan Sjoukje op haar fiets. |
 | 📦 | **Dozen plat** | Achter de Jumbo, bij Jumbo-Bas | Spring op alle 15 dozen binnen 40 seconden. |
 | 🔥 | **Gasunie-klim** | Het Gasunie-gebouw bij de flat, bij Conciërge Wiebe | Klim naar het dak en tik de gasvlam aan binnen 40 seconden. |
-| ⚔️ | **Bertus de buizerd** | Op het dak van de Gasunie | Gevecht in Pokémon-stijl: kies uit Fluitstoot, Snavelpik, Watskebeurt?! (verwarring) en Pistache (genezen). Toetsen 1-4 of tikken. |
+| ⚔️ | **Sjors de slechtvalk** | Op het dak van de Gasunie | Gevecht in Pokémon-stijl: kies uit Fluitstoot, Snavelpik, Watskebeurt?! (verwarring) en Pistache (genezen). Toetsen 1-4 of tikken. |
 
 **Patat 🍟 en de Groningse eierbal** (bij de snackbar) geven 15 seconden **superkracht**: supersnel lopen en
 superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Ze komen na een tijdje terug.
@@ -192,7 +192,7 @@ gemaakt. **Muziek** staat in `public/assets/music/` (rechtenvrije loops, genorma
 | `rustig-thuis.mp3` | rustig | Puck's appartement |
 | `rustig-stad.mp3` | rustig | Stad en de galerij |
 | `sluipen.mp3` | spannend, mysterieus | het Pistachehuis (langs de buurvrouw sluipen) |
-| `spannend.mp3` | spannend | tijdens elke minigame: fietsrace, dozen, Gasunie-klim, duiven, stapstenen, en het gevecht met Bertus |
+| `spannend.mp3` | spannend | tijdens elke minigame: fietsrace, dozen, Gasunie-klim, duiven, stapstenen, en het gevecht met Sjors |
 | `vrolijk.mp3` | vrolijk | Bakkerij Haafs en het feest na het fluitconcert |
 
 De lift heeft een liftdeuntje dat in de browser wordt gemaakt. Ontbreekt een muziekbestand, dan valt het spel
@@ -232,8 +232,8 @@ src/
   world/groningen.js    Gasunie-gebouw, Martinitoren (in de verte), stadsvlag, fietsen, auto's, grachtenpanden, stadsgezicht
   songGame.js           merel-minigame (nazingen)
   concert.js            het fluitconcert: ritmespel met eigen begeleiding
-  battle.js             gevecht tegen Bertus de buizerd (Pokémon-stijl)
-  world/raptor.js       Bertus de buizerd (3D-model)
+  battle.js             gevecht tegen Sjors de slechtvalk (Pokémon-stijl)
+  world/raptor.js       Sjors de slechtvalk (3D-model)
   minigames.js          duiven, fietsrace, dozen plat, rondlopers (Mehmet)
   dialog.js             droge Groningse dialogen
   world/people.js       Groningers (gezichten, kleding, haar) en hun animaties

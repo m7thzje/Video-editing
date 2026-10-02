@@ -596,12 +596,12 @@ export class Outside extends Area {
     // Waterput
     const well = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.6, 10, 1, true), M.stone);
     well.material.side = THREE.DoubleSide;
-    well.position.set(13, 0.3, -20.5);
+    well.position.set(-12, 0.3, -14.5);
     this.group.add(well);
-    this.addCollider(12.4, 0, -21.1, 13.6, 0.6, -20.9, { climbable: true });
-    this.addCollider(12.4, 0, -20.1, 13.6, 0.6, -19.9, { climbable: true });
-    this.addCollider(12.4, 0, -21.1, 12.6, 0.6, -19.9, { climbable: true });
-    this.addCollider(13.4, 0, -21.1, 13.6, 0.6, -19.9, { climbable: true });
+    this.addCollider(-12.6, 0, -15.1, -11.4, 0.6, -14.9, { climbable: true });
+    this.addCollider(-12.6, 0, -14.1, -11.4, 0.6, -13.9, { climbable: true });
+    this.addCollider(-12.6, 0, -15.1, -12.4, 0.6, -13.9, { climbable: true });
+    this.addCollider(-11.6, 0, -15.1, -11.4, 0.6, -13.9, { climbable: true });
     // Hooibalen
     [[22, 18, 0.6], [22.9, 18, 0.6], [22.45, 18, 1.2]].forEach(([x, z, top]) =>
       this.block(x - 0.45, top - 0.6, z - 0.4, x + 0.45, top, z + 0.4, lambert(0xe3c16f), { climbable: true, name: 'hooibaal' }),
@@ -640,7 +640,7 @@ export class Outside extends Area {
       spots.push([Math.cos(a) * d * 1.1, Math.sin(a) * d * 1.1]);
     }
     spots.push([-24, -4], [-9, 18], [18, 18], [24, -14], [-11, -22]);
-    const blocked = ([x, z]) => z > 19 || (x > 18.5 && x < 30.5 && z > -9 && z < 12.5) || Math.hypot(x + 24, z - 15) < 5 || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - 21.5, z + 24.5) < 7.5 || (x > -30 && x < -22 && z > -3.5 && z < 4);
+    const blocked = ([x, z]) => z > 19 || (x > 18.5 && x < 30.5 && z > -9 && z < 12.5) || Math.hypot(x + 24, z - 15) < 5 || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - 21, z + 23) < 10 || (x > -30 && x < -22 && z > -3.5 && z < 4);
     for (let k = spots.length - 1; k >= 0; k--) if (blocked(spots[k])) spots.splice(k, 1);
     const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.2, 0.3, 2, 6), M.trunk, spots.length);
     const crown = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.5, 0), M.treeLeaf, spots.length);
@@ -690,7 +690,7 @@ export class Outside extends Area {
       do {
         x = (rnd() - 0.5) * 54;
         z = (rnd() - 0.5) * 54;
-      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 2 || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - 21.5, z + 24.5) < 7 || (x > -30 && x < -22 && z > -3.5 && z < 4) || Math.hypot(x - POND.x, z - POND.z) < POND.r + 1 || (Math.abs(x) < 9 && z < -15));
+      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 2 || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - 21, z + 23) < 9.5 || (x > -30 && x < -22 && z > -3.5 && z < 4) || Math.hypot(x - POND.x, z - POND.z) < POND.r + 1 || (Math.abs(x) < 9 && z < -15));
       const sc = 0.8 + rnd() * 0.5;
       m.makeRotationY(rnd() * 6.28).scale(new THREE.Vector3(sc, sc, sc)).setPosition(x, 0, z);
       stems.setMatrixAt(i, m);
@@ -781,7 +781,7 @@ export class Outside extends Area {
       do {
         x = (rnd() - 0.5) * 56;
         z = (rnd() - 0.5) * 56;
-      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 1.2 || Math.hypot(x, z) < 3.4 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.5 || (Math.abs(x) < 9 && z < -15) || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - 21.5, z + 24.5) < 7 || (x > -30 && x < -22 && z > -3.5 && z < 4));
+      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 1.2 || Math.hypot(x, z) < 3.4 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.5 || (Math.abs(x) < 9 && z < -15) || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - 21, z + 23) < 9.5 || (x > -30 && x < -22 && z > -3.5 && z < 4));
       const sc = 0.7 + rnd() * 0.8;
       m.compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6), new THREE.Vector3(sc, sc, sc));
       tufts.setMatrixAt(i, m);
@@ -921,42 +921,46 @@ export class Outside extends Area {
   }
 
   buildTower() {
-    // Het Gasunie-gebouw, vlak bij de flat. Klim naar het dak (daar woont Bertus de buizerd).
-    const tx = 21.5;
-    const tz = -24.5;
-    const gas = makeGasunie({ brickMat: worldTexture(lambert(0xffffff), 'stone-rough', 1.4, 0xb07a5e) });
+    // Het Gasunie-gebouw, groot en vlak bij de flat. Op het dak broedt een slechtvalk (echt waar).
+    const tx = 21;
+    const tz = -24;
+    const gas = makeGasunie({ height: 22 });
     gas.position.set(tx, 0, tz);
     this.group.add(gas);
     const H = gas.userData.height;
     this.gasunie = { x: tx, z: tz, h: H };
-    // Klimbaar in een kruisvorm die de ronde gevel volgt
-    this.addCollider(tx - 4.2, 0, tz - 2.8, tx + 4.2, H, tz + 2.8, { climbable: true, name: 'gasunie' });
-    this.addCollider(tx - 2.8, 0, tz - 4.2, tx + 2.8, H, tz + 4.2, { climbable: true, name: 'gasunie' });
-    this.addCollider(tx - 4.5, H - 0.05, tz - 4.5, tx + 4.5, H + 0.25, tz + 4.5, { oneWay: true, name: 'gasunie-dak' });
+    this.addCollider(tx - 7.4, 0, tz - 3.5, tx + 7.4, H, tz + 3.5, { climbable: true, name: 'gasunie' });
+    this.addCollider(tx - 1.1, 0, tz + 3.5, tx + 1.1, H - 2, tz + 4.2, { climbable: true, name: 'gasunie-glas' });
+    this.addCollider(tx - 7.4, 0, tz + 3.5, tx - 1.8, 3, tz + 6.3, { climbable: true, name: 'gasunie-vleugel' });
+    this.addCollider(tx + 1.8, 0, tz + 3.5, tx + 7.4, 3, tz + 6.3, { climbable: true, name: 'gasunie-vleugel' });
+    this.addCollider(tx - 5.6, H - 0.05, tz - 3.5, tx + 5.6, H + 0.05, tz + 3.5, { oneWay: true, name: 'gasunie-dak' });
+    // Puntdaken aan de uiteinden zijn massief
+    this.addCollider(tx - 7.4, H, tz - 3.5, tx - 5.6, H + 3, tz + 1.5, { name: 'gasunie-punt' });
+    this.addCollider(tx + 5.6, H, tz - 3.5, tx + 7.4, H + 4, tz + 1.5, { name: 'gasunie-punt' });
     // Gasvlam op de dakrand: het doel van de klim
-    const flamePos = new THREE.Vector3(tx, H + 0.25, tz + 3.4);
-    this.block(flamePos.x - 0.12, H + 0.25, flamePos.z - 0.12, flamePos.x + 0.12, H + 0.75, flamePos.z + 0.12, M.metalDark, { collide: false });
+    const flamePos = new THREE.Vector3(tx - 3, H, tz + 2.8);
+    this.block(flamePos.x - 0.12, H, flamePos.z - 0.12, flamePos.x + 0.12, H + 0.5, flamePos.z + 0.12, M.metalDark, { collide: false });
     const flame = new THREE.Group();
-    const fm = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 8), new THREE.MeshBasicMaterial({ color: 0x4aa8ff }));
-    const fi = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.3, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    fi.position.y = -0.06;
+    const fm = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.6, 8), new THREE.MeshBasicMaterial({ color: 0x4aa8ff }));
+    const fi = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.35, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    fi.position.y = -0.07;
     flame.add(fm, fi);
-    flame.position.set(flamePos.x, H + 1.0, flamePos.z);
+    flame.position.set(flamePos.x, H + 0.8, flamePos.z);
     flame.userData.dynamic = true;
     this.group.add(flame);
     this.fx.push({ update: (dt, t) => flame.scale.set(1, 0.85 + Math.sin(t * 17) * 0.15, 1) });
-    this.towerTop = { x: flamePos.x, y: H + 0.2, z: flamePos.z - 0.6 };
-    this.towerStart = { x: tx + 1.0, z: tz + 6.2 };
-    this.sign(['Gasunie-klim', 'Naar het dak binnen 40 s!'], tx - 2.6, 1.1, tz + 6.4, 0, { width: 1.4, height: 0.45 });
-    this.block(tx - 2.63, 0, tz + 6.38, tx - 2.57, 0.9, tz + 6.42, M.woodDark, { collide: false });
-    // Bertus de buizerd op het dak
+    this.towerTop = { x: flamePos.x, y: H, z: flamePos.z - 0.6 };
+    this.towerStart = { x: tx + 1.5, z: tz + 8.5 };
+    this.sign(['Gasunie-klim', 'Naar het dak binnen 60 s!'], tx - 3, 1.1, tz + 8.6, 0, { width: 1.4, height: 0.45 });
+    this.block(tx - 3.03, 0, tz + 8.58, tx - 2.97, 0.9, tz + 8.62, M.woodDark, { collide: false });
+    // Sjors de slechtvalk op het dak
     this.raptor = makeRaptor();
-    this.raptor.position.set(tx - 1.2, H + 0.25, tz - 0.6);
-    this.raptor.rotation.y = 0.6;
-    this.raptor.scale.setScalar(1.35);
+    this.raptor.position.set(tx + 1.8, H, tz - 0.5);
+    this.raptor.rotation.y = -Math.PI / 2;
+    this.raptor.scale.setScalar(1.25);
     this.group.add(this.raptor);
     this.fx.push({ update: (dt, t) => this.raptor.userData.idle(t) });
-    this.zones.push({ id: 'roofvogel', x: tx - 1.2, y: H, z: tz - 0.6, r: 2.6, h: 2, prompt: 'Daag Bertus de buizerd uit ⚔️' });
+    this.zones.push({ id: 'roofvogel', x: tx + 1.8, y: H, z: tz - 0.5, r: 2.6, h: 2, prompt: 'Daag Sjors de slechtvalk uit ⚔️' });
   }
 
   buildShops() {
