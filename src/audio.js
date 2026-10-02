@@ -416,6 +416,20 @@ const PLACEHOLDERS = {
     // Knetters
     for (let i = 0; i < 6; i++) tone(ctx, out, { type: 'square', from: 2500 + Math.random() * 2000, start: 0.3 + Math.random() * 0.5, dur: 0.02, vol: 0.05 * v });
   },
+  // Geluiden die Puck nadoet
+  ding(ctx, out, v) {
+    tone(ctx, out, { type: 'sine', from: 1319, dur: 0.6, vol: 0.25 * v });
+    tone(ctx, out, { type: 'sine', from: 1047, start: 0.35, dur: 0.8, vol: 0.25 * v });
+  },
+  magnetron(ctx, out, v) {
+    [0, 0.35, 0.7].forEach((st) => tone(ctx, out, { type: 'square', from: 2100, start: st, dur: 0.22, vol: 0.06 * v }));
+  },
+  ringtone(ctx, out, v) {
+    [1319, 1175, 740, 831, 1109, 988, 587, 659].forEach((f, i) => tone(ctx, out, { type: 'square', from: f, start: i * 0.13, dur: 0.12, vol: 0.05 * v }));
+  },
+  scan(ctx, out, v) {
+    tone(ctx, out, { type: 'sine', from: 2350, dur: 0.12, vol: 0.18 * v });
+  },
   tick(ctx, out, v) {
     tone(ctx, out, { type: 'square', from: 660, dur: 0.12, vol: 0.12 * v });
   },

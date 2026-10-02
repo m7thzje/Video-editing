@@ -64,6 +64,8 @@ export class Outside extends Area {
     this.buildPeople();
     this.buildStage();
     this.buildShops();
+    this.buildPost();
+    this.buildMarket();
     this.addLights({ sunPos: new THREE.Vector3(-18, 30, 14), center: new THREE.Vector3(0, 0, 0), size: 31, sun: 2.4, hemi: 1.5 });
   }
 
@@ -961,6 +963,95 @@ export class Outside extends Area {
     this.group.add(this.raptor);
     this.fx.push({ update: (dt, t) => this.raptor.userData.idle(t) });
     this.zones.push({ id: 'roofvogel', x: tx + 1.8, y: H, z: tz - 0.5, r: 2.6, h: 2, prompt: 'Daag Sjors de slechtvalk uit ⚔️' });
+  }
+
+  buildPost() {
+    // Postbode Harm heeft vijf pakketjes laten vallen. Ze verschijnen pas als je de opdracht hebt.
+    const recipients = [
+      ['bas', 'Jumbo-Bas', 8.5, -3],
+      ['oma', 'Oma Moi', -3, 16],
+      ['tineke', 'Buurvrouw Tineke', 24, 14],
+      ['toren', 'Conciërge Wiebe', -18, -18],
+      ['zuur', 'Mw. Zuur (nr. 143)', 12.5, -15.5],
+    ];
+    this.parcels = recipients.map(([to, name, x, z]) => {
+      const g = new THREE.Group();
+      const box = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.24), M.cardboard);
+      box.position.y = 0.1;
+      const tape = new THREE.Mesh(new THREE.BoxGeometry(0.31, 0.01, 0.06), M.tape);
+      tape.position.y = 0.205;
+      const label = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.005), M.white);
+      label.position.set(0.04, 0.1, 0.122);
+      g.add(box, tape, label);
+      g.traverse((o) => (o.castShadow = true));
+      const c = this.addCollectible('pakket', g, x, 0, z, { to, name, glow: 0xffd27a, glowSize: 0.5 });
+      c.found = true;
+      c.group.visible = false;
+      return c;
+    });
+  }
+
+  /** Laat de pakketjes zien die nog niet gevonden of bezorgd zijn. */
+  showParcels(done) {
+    this.parcels.forEach((c) => {
+      const hide = done.includes(c.to);
+      c.found = hide;
+      c.group.visible = !hide;
+    });
+  }
+
+  buildMarket() {
+    // Vrijmarkt: kinderen verkopen spulletjes op kleedjes. Betalen met knoopjes.
+    const orange = lambert(0xff7a1a);
+    const kleed = [lambert(0xd7263d), lambert(0x3d7ea6), lambert(0xf2c230)];
+    this.marketItems = [];
+    const stalls = [
+      { kid: 'lotte', name: 'Lotte (8)', x: 2.8, z: -12.8, look: { height: 1.15, shirt: 0xff7a1a, hairStyle: 'ponytail', hair: 0xe8cf8a, mood: 'smile' },
+        items: [{ id: 'oranjehoed', name: 'Oranje hoedje', price: 3, color: 0xff7a1a }, { id: 'tompoes', name: 'Tompoes', price: 1, color: 0xf7a7c0 }] },
+      { kid: 'daan', name: 'Daan (10)', x: 5.2, z: -12.8, look: { height: 1.25, shirt: 0x3d7ea6, hair: 0x6b4423, mood: 'flat' },
+        items: [{ id: 'gameboy', name: 'Gameboy (zonder batterijen)', price: 2, color: 0x9aa1a6 }, { id: 'fluitje', name: 'Plastic fluitje', price: 2, color: 0x6ac46b }] },
+      { kid: 'stef', name: 'Stef (9)', x: 3.9, z: -10.2, look: { height: 1.2, shirt: 0xf2c230, hairStyle: 'bob', hair: 0x2b2220, mood: 'smile' },
+        items: [{ id: 'limonade', name: 'Limonade', price: 1, color: 0xffd84a }, { id: 'tekening', name: 'Tekening van een papegaai', price: 4, color: 0xffffff }] },
+    ];
+    stalls.forEach((st, si) => {
+      const blanket = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.02, 1.2), kleed[si]);
+      blanket.position.set(st.x, 0.01, st.z);
+      this.group.add(blanket);
+      this.addNPC(st.kid, st.name, st.x, st.z - 0.85, 0, st.look, { r: 0.1 });
+      st.items.forEach((it, k) => {
+        const x = st.x - 0.45 + k * 0.9;
+        const z = st.z + 0.15;
+        const m = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.12, 0.18), lambert(it.color));
+        m.position.set(x, 0.08, z);
+        m.castShadow = true;
+        this.group.add(m);
+        const tag = makeSign([it.name, `${it.price} 🔘`], { width: 0.6, height: 0.24, bg: '#fff6e6', fg: '#3b2a1e' });
+        tag.position.set(x, 0.35, z + 0.2);
+        tag.rotation.x = -0.4;
+        this.group.add(tag);
+        this.zones.push({ id: 'koop', item: it, seller: st, x, y: 0, z: z + 0.45, r: 0.4, h: 1, prompt: `Koop: ${it.name} (${it.price} 🔘)` });
+      });
+    });
+    bunting(this.group, new THREE.Vector3(1.8, 2.0, -14), new THREE.Vector3(6.4, 2.0, -14), 14, 0.25);
+    [1.8, 6.4].forEach((x) => this.block(x - 0.04, 0, -14.04, x + 0.04, 2.05, -13.96, M.woodDark, { collide: false }));
+    const sign = makeSign(['VRIJMARKT', 'Betalen met knoopjes 🔘'], { width: 1.8, height: 0.5, bg: '#ff7a1a', fg: '#ffffff', border: '#ffffff' });
+    sign.position.set(4.1, 2.25, -14);
+    this.group.add(sign);
+    // Knoopjes verspreid door Stad (komen na een tijdje terug)
+    const spots = [[-2, -8], [7, 2], [-10, -2], [12, -9], [-6, 18], [15, 20], [-15, 12], [9, 15], [-20, -6], [2, 12], [17, -2], [-12, -18]];
+    spots.forEach(([x, z], i) => {
+      const b = new THREE.Group();
+      const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.025, 14), lambert([0xd7263d, 0x3d7ea6, 0xf2c230, 0x6ac46b][i % 4]));
+      disc.position.y = 0.0125;
+      b.add(disc);
+      [[-0.02, -0.02], [0.02, -0.02], [-0.02, 0.02], [0.02, 0.02]].forEach(([hx, hz]) => {
+        const h = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.03, 6), lambert(0x222222));
+        h.position.set(hx, 0.014, hz);
+        b.add(h);
+      });
+      b.scale.setScalar(1.6);
+      this.addCollectible('knoop', b, x, 0, z, { respawn: true, glow: 0xfff1a8, glowSize: 0.35 });
+    });
   }
 
   buildShops() {

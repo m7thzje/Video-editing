@@ -46,6 +46,13 @@ omroepbericht.
 als je wilt. Er staat ook een gokkast. **Kringloop Van Alles Wat** (helemaal in het westen): pas hoedjes (pet, zonnebril,
 koksmuts, feesthoedje, kaboutermuts, kroon bij 10 sterren) die je met sterren vrijspeelt, en bekijk je bekers in de prijzenkast.
 
+**Vrijmarkt** (bij de flat): kinderen verkopen spulletjes op kleedjes. Betalen doe je met **knoopjes** 🔘 die overal
+in Stad liggen (ze komen terug). Te koop: een oranje hoedje, tompoes, Gameboy zonder batterijen, plastic fluitje,
+limonade en een tekening van Puck.
+
+**Puck doet geluiden na**, net als een echte grijze roodstaart: de magnetron thuis, de telefoon van Tineke, de
+scanner bij de Jumbo-kassa en het belletje van de lift. De buren worden er gek van.
+
 **Minikaart** (buiten, linksonder): draait mee met de camera, met iconen, mensen en een rode stip voor het doel.
 
 **Cheatcode:** typ `watskebeurt` tijdens het spelen, of tik 7x snel op de sterren linksboven: alle sterren,
@@ -62,7 +69,7 @@ duif Henk), Buurman Klaas, Oma Moi, Jumbo-Bas en Eline van de Jumbo, Buurvrouw T
 auto's), Conciërge Wiebe van de Gasunie, Meneer Mehmet met zijn oranje kat Pasja (zegt alleen "Hoi.", en ruikt een beetje) en
 Buurman Ben in de lift, Kassière Anja en Bedrijfsleider Gerrit in de Jumbo.
 
-Elke minigame levert een ⭐ op (10 in totaal):
+Elke minigame levert een ⭐ op (11 in totaal):
 
 | ⭐ | Minigame | Waar | Doel |
 |---|---|---|---|
@@ -74,8 +81,9 @@ Elke minigame levert een ⭐ op (10 in totaal):
 | 🕊️ | **Duiven wegjagen** | Het plein, bij Duivenman Jan | Jaag alle duiven weg binnen de tijd. |
 | 🚲 | **Fietsrace** | De brug, bij Studente Sjoukje | Ren door alle blauwe ringen en wees eerder terug dan Sjoukje op haar fiets. |
 | 📦 | **Dozen plat** | Achter de Jumbo, bij Jumbo-Bas | Spring op alle 15 dozen binnen 40 seconden. |
-| 🔥 | **Gasunie-klim** | Het Gasunie-gebouw bij de flat, bij Conciërge Wiebe | Klim naar het dak en tik de gasvlam aan binnen 40 seconden. |
-| ⚔️ | **Sjors de slechtvalk** | Op het dak van de Gasunie | Gevecht in Pokémon-stijl: kies uit Fluitstoot, Snavelpik, Watskebeurt?! (verwarring) en Pistache (genezen). Toetsen 1-4 of tikken. |
+| 🔥 | **Gasunie-klim** | Het Gasunie-gebouw bij de flat, bij Conciërge Wiebe | Klim naar het dak (22 m) en tik de gasvlam aan binnen 60 seconden. |
+| 📮 | **Pakketjes van Harm** | Overal in Stad, start bij Postbode Harm | Harm verloor 5 pakketjes. Zoek ze en geef ze aan de juiste persoon (Jumbo-Bas, Oma Moi, Tineke, Conciërge Wiebe en nr. 143). |
+| ⚔️ | **Sjors de slechtvalk** | Op het dak van de Gasunie (er broeden echt slechtvalken) | Gevecht in Pokémon-stijl: kies uit Fluitstoot, Snavelpik, Watskebeurt?! (verwarring) en Pistache (genezen). Toetsen 1-4 of tikken. |
 
 **Patat 🍟 en de Groningse eierbal** (bij de snackbar) geven 15 seconden **superkracht**: supersnel lopen en
 superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Ze komen na een tijdje terug.
@@ -83,7 +91,7 @@ superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Ze komen na een tij
 Alles wat je vrijspeelt krijgt een duidelijk effect: een grote pop-up met stralen, confetti, een schokgolf en een flits
 (sterren krijgen een eigen ⭐ STER!-banner). Gevonden ingrediënten staan in de inventaris linksboven.
 
-Met alle 10 sterren krijgt Puck een **kroon** 👑 en kan het fluitconcert beginnen. Je voortgang (sterren, geheimpjes, items, beste tijd) wordt in de
+Met alle 11 sterren krijgt Puck een **kroon** 👑 en kan het fluitconcert beginnen. Je voortgang (sterren, geheimpjes, items, beste tijd) wordt in de
 browser bewaard; via het menu (☰) kun je opnieuw beginnen.
 
 ### De buurvrouw 👓

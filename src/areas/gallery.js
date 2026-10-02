@@ -146,6 +146,7 @@ export class Gallery extends Area {
     };
     mat(GALLERY_DOORS.puck, 'Moi!');
     mat(GALLERY_DOORS.buurvrouw, 'WEG!');
+    this.zones.push({ id: 'bezorg143', x: GALLERY_DOORS.buurvrouw + 0.45, y: 0, z: 0.75, r: 0.55, h: 1.2, prompt: 'Klop aan bij nr. 143 🚪' });
     this.zones.push({ x: GALLERY_DOORS.buurvrouw + 0.45, y: 0, z: 0.35, r: 0.35, h: 0.5, secret: 'deurmat', say: 'WEG? Watskebeurt? Mag ik een koekje?' });
 
     // Lift aan het eind: stalen deuren met knopje en verdiepingsbordje

@@ -1349,3 +1349,9 @@ body.cinema #speech {
 
 #battle .bt-moves button small { display: block; font-size: 12px; opacity: 0.75; }
 #battle .bt-moves button:disabled { opacity: 0.4; }
+
+#knopen {
+  left: calc(136px + env(safe-area-inset-left));
+  font-size: 17px;
+  padding: 6px 12px;
+}

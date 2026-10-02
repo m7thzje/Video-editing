@@ -221,6 +221,7 @@ const STARS = [
   { id: 'rondje', icon: '🚲', name: 'Fietsrace', desc: 'Race tegen Studente Sjoukje op de fiets door alle ringen' },
   { id: 'dozen', icon: '📦', name: 'Dozen plat', desc: 'Maak voor Jumbo-Bas alle dozen plat binnen 40 s' },
   { id: 'toren', icon: '🔥', name: 'Gasunie-klim', desc: 'Klim het Gasunie-gebouw op en tik de gasvlam aan binnen 40 s' },
+  { id: 'post', icon: '📮', name: 'Pakketjes van Harm', desc: 'Bezorg de 5 pakketjes die Postbode Harm heeft laten vallen' },
   { id: 'roofvogel', icon: '⚔️', name: 'Sjors de slechtvalk', desc: 'Versla de roofvogel op het dak van de Gasunie in een gevecht' },
 ];
 const SECRETS = {
@@ -253,6 +254,11 @@ const SECRETS = {
   winkeldief: 'Winkeldief!',
   gokkast: 'Jackpot! (niet echt)',
   hoedje: 'Nieuw hoedje gepast',
+  imitatie: 'Puck doet geluiden na',
+  oranjehoed: 'Oranje hoedje van de vrijmarkt',
+  gameboy: 'Gameboy zonder batterijen',
+  fluitje: 'Het plastic fluitje',
+  tekening: 'Een tekening van Puck (of een duif)',
   frank: 'Frank van karton',
   wcpapier: 'Koning van het wc-papier',
   'natte-vloer': 'Uitglijden op de natte vloer',
@@ -292,6 +298,11 @@ const SECRET_JOKES = {
   'natte-vloer': 'Er staat een geel bordje "Pas op, natte vloer". Puck loopt er natuurlijk gewoon doorheen en glijdt uit. Bordjes lezen kan hij niet.',
   statiegeld: 'De statiegeldautomaat is buiten gebruik. Dat is hij altijd. In elke supermarkt. Overal. Al jaren.',
   gokkast: 'Puck speelt op de gokkast in de snackbar. Alle lampjes gaan af, er komt muziek uit… en dan valt er één muntje uit. Van vijf cent.',
+  imitatie: 'Echte grijze roodstaarten doen geluiden na: de magnetron, de telefoon, de lift. Puck dus ook. Buren worden er gek van.',
+  oranjehoed: 'Op de vrijmarkt koopt Puck een oranje hoedje voor drie knoopjes. Knoopjes zijn hier gewoon geld. Vraag maar aan Anja van de Jumbo.',
+  gameboy: 'Een Gameboy zonder batterijen voor twee knoopjes. Puck speelt er toch op. Hij wint ook nog.',
+  fluitje: 'Puck koopt een plastic fluitje. Hij fluit zelf veel mooier. Het fluitje weet dat.',
+  tekening: 'Een tekening van Puck door Stef (9). Het lijkt op een duif. Of een wolk. Puck hangt hem op.',
   hoedje: 'In de kringloop past Puck hoedjes. Hij ziet er in alles goed uit. Vindt hij zelf.',
   winkeldief: 'Puck loopt zonder betalen door de poortjes. Alarm! Bedrijfsleider Gerrit ontploft bijna. Stelen is niet netjes. Maar zijn hoofd…',
 };
@@ -309,6 +320,12 @@ function loadProgress() {
 let progress = loadProgress();
 progress.items = progress.items || {};
 progress.found = progress.found || {};
+progress.post = progress.post || { started: false, carry: [], done: [] };
+progress.knopen = progress.knopen || 0;
+progress.bought = progress.bought || {};
+if (progress.post.started) areas.buiten.showParcels([...progress.post.done, ...progress.post.carry]);
+// De kroon kost altijd alle sterren
+HATS.find((h) => h.id === 'kroon').need = STARS.length;
 // Al gevonden veren en pistachenootjes blijven weg
 [['pistachehuis', 'pistache'], ['buiten', 'veer']].forEach(([an, type]) => {
   const list = areas[an].collectibles;
@@ -385,6 +402,105 @@ function setCounter(key, html) {
 
 function updateStarHud() {
   $('star-count').textContent = STARS.filter((s) => progress.stars[s.id]).length;
+  updateKnopen();
+}
+
+function updateKnopen() {
+  const el = $('knopen');
+  el.querySelector('span').textContent = progress.knopen;
+  el.classList.toggle('hidden', !progress.knopen && !progress.bought.any);
+}
+
+// ---------- Pakketjes van Harm ----------
+const DELIVER_LINES = {
+  bas: ['Jumbo-Bas', 'Een pakketje voor mij? Een doos. Wat zit erin? … Nog een doos. Prachtig. Die maak ik straks plat.'],
+  oma: ['Oma Moi', 'Mijn nieuwe deegroller! De oude was op. Hoe een deegroller op kan raken? Vraag dat maar aan mijn kleinzoon.'],
+  tineke: ['Buurvrouw Tineke', 'Eindelijk. Een bordje: "NIET SCHEEF PARKEREN". Zelf besteld. Het is voor de witte auto. Je weet wel welke.'],
+  toren: ['Conciërge Wiebe', 'Een nieuwe helm. Van echt plastic deze keer. Ik ben er stil van. Sjors ook, denk ik.'],
+  zuur: ['Mw. Zuur (nr. 143)', '(door de deur heen) Leg maar neer. … Neer, zei ik. … Hmpf. Dank je. … WEG.'],
+};
+function deliver(id) {
+  const P = progress.post;
+  if (!P.carry.includes(id)) return false;
+  P.carry = P.carry.filter((x) => x !== id);
+  P.done.push(id);
+  saveProgress();
+  const [who, line] = DELIVER_LINES[id];
+  dialog.show(who, line, 5);
+  audio.play('checkpoint');
+  confettiBurst(tmpV.set(body.pos.x, body.pos.y + 0.4, body.pos.z), 25);
+  if (P.done.length >= 5) {
+    setTimeout(() => {
+      dialog.show('Postbode Harm', 'Alle vijf bezorgd? Door een papegaai? Ik ga met pensioen. Morgen. Of overmorgen.', 5);
+      award('post');
+    }, 5200);
+  } else toast(`📮 Bezorgd! Nog ${5 - P.done.length} te gaan.`, 2.5);
+  return true;
+}
+
+// ---------- Vrijmarkt ----------
+const KID_LINES = {
+  oranjehoed: 'Hij staat je goed. Ik zeg dat tegen iedereen, maar bij jou meen ik het.',
+  tompoes: 'Eerst het roze eraf likken. Dat is de regel. Van mij.',
+  gameboy: 'Batterijen zitten er nait in. Die heeft mijn broer. Mijn broer zit er ook nait in.',
+  fluitje: 'Mijn moeder zei: verkoop dat fluitje. Nu. Alsjeblieft. Ik smeek het je.',
+  limonade: 'Zelfgemaakt. Water met suiker. En een citroen die ik heb gezien.',
+  tekening: 'Dat ben jij! Of een duif. Of een wolk. Je mag zelf kiezen.',
+};
+function buy(z) {
+  const it = z.item;
+  const unique = !['tompoes', 'limonade'].includes(it.id);
+  const kid = areas.buiten.npcs.find((n) => n.id === z.seller.kid);
+  kid?.person.talk(3);
+  if (unique && progress.bought[it.id]) return dialog.show(z.seller.name, 'Die heb je al. Ik heb er maar één. Ik ben acht.', 3);
+  if (progress.knopen < it.price) return dialog.show(z.seller.name, `Dat is ${it.price} knoopjes. Jij hebt er ${progress.knopen}. Zoek er nog wat, ze liggen overal in Stad.`, 4);
+  progress.knopen -= it.price;
+  progress.bought[it.id] = true;
+  progress.bought.any = true;
+  saveProgress();
+  updateKnopen();
+  audio.play('kassa', { volume: 0.6 });
+  dialog.show(z.seller.name, KID_LINES[it.id], 4);
+  if (it.id === 'oranjehoed') {
+    progress.hatPick = 'oranjehoed';
+    saveProgress();
+    applyHat();
+    secret('oranjehoed');
+  } else if (it.id === 'tompoes' || it.id === 'limonade') {
+    eat(it.color);
+    state.powerTime = 15;
+  } else secret(it.id);
+}
+
+// ---------- Puck doet geluiden na ----------
+function imitate(sound, text, after) {
+  setTimeout(() => {
+    if (state.mode !== 'play') return;
+    audio.play(sound, { volume: 0.9 });
+    say(text, { sound: null, seconds: 2 });
+    puck.cheer(0.8);
+    secret('imitatie');
+    if (after) setTimeout(after, 1500);
+  }, 1100);
+}
+function updateImitation(dt) {
+  state.imTimer = (state.imTimer ?? 15) - dt;
+  if (state.imTimer > 0 || state.mode !== 'play' || state.frozen) return;
+  state.imTimer = 22 + Math.random() * 15;
+  if (area === areas.puckhuis) {
+    const m = areas.puckhuis.microwave;
+    audio.play('magnetron', { volume: 0.7 });
+    if (body.pos.distanceTo(m) < 7) imitate('magnetron', 'Piep! Piep! Piep! ♪');
+  } else if (area === areas.buiten) {
+    const t = areas.buiten.npcs.find((n) => n.id === 'tineke');
+    const d = Math.hypot(body.pos.x - t.x, body.pos.z - t.z);
+    if (d > 9) return;
+    audio.play('ringtone', { volume: 0.8 });
+    imitate('ringtone', 'Tuut-tuu-tuut-tuuut! ♪', () => dialog.show('Buurvrouw Tineke', 'Hallo? … Hallo?? … Er is niemand. … Weer die papegaai. Ik bel de gemeente.', 4));
+  } else if (area === areas.jumbo) {
+    audio.play('scan', { volume: 0.7 });
+    if (Math.hypot(body.pos.x - 2.5, body.pos.z - 2.5) < 4.5) imitate('scan', 'Piep! ♪', () => dialog.show('Kassière Anja', 'Wie scant er hier? Ik heb niks gescand. … O. Jij.', 3.5));
+  }
 }
 
 function applyHat() {
@@ -1001,6 +1117,22 @@ function rememberFound(c) {
 function onCollect(c) {
   if (c.type === 'pistache' || c.type === 'veer') rememberFound(c);
   switch (c.type) {
+    case 'pakket': {
+      progress.post.carry.push(c.to);
+      saveProgress();
+      audio.play('box');
+      say(`Een pakketje voor ${c.name}!`, { sound: 'chirp' });
+      toast(`📮 Pakketje voor ${c.name}. Breng het naar diegene toe.`, 3.5);
+      break;
+    }
+    case 'knoop': {
+      progress.knopen++;
+      saveProgress();
+      updateKnopen();
+      audio.play('nut', { volume: 0.6 });
+      if (progress.knopen === 1) toast('🔘 Een knoopje! Daarmee kun je betalen op de vrijmarkt (bij de flat).', 4);
+      break;
+    }
     case 'pistache': {
       audio.play('nut');
       eat(0x9cc75a);
@@ -1203,13 +1335,21 @@ function interact() {
     if (lift.ride((floor) => {
       audio.play('checkpoint');
       toast(floor === 0 ? '🛗 Ding! Begane grond. Welkom in Stad!' : '🛗 Ding! 9e verdieping', 2.5);
+      audio.play('ding');
+      imitate('ding', 'Ding! ♪', () => dialog.show('Buurman Ben', 'Was dat de lift of was dat jij? … OP WELK NUMMER WOON JIJ?', 3.5));
     })) {
       audio.play('door');
       toast(lift.floor === 9 ? '🛗 Naar beneden…' : '🛗 Naar boven…', 2);
     }
     return;
   }
+  if (z.id === 'koop') return buy(z);
+  if (z.id === 'bezorg143') {
+    if (!deliver('zuur')) dialog.show('Mw. Zuur (nr. 143)', '(door de deur heen) Ik doe nait open. Voor niemand. Zeker nait voor papegaaien.', 3.5);
+    return;
+  }
   if (z.id === 'oma') {
+    if (deliver('oma')) return;
     followCam.yaw = 0; // kijk naar oma achter de toonbank
     followCam.pitch = 0.55;
     talkToOma();
@@ -1405,6 +1545,19 @@ function talkTo(npc) {
   // Kort stukje "game-gebrabbel" bij elk bericht van een NPC, iets hoger of lager per persoon
   const pitch = 0.85 + ((npc.id.charCodeAt(0) * 7 + npc.id.length * 13) % 30) / 100;
   audio.playSlice('npc-praat', 0.55 + Math.random() * 0.35, { volume: 0.3, rate: pitch });
+  if (deliver(npc.id)) return;
+  if (npc.id === 'harm' && !progress.stars.post) {
+    const P = progress.post;
+    if (!P.started) {
+      P.started = true;
+      saveProgress();
+      areas.buiten.showParcels([]);
+      dialog.show(npc.name, 'Moi. Ik ben vijf pakketjes kwijt. Ergens in Stad. Gat in mijn tas. Al sinds 1998. Breng jij ze even rond? Ik ga zitten.', 6);
+      setTimeout(() => startChallenge({ icon: '📮', title: 'PAKKETJES VAN HARM', goal: 'Zoek 5 pakketjes en bezorg ze bij de juiste persoon', tip: 'Op elk pakketje staat voor wie het is. Praat met diegene om het af te geven.', countdown: false, active: () => !progress.stars.post && progress.post.started }), 2500);
+      return;
+    }
+    return dialog.show(npc.name, `Nog ${5 - P.done.length} te gaan. Ik zit hier prima. Mijn knieën ook.`, 3);
+  }
   const o = areas.buiten;
   if (npc.id === 'frank') {
     if (dialog.index.frank === 1) secret('frank');
@@ -1539,6 +1692,19 @@ function currentObjective() {
   if (!S.rondje) list.push({ area: 'buiten', pos: V3(-5.4, 0, 20.6), text: 'Fietsrace: praat met Studente Sjoukje bij de brug' });
   if (!S.dozen) list.push({ area: 'buiten', pos: V3(20.5, 0, -2.5), text: 'Dozen plat: praat met Jumbo-Bas achter de Jumbo' });
   if (!S.toren) list.push({ area: 'buiten', pos: V3(areas.buiten.towerStart.x, 0, areas.buiten.towerStart.z), text: 'Gasunie-klim: praat met Conciërge Wiebe' });
+  if (progress.post.started && !S.post) {
+    const P = progress.post;
+    if (P.carry.length) {
+      const id = P.carry[0];
+      const npc = areas.buiten.npcs.find((n) => n.id === id);
+      if (id === 'oma') list.push({ area: 'bakkerij', pos: V3(0, 0, -1), text: 'Breng het pakketje naar Oma Moi' });
+      else if (id === 'zuur') list.push({ area: 'galerij', pos: V3(7.95, 0, 0.4), text: 'Bezorg het pakketje bij nr. 143' });
+      else if (npc) list.push({ area: 'buiten', pos: V3(npc.x, 0, npc.z), text: `Breng het pakketje naar ${npc.name}` });
+    } else {
+      const c = areas.buiten.parcels.find((p) => !p.found);
+      if (c) list.unshift({ area: 'buiten', pos: c.group.position.clone().setY(0), text: 'Zoek de pakketjes van Postbode Harm' });
+    }
+  }
   if (!S.roofvogel) list.push({ area: 'buiten', pos: V3(areas.buiten.towerTop.x, 0, areas.buiten.towerTop.z), text: 'Klim op de Gasunie en daag Sjors de slechtvalk uit' });
   if (!S.koek) {
     const missing = b.collectibles.filter((c) => c.type === 'ingredient' && !c.found);
@@ -2038,6 +2204,7 @@ function update(dt) {
   }
   if (input.consumeInteract()) interact();
   updateChallenge();
+  updateImitation(dt);
   updateMinimap(dt);
   if (state.concert) {
     concert.update();

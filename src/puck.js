@@ -283,7 +283,12 @@ export class Puck {
     const party = new THREE.Group();
     add(party, new THREE.ConeGeometry(0.04, 0.12, 12), mat(0xe86fb4), [0.02, 0.12, 0], null, [0, 0, -0.2]);
     add(party, new THREE.SphereGeometry(0.014, 8, 6), mat(0xffd84a), [0.033, 0.18, 0]);
-    this.hats = { kabouter: gnome, kroon: crown, pet, zonnebril: shades, koksmuts: chef, feesthoed: party };
+    // Oranje hoedje van de vrijmarkt (hoge hoed)
+    const oranje = new THREE.Group();
+    add(oranje, new THREE.CylinderGeometry(0.075, 0.075, 0.012, 14), mat(0xff7a1a), [0, 0.07, 0]);
+    add(oranje, new THREE.CylinderGeometry(0.045, 0.05, 0.08, 14), mat(0xff7a1a), [0, 0.115, 0]);
+    add(oranje, new THREE.CylinderGeometry(0.051, 0.051, 0.015, 14), mat(0xffffff), [0, 0.085, 0]);
+    this.hats = { kabouter: gnome, kroon: crown, pet, zonnebril: shades, koksmuts: chef, feesthoed: party, oranjehoed: oranje };
     Object.values(this.hats).forEach((h) => {
       h.visible = false;
       this.head.add(h);

@@ -511,6 +511,11 @@ export class PuckHouse extends Area {
     [[3.05, 0.28], [3.3, 0.22]].forEach(([x, hh]) => {
       this.block(x - 0.012, h, 3.23, x + 0.012, h + hh, 3.26, M.white, { collide: false });
     });
+    // Magnetron op het dressoir: piept af en toe (en Puck doet hem na)
+    this.block(2.12, h, 3.08, 2.58, h + 0.27, 3.45, lambert(0xe9e9e6), { collide: false });
+    this.block(2.14, h + 0.04, 3.07, 2.46, h + 0.24, 3.075, lambert(0x2b2f36), { collide: false, shadow: false });
+    this.block(2.49, h + 0.06, 3.07, 2.56, h + 0.22, 3.075, lambert(0x9fe0a0, { emissive: 0x3fa040, emissiveIntensity: 0.6 }), { collide: false, shadow: false });
+    this.microwave = new THREE.Vector3(2.35, h, 3.2);
     // Het zwarte tasje met rits en wit logootje: Puck gaat ervan dansen
     const bag = new THREE.Group();
     const shell = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.1, 0.22), lambert(0x1c1c1e));
