@@ -272,8 +272,11 @@ export class Puck {
     add(pet, new THREE.SphereGeometry(0.068, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xffd200), [0, 0.045, -0.005]);
     add(pet, new THREE.CylinderGeometry(0.055, 0.055, 0.008, 12, 1, false, -Math.PI / 2, Math.PI), mat(0xffd200), [0, 0.05, 0.045], [1, 1, 0.9]);
     const shades = new THREE.Group();
-    [-1, 1].forEach((s) => add(shades, new THREE.CylinderGeometry(0.02, 0.02, 0.006, 12), mat(0x111111), [s * 0.074, 0.012, 0.046], null, [0, 0, Math.PI / 2]));
-    add(shades, new THREE.BoxGeometry(0.14, 0.006, 0.006), mat(0x111111), [0, 0.03, 0.05]);
+    // Glazen vóór de ogen (die zitten bij een papegaai aan de zijkant), met een brugje over de snavel
+    [-1, 1].forEach((s) => {
+      add(shades, new THREE.CylinderGeometry(0.024, 0.024, 0.008, 14), mat(0x111111), [s * 0.083, 0.01, 0.047], null, [0, s * 0.5, Math.PI / 2]);
+      add(shades, new THREE.BoxGeometry(0.004, 0.004, 0.06), mat(0x111111), [s * 0.078, 0.022, 0.0]);
+    });
     const chef = new THREE.Group();
     add(chef, new THREE.CylinderGeometry(0.05, 0.05, 0.04, 12), MATERIALS.hatWhite, [0, 0.085, 0]);
     add(chef, new THREE.SphereGeometry(0.068, 12, 8), MATERIALS.hatWhite, [0, 0.13, 0], [1, 0.7, 1]);

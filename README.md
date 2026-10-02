@@ -31,7 +31,7 @@ met uitzicht over Stad en de gang met de zwarte voordeur.
 3. **Groningen op straatniveau:** de ingang van de Donderslaanflat (glazen hal, grijze plint, rij fietsen, coniferen,
    klinkerpad met paaltje, parkeerplaats), een plein met fontein en snackbar, de vijver, de merelboom, een gracht met
    brug, bootje en grachtenpanden, stadsvlaggen en de Martinitoren. Op de parkeerplaats staat Puck's eigen witte
-   Citroën DS3 met zwart dak (kenteken P-UCK-141). Verder: de Jumbo, de Martinitoren, en het podium voor het concert.
+   Citroën DS3 met zwart dak (kenteken P-UCK-141). Verder: de Jumbo, het Gasunie-gebouw (met Bertus de buizerd op het dak) en het podium voor het concert.
 
 **De Jumbo** kun je in: pak een zak pistachenoten uit de aanbiedingsbak en reken af bij Kassière Anja (met een
 glimmend knoopje), of loop zonder betalen door de poortjes. Dan gaat het alarm af en ontploft Bedrijfsleider Gerrit:
@@ -43,8 +43,8 @@ die natuurlijk buiten gebruik is, Meneer Kuipers die al een half uur twijfelt ov
 omroepbericht.
 
 **Snackbar De Vette Hap** (west van het plein): bestel aan de toonbank een snack voor 20 seconden superkracht, zo vaak
-als je wilt. Er staat ook een gokkast. **Kringloop Van Alles Wat** (bij de vijver): pas hoedjes (pet, zonnebril,
-koksmuts, feesthoedje, kaboutermuts, kroon) die je met sterren vrijspeelt, en bekijk je bekers in de prijzenkast.
+als je wilt. Er staat ook een gokkast. **Kringloop Van Alles Wat** (helemaal in het westen): pas hoedjes (pet, zonnebril,
+koksmuts, feesthoedje, kaboutermuts, kroon bij 10 sterren) die je met sterren vrijspeelt, en bekijk je bekers in de prijzenkast.
 
 **Minikaart** (buiten, linksonder): draait mee met de camera, met iconen, mensen en een rode stip voor het doel.
 
@@ -59,10 +59,10 @@ bovenin beeld.
 
 **De Groningers** zijn droog en kort van stof: Postbode Harm, Visser Geert, Studente Sjoukje, Duivenman Jan (en
 duif Henk), Buurman Klaas, Oma Moi, Jumbo-Bas en Eline van de Jumbo, Buurvrouw Tineke (klaagt over scheef geparkeerde
-auto's), Torenwachter Wiebe, Meneer Mehmet met zijn oranje kat Pasja (zegt alleen "Hoi.", en ruikt een beetje) en
+auto's), Conciërge Wiebe van de Gasunie, Meneer Mehmet met zijn oranje kat Pasja (zegt alleen "Hoi.", en ruikt een beetje) en
 Buurman Ben in de lift, Kassière Anja en Bedrijfsleider Gerrit in de Jumbo.
 
-Elke minigame levert een ⭐ op (9 in totaal):
+Elke minigame levert een ⭐ op (10 in totaal):
 
 | ⭐ | Minigame | Waar | Doel |
 |---|---|---|---|
@@ -74,7 +74,8 @@ Elke minigame levert een ⭐ op (9 in totaal):
 | 🕊️ | **Duiven wegjagen** | Het plein, bij Duivenman Jan | Jaag alle duiven weg binnen de tijd. |
 | 🚲 | **Fietsrace** | De brug, bij Studente Sjoukje | Ren door alle blauwe ringen en wees eerder terug dan Sjoukje op haar fiets. |
 | 📦 | **Dozen plat** | Achter de Jumbo, bij Jumbo-Bas | Spring op alle 15 dozen binnen 40 seconden. |
-| 🔔 | **Martinitoren** | De toren, bij Torenwachter Wiebe | Klim naar het balkon en luid de klok binnen 30 seconden. |
+| 🔥 | **Gasunie-klim** | Het Gasunie-gebouw bij de flat, bij Conciërge Wiebe | Klim naar het dak en tik de gasvlam aan binnen 40 seconden. |
+| ⚔️ | **Bertus de buizerd** | Op het dak van de Gasunie | Gevecht in Pokémon-stijl: kies uit Fluitstoot, Snavelpik, Watskebeurt?! (verwarring) en Pistache (genezen). Toetsen 1-4 of tikken. |
 
 **Patat 🍟 en de Groningse eierbal** (bij de snackbar) geven 15 seconden **superkracht**: supersnel lopen en
 superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Ze komen na een tijdje terug.
@@ -82,7 +83,7 @@ superhoog hoppen. Sommige plekken zijn alleen zo bereikbaar. Ze komen na een tij
 Alles wat je vrijspeelt krijgt een duidelijk effect: een grote pop-up met stralen, confetti, een schokgolf en een flits
 (sterren krijgen een eigen ⭐ STER!-banner). Gevonden ingrediënten staan in de inventaris linksboven.
 
-Met alle 9 sterren krijgt Puck een **kroon** 👑 en kan het fluitconcert beginnen. Je voortgang (sterren, geheimpjes, items, beste tijd) wordt in de
+Met alle 10 sterren krijgt Puck een **kroon** 👑 en kan het fluitconcert beginnen. Je voortgang (sterren, geheimpjes, items, beste tijd) wordt in de
 browser bewaard; via het menu (☰) kun je opnieuw beginnen.
 
 ### De buurvrouw 👓
@@ -180,7 +181,7 @@ Per geluid wordt eerst `.mp3`, dan `.ogg`, dan `.wav` geprobeerd.
 | `alert.mp3` | de buurvrouw vermoedt iets |
 | `caught.mp3` | de buurvrouw zet je buiten |
 | `meow.mp3` | Pasja de kat |
-| `bell.mp3` | fietsbel en de klok van de Martinitoren |
+| `bell.mp3` | fietsbel |
 | `crunch.mp3` | een doos plat springen |
 
 Omgevingsgeluid (stadsgeruis, vogels, meeuwen, fietsbellen, de klok thuis, de liftzoem) wordt ook in de browser
@@ -191,7 +192,7 @@ gemaakt. **Muziek** staat in `public/assets/music/` (rechtenvrije loops, genorma
 | `rustig-thuis.mp3` | rustig | Puck's appartement |
 | `rustig-stad.mp3` | rustig | Stad en de galerij |
 | `sluipen.mp3` | spannend, mysterieus | het Pistachehuis (langs de buurvrouw sluipen) |
-| `spannend.mp3` | spannend | tijdens elke minigame: fietsrace, dozen, toren, duiven, stapstenen |
+| `spannend.mp3` | spannend | tijdens elke minigame: fietsrace, dozen, Gasunie-klim, duiven, stapstenen, en het gevecht met Bertus |
 | `vrolijk.mp3` | vrolijk | Bakkerij Haafs en het feest na het fluitconcert |
 
 De lift heeft een liftdeuntje dat in de browser wordt gemaakt. Ontbreekt een muziekbestand, dan valt het spel
@@ -228,9 +229,11 @@ src/
   world/area.js         basisklasse voor gebieden + gedeelde objecten (pistache, veer, patat, koekje, borden…)
   world/materials.js    gedeelde lowpoly-materialen
   world/fx.js           sfeer: lucht, wolken, wind, vlinders, vogels, fontein, vlaggetjes, zonnestralen, stofjes
-  world/groningen.js    Martinitoren, stadsvlag, fietsen, auto's, grachtenpanden, stadsgezicht
+  world/groningen.js    Gasunie-gebouw, Martinitoren (in de verte), stadsvlag, fietsen, auto's, grachtenpanden, stadsgezicht
   songGame.js           merel-minigame (nazingen)
   concert.js            het fluitconcert: ritmespel met eigen begeleiding
+  battle.js             gevecht tegen Bertus de buizerd (Pokémon-stijl)
+  world/raptor.js       Bertus de buizerd (3D-model)
   minigames.js          duiven, fietsrace, dozen plat, rondlopers (Mehmet)
   dialog.js             droge Groningse dialogen
   world/people.js       Groningers (gezichten, kleding, haar) en hun animaties

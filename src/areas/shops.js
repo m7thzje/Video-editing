@@ -113,7 +113,7 @@ export const HATS = [
   { id: 'koksmuts', name: 'Koksmuts', need: 5 },
   { id: 'feesthoed', name: 'Feesthoedje', need: 7 },
   { id: 'kabouter', name: 'Kaboutermuts', secret: 'kabouter' },
-  { id: 'kroon', name: 'Kroon', need: 9 },
+  { id: 'kroon', name: 'Kroon', need: 10 },
 ];
 
 /** Grote versie van een hoedje voor op de standaard in de winkel. */
@@ -176,7 +176,7 @@ export class Kringloop extends Area {
       const label = makeSign([h.name, h.secret ? 'geheim' : h.need ? `${h.need} ⭐` : 'gratis'], { width: 0.55, height: 0.24, bg: '#fff6e6', fg: '#3b2a1e' });
       label.position.set(x, 0.55, z + 0.06);
       this.group.add(label);
-      this.zones.push({ id: 'hoed', hat: h, x, y: 0, z: z + 0.55, r: 0.38, h: 1.3, prompt: `Pas: ${h.name} 🧢` });
+      this.zones.push({ id: 'hoed', hatDef: h, x, y: 0, z: z + 0.55, r: 0.38, h: 1.3, prompt: `Pas: ${h.name} 🧢` });
       return { model, x, z };
     });
     // Spiegel om jezelf te bekijken

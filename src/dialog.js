@@ -124,11 +124,11 @@ export const NPC_LINES = {
   ],
   basIdle: ['Plat is plat.', 'Morgen komen er weer honderd. Dozen houden nooit op.', 'Mooi werk. Nou ja. Werk.', 'Ik heb een keer een doos plat gesprongen waar nog koekjes in zaten. Dat was mijn beste dag.', 'Gerrit zegt dat ik te hard spring. Gerrit springt nooit.'],
   torenIdle: [
-    'De echte is 97 meter. Deze is kleiner. Zeg het tegen niemand.',
-    "D'Olle Grieze. Zo noemen we hem. Hij vindt het nait erg.",
-    'Klokluiden mag. Nait te vaak.',
-    'Ik ben hier torenwachter. Ik wacht op de toren. Hij gaat nergens heen. Goeie baan.',
-    'Boven is het uitzicht mooi. Beneden ook. Ik blijf beneden.',
+    'Dit gebouw heeft geen rechte hoek. Ik heb ze geteld. Nul. Mijn waterpas is in therapie.',
+    'Ze noemen het het Apenrots-gebouw. Ik zeg niks. Ik ben maar conciërge.',
+    'Bertus woont op het dak. Huur betaalt hij nait. Wel elke dag een muis op de mat.',
+    'Ik dweil hier al twintig joar. Alles is rond. Ik dweil in rondjes.',
+    'Gas is gevaarlijk. Daarom heb ik een helm. Hij is van karton, maar het gaat om het gebaar.',
   ],
   omaIdle: [
     'Moi Puck! Nog een koekje? Alsjeblieft. Nait alles in één keer opeten.',

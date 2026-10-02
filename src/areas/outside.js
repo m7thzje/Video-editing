@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { applyWind, Birds, bunting, Butterflies, Clouds, Fountain, makeSkyDome, waterTexture } from '../world/fx.js';
 import { Area, glowSprite, makeFeather, makeFries, makeHaafsBoard, makePistachio, makeSign } from '../world/area.js';
-import { makeBike, makeCanalHouse, makeCar, makeCityView, makeDS3, makeGroningenFlag, makeMartinitoren } from '../world/groningen.js';
+import { makeBike, makeCanalHouse, makeCar, makeCityView, makeDS3, makeGasunie, makeGroningenFlag } from '../world/groningen.js';
+import { makeRaptor } from '../world/raptor.js';
 import { greyBrickTexture, mailboxTexture, pavingTexture, redBrickPavingTexture, terrazzoTexture } from '../textures.js';
 import { lambert, M } from '../world/materials.js';
 import { BoxSmash, Pigeons, RingRace, Rival, Walker } from '../minigames.js';
@@ -595,12 +596,12 @@ export class Outside extends Area {
     // Waterput
     const well = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.6, 10, 1, true), M.stone);
     well.material.side = THREE.DoubleSide;
-    well.position.set(20, 0.3, -20);
+    well.position.set(13, 0.3, -20.5);
     this.group.add(well);
-    this.addCollider(19.4, 0, -20.6, 20.6, 0.6, -20.4, { climbable: true });
-    this.addCollider(19.4, 0, -19.6, 20.6, 0.6, -19.4, { climbable: true });
-    this.addCollider(19.4, 0, -20.6, 19.6, 0.6, -19.4, { climbable: true });
-    this.addCollider(20.4, 0, -20.6, 20.6, 0.6, -19.4, { climbable: true });
+    this.addCollider(12.4, 0, -21.1, 13.6, 0.6, -20.9, { climbable: true });
+    this.addCollider(12.4, 0, -20.1, 13.6, 0.6, -19.9, { climbable: true });
+    this.addCollider(12.4, 0, -21.1, 12.6, 0.6, -19.9, { climbable: true });
+    this.addCollider(13.4, 0, -21.1, 13.6, 0.6, -19.9, { climbable: true });
     // Hooibalen
     [[22, 18, 0.6], [22.9, 18, 0.6], [22.45, 18, 1.2]].forEach(([x, z, top]) =>
       this.block(x - 0.45, top - 0.6, z - 0.4, x + 0.45, top, z + 0.4, lambert(0xe3c16f), { climbable: true, name: 'hooibaal' }),
@@ -639,7 +640,7 @@ export class Outside extends Area {
       spots.push([Math.cos(a) * d * 1.1, Math.sin(a) * d * 1.1]);
     }
     spots.push([-24, -4], [-9, 18], [18, 18], [24, -14], [-11, -22]);
-    const blocked = ([x, z]) => z > 19 || (x > 18.5 && x < 30.5 && z > -9 && z < 12.5) || Math.hypot(x + 24, z - 15) < 5 || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18);
+    const blocked = ([x, z]) => z > 19 || (x > 18.5 && x < 30.5 && z > -9 && z < 12.5) || Math.hypot(x + 24, z - 15) < 5 || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - 21.5, z + 24.5) < 7.5 || (x > -30 && x < -22 && z > -3.5 && z < 4);
     for (let k = spots.length - 1; k >= 0; k--) if (blocked(spots[k])) spots.splice(k, 1);
     const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.2, 0.3, 2, 6), M.trunk, spots.length);
     const crown = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.5, 0), M.treeLeaf, spots.length);
@@ -689,7 +690,7 @@ export class Outside extends Area {
       do {
         x = (rnd() - 0.5) * 54;
         z = (rnd() - 0.5) * 54;
-      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 2 || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - POND.x, z - POND.z) < POND.r + 1 || (Math.abs(x) < 9 && z < -15));
+      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 2 || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - 21.5, z + 24.5) < 7 || (x > -30 && x < -22 && z > -3.5 && z < 4) || Math.hypot(x - POND.x, z - POND.z) < POND.r + 1 || (Math.abs(x) < 9 && z < -15));
       const sc = 0.8 + rnd() * 0.5;
       m.makeRotationY(rnd() * 6.28).scale(new THREE.Vector3(sc, sc, sc)).setPosition(x, 0, z);
       stems.setMatrixAt(i, m);
@@ -780,7 +781,7 @@ export class Outside extends Area {
       do {
         x = (rnd() - 0.5) * 56;
         z = (rnd() - 0.5) * 56;
-      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 1.2 || Math.hypot(x, z) < 3.4 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.5 || (Math.abs(x) < 9 && z < -15) || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18));
+      } while (z > 20.5 || (x > 19.5 && z > -8.5 && z < 11.5) || Math.hypot(x + 24, z - 15) < 3.5 || Math.abs(x) < 1.2 || Math.hypot(x, z) < 3.4 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.5 || (Math.abs(x) < 9 && z < -15) || (x > -21 && x < -11 && z > 1 && z < 10) || (x > -9 && x < -2 && z > 4.5 && z < 10.5) || (x > -22 && x < -13 && z > -10.5 && z < -3.5) || (x > 10.5 && x < 18 && z > 11.5 && z < 18) || Math.hypot(x - 21.5, z + 24.5) < 7 || (x > -30 && x < -22 && z > -3.5 && z < 4));
       const sc = 0.7 + rnd() * 0.8;
       m.compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6), new THREE.Vector3(sc, sc, sc));
       tufts.setMatrixAt(i, m);
@@ -920,34 +921,46 @@ export class Outside extends Area {
   }
 
   buildTower() {
-    // De Martinitoren in het klein (1:1 zou nait passen). Klimmen tot het balkon!
-    const tx = -24;
-    const tz = 15;
-    const tower = makeMartinitoren(0.9);
-    tower.position.set(tx, 0, tz);
-    this.group.add(tower);
-    const r = 2.5 * 0.9;
-    this.addCollider(tx - r, 0, tz - r, tx + r, 9, tz + r, { climbable: true, name: 'martinitoren' });
-    // Balkon op 9 m
-    this.block(tx - r - 0.5, 8.9, tz - r - 0.5, tx + r + 0.5, 9.05, tz + r + 0.5, M.stone, { oneWay: true, name: 'balkon' });
-    for (const [x0, z0, x1, z1] of [[-1, -1, 1, -1], [-1, 1, 1, 1], [-1, -1, -1, 1], [1, -1, 1, 1]]) {
-      const w = r + 0.5;
-      this.block(tx + Math.min(x0, x1) * w - 0.04, 9.05, tz + Math.min(z0, z1) * w - 0.04, tx + Math.max(x0, x1) * w + 0.04, 9.6, tz + Math.max(z0, z1) * w + 0.04, M.white, { collide: false });
-    }
-    this.addCollider(tx - r, 9, tz - r, tx + r, 22, tz + r, { name: 'toren-boven' });
-    // Klok om te luiden
-    const bell = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 10, 1, true), M.gold);
-    bell.material = M.gold;
-    bell.position.set(tx + r + 0.2, 9.75, tz);
-    this.group.add(bell);
-    this.towerTop = { x: tx + r + 0.25, y: 9.05, z: tz };
-    this.towerStart = { x: tx + r + 0.8, z: tz };
-    this.sign(['Martinitoren-klim', 'Luid de klok binnen 30 s!'], tx + r + 1.5, 1.1, tz - 1.6, Math.PI / 2, { width: 1.4, height: 0.45 });
-    this.block(tx + r + 1.47, 0, tz - 1.62, tx + r + 1.53, 0.9, tz - 1.58, M.woodDark, { collide: false });
+    // Het Gasunie-gebouw, vlak bij de flat. Klim naar het dak (daar woont Bertus de buizerd).
+    const tx = 21.5;
+    const tz = -24.5;
+    const gas = makeGasunie({ brickMat: worldTexture(lambert(0xffffff), 'stone-rough', 1.4, 0xb07a5e) });
+    gas.position.set(tx, 0, tz);
+    this.group.add(gas);
+    const H = gas.userData.height;
+    this.gasunie = { x: tx, z: tz, h: H };
+    // Klimbaar in een kruisvorm die de ronde gevel volgt
+    this.addCollider(tx - 4.2, 0, tz - 2.8, tx + 4.2, H, tz + 2.8, { climbable: true, name: 'gasunie' });
+    this.addCollider(tx - 2.8, 0, tz - 4.2, tx + 2.8, H, tz + 4.2, { climbable: true, name: 'gasunie' });
+    this.addCollider(tx - 4.5, H - 0.05, tz - 4.5, tx + 4.5, H + 0.25, tz + 4.5, { oneWay: true, name: 'gasunie-dak' });
+    // Gasvlam op de dakrand: het doel van de klim
+    const flamePos = new THREE.Vector3(tx, H + 0.25, tz + 3.4);
+    this.block(flamePos.x - 0.12, H + 0.25, flamePos.z - 0.12, flamePos.x + 0.12, H + 0.75, flamePos.z + 0.12, M.metalDark, { collide: false });
+    const flame = new THREE.Group();
+    const fm = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 8), new THREE.MeshBasicMaterial({ color: 0x4aa8ff }));
+    const fi = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.3, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    fi.position.y = -0.06;
+    flame.add(fm, fi);
+    flame.position.set(flamePos.x, H + 1.0, flamePos.z);
+    flame.userData.dynamic = true;
+    this.group.add(flame);
+    this.fx.push({ update: (dt, t) => flame.scale.set(1, 0.85 + Math.sin(t * 17) * 0.15, 1) });
+    this.towerTop = { x: flamePos.x, y: H + 0.2, z: flamePos.z - 0.6 };
+    this.towerStart = { x: tx + 1.0, z: tz + 6.2 };
+    this.sign(['Gasunie-klim', 'Naar het dak binnen 40 s!'], tx - 2.6, 1.1, tz + 6.4, 0, { width: 1.4, height: 0.45 });
+    this.block(tx - 2.63, 0, tz + 6.38, tx - 2.57, 0.9, tz + 6.42, M.woodDark, { collide: false });
+    // Bertus de buizerd op het dak
+    this.raptor = makeRaptor();
+    this.raptor.position.set(tx - 1.2, H + 0.25, tz - 0.6);
+    this.raptor.rotation.y = 0.6;
+    this.raptor.scale.setScalar(1.35);
+    this.group.add(this.raptor);
+    this.fx.push({ update: (dt, t) => this.raptor.userData.idle(t) });
+    this.zones.push({ id: 'roofvogel', x: tx - 1.2, y: H, z: tz - 0.6, r: 2.6, h: 2, prompt: 'Daag Bertus de buizerd uit ⚔️' });
   }
 
   buildShops() {
-    // Snackbar De Vette Hap (west van het plein) en Kringloop Van Alles Wat (bij de vijver)
+    // Snackbar De Vette Hap (west van het plein) en Kringloop Van Alles Wat (helemaal in het westen)
     const shop = (x0, z0, x1, z1, wallMat, roofMat, door, sign, to, spawn) => {
       const h = 3.0;
       this.block(x0, 0, z0, x1, h, z1, wallMat, { name: to });
@@ -980,8 +993,8 @@ export class Outside extends Area {
       makeSign(['🍟 DE VETTE HAP 🍟', 'Snackbar · ook eierballen'], { width: 2.2, height: 0.6, bg: '#d7263d', fg: '#ffffff', border: '#ffd84a' }), 'snackbar', 'snackbar');
     // Raam met warm licht
     this.block(-14.98, 1.0, -9.0, -14.94, 2.0, -7.8, M.windowBlue, { collide: false, shadow: false });
-    shop(11.5, 13, 17, 16.8, worldTexture(lambert(0xffffff), 'stone-rough', 1.6), M.roof,
-      { axis: 'z', x: 14.25, z: 13 },
+    shop(-29.2, -2.5, -23.6, 3, worldTexture(lambert(0xffffff), 'stone-rough', 1.6), M.roof,
+      { axis: 'x', x: -23.6, z: 0.25 },
       makeSign(['♻️ KRINGLOOP', 'Van Alles Wat · hoedjes!'], { width: 2.2, height: 0.6, bg: '#2f6e4a', fg: '#ffffff', border: '#1d4a30' }), 'kringloop', 'kringloop');
   }
 
@@ -1050,7 +1063,7 @@ export class Outside extends Area {
     this.addNPC('bas', 'Jumbo-Bas', 20.5, -1.9, Math.PI, { shirt: 0xffd200, pants: 0x1b1b1d, hair: 0x3b2a1e, hat: 'cap', hatColor: 0xffd200, activity: 'drink' });
     this.addNPC('jumbo', 'Jumbo-medewerker Eline', 19.2, 3.2, -Math.PI / 2, { height: 1.66, shirt: 0xffd200, pants: 0x1b1b1d, hairStyle: 'bun', hair: 0x6b4423, mood: 'smile', activity: 'smoke' });
     this.addNPC('tineke', 'Buurvrouw Tineke', 14.8, -13.6, -Math.PI / 2, { height: 1.62, shirt: 0xd96fb4, pants: 0x4d4a5c, hairStyle: 'bob', hair: 0xb07a4a, glasses: true, mood: 'frown', activity: 'phone' });
-    this.addNPC('toren', 'Torenwachter Wiebe', this.towerStart.x + 0.9, this.towerStart.z + 1.2, -Math.PI / 2, { shirt: 0x2f6e4a, pants: 0x3a3d40, beard: true, hair: 0x8a8a8a, hat: 'cap', hatColor: 0x1f8a4c, activity: 'sport' });
+    this.addNPC('toren', 'Conciërge Wiebe', this.towerStart.x + 0.9, this.towerStart.z + 1.2, -Math.PI / 2, { shirt: 0x2f6e4a, pants: 0x3a3d40, beard: true, hair: 0x8a8a8a, hat: 'cap', hatColor: 0x1f8a4c, activity: 'sport' });
     // Zwerver bij de ingang van de Jumbo: zegt niks, wiebelt heen en weer
     const zw = this.addNPC('zwerver', 'Man bij de Jumbo', 19.3, 6.9, -Math.PI / 2, {
       sitting: true, shirt: 0x5a5a4a, pants: 0x3f3a33, hair: 0x6b6b66, beard: true, hat: 'beanie', hatColor: 0x6b3a2a, skin: 1, mood: 'flat', shoes: 0x3a2e24,

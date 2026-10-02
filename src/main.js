@@ -16,6 +16,7 @@ import { Input } from './input.js';
 import { CharacterBody, DEFAULT_HOP } from './physics.js';
 import { Puck } from './puck.js';
 import { Concert } from './concert.js';
+import { Battle } from './battle.js';
 import { JumboStore } from './areas/jumbo.js';
 import { HATS, Kringloop, SNACKS, Snackbar } from './areas/shops.js';
 import { Minimap } from './minimap.js';
@@ -219,7 +220,8 @@ const STARS = [
   { id: 'duiven', icon: '🐦', name: 'Duiven wegjagen', desc: 'Jaag voor Duivenman Jan alle duiven van het plein (30 s)' },
   { id: 'rondje', icon: '🚲', name: 'Fietsrace', desc: 'Race tegen Studente Sjoukje op de fiets door alle ringen' },
   { id: 'dozen', icon: '📦', name: 'Dozen plat', desc: 'Maak voor Jumbo-Bas alle dozen plat binnen 40 s' },
-  { id: 'toren', icon: '🔔', name: 'Martinitoren', desc: 'Klim de toren op en luid de klok binnen 30 s' },
+  { id: 'toren', icon: '🔥', name: 'Gasunie-klim', desc: 'Klim het Gasunie-gebouw op en tik de gasvlam aan binnen 40 s' },
+  { id: 'roofvogel', icon: '⚔️', name: 'Bertus de buizerd', desc: 'Versla de roofvogel op het dak van de Gasunie in een gevecht' },
 ];
 const SECRETS = {
   portret: 'Het schilderij bij de buren',
@@ -675,7 +677,7 @@ const dialog = new Dialog();
 const DUIVEN_TIME = 30;
 const RONDJE_TIME = 60;
 const DOZEN_TIME = 40;
-const TOREN_TIME = 30;
+const TOREN_TIME = 40;
 
 const song = new SongGame({
   audio,
@@ -1234,7 +1236,7 @@ function interact() {
     return;
   }
   if (z.id === 'hoed') {
-    const h = z.hat;
+    const h = z.hatDef;
     if (!hatUnlocked(h)) {
       const n = STARS.filter((s) => progress.stars[s.id]).length;
       const karin = areas.kringloop.npcs[0];
@@ -1283,6 +1285,11 @@ function interact() {
       secret('betaald');
       state.frozen = false;
     }, 6000);
+    return;
+  }
+  if (z.id === 'roofvogel') {
+    if (progress.stars.roofvogel) return dialog.show('Bertus de buizerd', 'Jij weer. Ik zit hier alleen nog voor het uitzicht. Ga weg.', 3);
+    startBattle();
     return;
   }
   if (z.id === 'podium') {
@@ -1428,10 +1435,10 @@ function talkTo(npc) {
   }
   if (npc.id === 'toren') {
     if (o.towerRun) return dialog.show(npc.name, 'Klimmen. Nait kletsen.');
-    dialog.show(npc.name, progress.stars.toren ? dialog.next('torenIdle') : `Moi. Klim naar het balkon en luid de klok. ${TOREN_TIME} tellen. Nait naar beneden kieken.`, 4);
+    dialog.show(npc.name, progress.stars.toren ? dialog.next('torenIdle') : `Moi. Ik ben de conciërge. Klim naar het dak en tik de gasvlam aan. ${TOREN_TIME} tellen. Pas op voor Bertus.`, 4);
     startChallenge({
-      icon: '🔔', title: 'MARTINITOREN', goal: `Klim naar het balkon en luid de klok binnen ${TOREN_TIME} seconden`,
-      tip: 'Loop tegen de toren aan om te klimmen. De gele pijl wijst naar de klok.', onGo: () => (o.towerRun = { time: 0 }), active: () => !!o.towerRun,
+      icon: '🔥', title: 'GASUNIE-KLIM', goal: `Klim naar het dak en tik de gasvlam aan binnen ${TOREN_TIME} seconden`,
+      tip: 'Loop tegen de gevel aan om te klimmen. De gele pijl wijst naar de vlam.', onGo: () => (o.towerRun = { time: 0 }), active: () => !!o.towerRun,
     });
     return;
   }
@@ -1522,7 +1529,7 @@ function currentObjective() {
   if (b.race.active) return { area: 'buiten', pos: V3(b.race.target.x, 0, b.race.target.z), text: 'Rondje Stad: volg de ringen!' };
   if (b.pigeons.active) return { area: 'buiten', text: 'Jaag alle duiven weg!' };
   if (b.boxSmash.active) return { area: 'buiten', text: 'Spring op alle dozen!' };
-  if (b.towerRun) return { area: 'buiten', pos: V3(b.towerTop.x, 0, b.towerTop.z), text: 'Klim naar het balkon en luid de klok!' };
+  if (b.towerRun) return { area: 'buiten', pos: V3(b.towerTop.x, 0, b.towerTop.z), text: 'Klim naar het dak en tik de gasvlam aan!' };
   if (!visited.buiten) return { area: 'buiten', pos: V3(0, 0, -12), text: 'Neem de lift naar beneden (eind van de galerij)' };
   const list = [];
   const S = progress.stars;
@@ -1531,7 +1538,8 @@ function currentObjective() {
   if (!S.duiven) list.push({ area: 'buiten', pos: V3(3, 0, 3.1), text: 'Praat met Duivenman Jan op het plein' });
   if (!S.rondje) list.push({ area: 'buiten', pos: V3(-5.4, 0, 20.6), text: 'Fietsrace: praat met Studente Sjoukje bij de brug' });
   if (!S.dozen) list.push({ area: 'buiten', pos: V3(20.5, 0, -2.5), text: 'Dozen plat: praat met Jumbo-Bas achter de Jumbo' });
-  if (!S.toren) list.push({ area: 'buiten', pos: V3(-20, 0, 16), text: 'Martinitoren: praat met Torenwachter Wiebe' });
+  if (!S.toren) list.push({ area: 'buiten', pos: V3(areas.buiten.towerStart.x, 0, areas.buiten.towerStart.z), text: 'Gasunie-klim: praat met Conciërge Wiebe' });
+  if (!S.roofvogel) list.push({ area: 'buiten', pos: V3(areas.buiten.towerTop.x, 0, areas.buiten.towerTop.z), text: 'Klim op de Gasunie en daag Bertus de buizerd uit' });
   if (!S.koek) {
     const missing = b.collectibles.filter((c) => c.type === 'ingredient' && !c.found);
     if (!state.omaMet || !missing.length) list.push({ area: 'bakkerij', pos: V3(0, 0, 0.55), text: missing.length ? 'Praat met oma Moi in Bakkerij Haafs' : 'Breng de ingrediënten naar oma Moi' });
@@ -1612,7 +1620,7 @@ const AUDIENCE = [
   ['Meneer Mehmet', { shirt: 0x2f5d7c, beard: true, hair: 0x2a2a2a, skin: 2 }, 'Hoi.'],
   ['Buurvrouw Tineke', { height: 1.62, shirt: 0xc86a8a, hairStyle: 'bob', hair: 0x9a7b5a, glasses: true }, 'Ik heb mijn fiets keurig in het rek gezet. Voor de duidelijkheid.'],
   ['Jumbo-Bas', { shirt: 0xf2c230, hat: 'cap', hatColor: 0xf2c230 }, 'Ik heb de dozen laten staan. Voor één keer.'],
-  ['Torenwachter Wiebe', { shirt: 0x4b3a6b, beard: true, hair: 0x8a8a8a }, 'Ik heb de klok zacht gezet. Uit respect.'],
+  ['Conciërge Wiebe', { shirt: 0x4b3a6b, beard: true, hair: 0x8a8a8a }, 'Ik heb de gasvlam een tandje hoger gezet. Uit respect.'],
   ['Mw. Zuur (nr. 143)', { height: 1.9, shirt: 0x7b5c7e, pants: 0x4d4a5c, hairStyle: 'bob', hair: 0xf1f0ec, glasses: true, mood: 'frown' }, 'Hmpf. Nou. Het was mooi. Zeg het tegen niemand.'],
 ];
 
@@ -1695,6 +1703,82 @@ function endConcert(acc, best) {
   saveProgress();
   toast(`🎉 ${pct} procent! Langste reeks: ${best}. Heel Stad klapt!`, 4);
   startFinale();
+}
+
+// ---------- Gevecht tegen Bertus de buizerd ----------
+const battle = new Battle({
+  audio,
+  onAttack: (who) => (state.btAnim = { who, kind: 'attack', t: 0 }),
+  onHit: (who) => (state.btAnim = { who, kind: 'hit', t: 0 }),
+  onEnd: (won) => endBattle(won),
+});
+
+function startBattle() {
+  const b = areas.buiten;
+  const r = b.raptor;
+  state.mode = 'battle';
+  state.frozen = true;
+  input.releasePointer();
+  dialog.hide();
+  document.body.classList.add('cinema');
+  music.play('spannend');
+  // Puck tegenover de buizerd
+  const dir = V3(Math.sin(r.rotation.y), 0, Math.cos(r.rotation.y));
+  state.btPuck = V3(r.position.x + dir.x * 2.2, r.position.y, r.position.z + dir.z * 2.2);
+  state.btFoe = r.position.clone();
+  body.teleport(state.btPuck, Math.atan2(r.position.x - state.btPuck.x, r.position.z - state.btPuck.z));
+  battle.start();
+}
+
+function updateBattle(dt) {
+  const b = areas.buiten;
+  const r = b.raptor;
+  const P = state.btPuck;
+  const F = state.btFoe;
+  const mid = V3((P.x + F.x) / 2, P.y, (P.z + F.z) / 2);
+  const side = V3(-(F.z - P.z), 0, F.x - P.x).normalize();
+  camera.position.set(mid.x + side.x * 2.6 - (F.x - P.x) * 0.35, P.y + 1.2, mid.z + side.z * 2.6 - (F.z - P.z) * 0.35);
+  camera.lookAt(mid.x, P.y + 0.45, mid.z);
+  const a = state.btAnim;
+  const pp = tmpV.copy(P);
+  r.position.copy(F);
+  r.userData.flap = Math.max(0, r.userData.flap - dt * 1.5);
+  if (a) {
+    a.t += dt;
+    const k = Math.sin(Math.min(1, a.t / 0.5) * Math.PI);
+    if (a.kind === 'attack' && a.who === 'puck') pp.lerp(F, 0.45 * k);
+    if (a.kind === 'attack' && a.who === 'foe') {
+      r.position.lerp(P, 0.4 * k);
+      r.userData.flap = 1;
+    }
+    if (a.kind === 'hit' && a.who === 'foe') r.position.x += Math.sin(a.t * 60) * 0.06 * (1 - Math.min(1, a.t / 0.5));
+    if (a.kind === 'hit' && a.who === 'puck') {
+      pp.x += Math.sin(a.t * 60) * 0.04 * (1 - Math.min(1, a.t / 0.5));
+      puck.land(0.8);
+    }
+    if (a.t > 0.6) state.btAnim = null;
+  }
+  body.pos.copy(pp);
+  puck.root.position.copy(pp);
+  puck.root.rotation.y = body.yaw;
+  puck.update(dt, { speed: 0, grounded: true, climbing: false, vy: 0 });
+}
+
+function endBattle(won) {
+  state.mode = 'play';
+  state.frozen = false;
+  document.body.classList.remove('cinema');
+  body.teleport(state.btPuck, body.yaw);
+  const r = areas.buiten.raptor;
+  r.position.copy(state.btFoe);
+  music.play(musicFor(area.name));
+  if (won) {
+    award('roofvogel');
+    // Bertus vliegt weg
+    state.raptorAway = 0.01;
+  } else {
+    toast('Puck is even uitgeteld. Eet wat (snackbar!) en probeer het nog eens.', 4);
+  }
 }
 
 // ---------- Finale-film: feest met dansende buurt, vuurwerk en een drone die wegvliegt ----------
@@ -1857,15 +1941,15 @@ function updateMinigames(dt) {
     if (body.pos.y > tt.y - 0.2 && Math.hypot(body.pos.x - tt.x, body.pos.z - tt.z) < 1.2) {
       const t = o.towerRun.time;
       o.towerRun = null;
-      audio.play('bell');
-      setTimeout(() => audio.play('bell'), 450);
+      audio.play('fries');
+      burst(sparkleTex, tmpV.set(tt.x, tt.y + 0.8, tt.z + 0.6), 20, 0.8);
       if (t <= TOREN_TIME) {
-        dialog.show('Torenwachter Wiebe', `Bim. Bam. ${t.toFixed(1)} seconden. Heel Stad heeft het gehoord. Nou ja. De straat.`, 4);
+        dialog.show('Conciërge Wiebe', `Fwoesj. ${t.toFixed(1)} seconden. De vlam brandt. Dat deed hij al. Maar nu met jou erbij.`, 4);
         award('toren');
-      } else dialog.show('Torenwachter Wiebe', `${t.toFixed(1)} seconden. Mooi geluid. Te laat. Nog een keer?`, 3.5);
+      } else dialog.show('Conciërge Wiebe', `${t.toFixed(1)} seconden. Boven ben je. Te laat. Nog een keer?`, 3.5);
     } else if (o.towerRun.time > TOREN_TIME + 20) {
       o.towerRun = null;
-      dialog.show('Torenwachter Wiebe', 'Ook goed. Beneden is ook mooi.', 3);
+      dialog.show('Conciërge Wiebe', 'Ook goed. Beneden is ook mooi.', 3);
     }
   }
   if (o.race.active && o.race.time > RONDJE_TIME + 30) {
@@ -1891,7 +1975,7 @@ function updateCounter() {
   if (area.name === 'buiten' && area.towerRun) {
     counterEl.classList.remove('hidden');
     counterKey = 'timer';
-    counterEl.textContent = `🔔 ${area.towerRun.time.toFixed(1)} s · hoogte ${body.pos.y.toFixed(1)} m`;
+    counterEl.textContent = `🔥 ${area.towerRun.time.toFixed(1)} s · hoogte ${body.pos.y.toFixed(1)} m`;
     return;
   }
   if (area.name === 'buiten' && area.pigeons.active) {
@@ -2128,9 +2212,9 @@ const minimap = new Minimap($('minimap'), {
 minimap.build(areas.buiten.group);
 minimap.pois = [
   { icon: '🛗', x: 0, z: -14.3 }, { icon: '🥖', x: -11.2, z: 5.55 }, { icon: '🛒', x: 19.3, z: 5 },
-  { icon: '🔔', x: -24, z: 15 }, { icon: '🎤', x: -5.5, z: 7.3 }, { icon: '🐦', x: 17, z: -8 },
+  { icon: '🏢', x: 21.5, z: -24.5 }, { icon: '🎤', x: -5.5, z: 7.3 }, { icon: '🐦', x: 17, z: -8 },
   { icon: '🚲', x: -5.4, z: 20.6 }, { icon: '📦', x: 24, z: -5 },
-  { icon: '🍟', x: -14.4, z: -7 }, { icon: '🧢', x: 14.25, z: 12.4 },
+  { icon: '🍟', x: -14.4, z: -7 }, { icon: '🧢', x: -23, z: 0.25 },
 ];
 function updateMinimap(dt) {
   const on = area === areas.buiten && state.mode === 'play' && !state.concert;
@@ -2219,6 +2303,8 @@ function frame(timestamp) {
     updateIntro(dt);
   } else if (state.mode === 'finale') {
     updateFinale(dt);
+  } else if (state.mode === 'battle') {
+    updateBattle(dt);
   } else if (state.mode === 'start') {
     followCam.yaw += dt * 0.05;
     puck.root.position.copy(body.pos);
@@ -2250,7 +2336,20 @@ function frame(timestamp) {
     audio.play('kassa', { volume: 0.5 });
     toast(`📢 ${lines[Math.floor(Math.random() * lines.length)]}`, 5.5);
   }
-  // Omgevingsgeluid per plek
+  // Bertus vliegt weg na het verloren gevecht
+  if (state.raptorAway) {
+    const r = areas.buiten.raptor;
+    state.raptorAway += dt;
+    r.userData.flap = 1;
+    r.position.y += dt * 3;
+    r.position.x += dt * 4;
+    if (state.raptorAway > 6) {
+      state.raptorAway = 0;
+      r.position.copy(state.btFoe);
+      r.userData.flap = 0;
+    }
+  }
+    // Omgevingsgeluid per plek
   const ambKind = state.mode !== 'play' || state.concert ? null : { buiten: 'buiten', galerij: 'galerij', lift: 'lift', puckhuis: 'binnen', bakkerij: 'binnen', jumbo: 'binnen', snackbar: 'binnen', kringloop: 'binnen' }[area.name] || null;
   if (ambKind !== state.ambKind) {
     state.ambKind = ambKind;

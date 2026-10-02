@@ -350,3 +350,66 @@ export function makeResidentialTower(h = 40) {
   m.position.y = h / 2;
   return m;
 }
+
+/**
+ * Het Gasunie-gebouw (Groningen), in het klein: bruine baksteen, verdiepingen die organisch
+ * om elkaar heen kronkelen met donkere raambanden ertussen, een koperen dakrand en een gasvlam.
+ * Footprint ongeveer 9 x 9 m rond (0,0), dak op `height`.
+ */
+export function makeGasunie({ floors = 7, fh = 1.6, brickMat, roofMat } = {}) {
+  const g = new THREE.Group();
+  const brick = brickMat || lambert(0x8a4e36);
+  const glass = Object.assign(lambert(0x23303a, { emissive: 0x16202a, emissiveIntensity: 0.4 }), { userData: { night: 'window' } });
+  const copper = lambert(0x5f8f7a);
+  const add = (geo, mat, x, y, z, ry = 0) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    m.rotation.y = ry;
+    m.castShadow = true;
+    m.receiveShadow = true;
+    g.add(m);
+    return m;
+  };
+  for (let f = 0; f < floors; f++) {
+    const y = f * fh;
+    // Elke verdieping een iets andere, ronde vorm: een paar overlappende "lobben"
+    const sway = Math.sin(f * 1.3) * 0.35;
+    const lobes = [
+      [0 + sway, 0, 3.6],
+      [1.4, 1.3 - sway, 2.9],
+      [-1.5 - sway * 0.5, 1.1, 2.7],
+      [1.2, -1.5, 2.8 + sway * 0.3],
+      [-1.2 + sway, -1.4, 2.9],
+    ];
+    lobes.forEach(([x, z, r], i) => {
+      add(new THREE.CylinderGeometry(r, r * 0.97, fh * 0.62, 9 + (i % 3)), brick, x, y + fh * 0.31, z, f * 0.3 + i);
+      add(new THREE.CylinderGeometry(r - 0.12, r - 0.12, fh * 0.38, 9 + (i % 3)), glass, x, y + fh * 0.81, z, f * 0.3 + i);
+    });
+  }
+  const H = floors * fh;
+  // Dak met koperen rand
+  add(new THREE.CylinderGeometry(4.6, 4.6, 0.25, 14), roofMat || lambert(0x6f6a64), 0, H + 0.12, 0);
+  add(new THREE.TorusGeometry(4.6, 0.12, 5, 28), copper, 0, H + 0.26, 0).rotation.x = Math.PI / 2;
+  // Installaties op het dak
+  add(new THREE.BoxGeometry(1.4, 0.8, 1.0), lambert(0x9aa1a6), 2.4, H + 0.65, -2.6);
+  add(new THREE.CylinderGeometry(0.06, 0.06, 2.6, 6), M.metalDark, 1.8, H + 1.55, -1.6);
+  // Logo
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 128;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 512, 128);
+  ctx.fillStyle = '#0a5e9e';
+  ctx.font = 'bold 84px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Gasunie', 256, 68);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const logo = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.8), new THREE.MeshBasicMaterial({ map: tex }));
+  logo.position.set(0, H - 0.9, 3.75);
+  g.add(logo);
+  g.userData.height = H;
+  return g;
+}
